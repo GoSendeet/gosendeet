@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "../../constants";
-import logo from "@/assets/images/sendeet-logo.png";
+import logo from "@/assets/images/gosendeet-black-logo.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
 // import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
-import { Home } from "lucide-react";
+import { ArrowUpRight, Home } from "lucide-react";
+import { Button } from "../ui/button";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -32,12 +33,12 @@ const Navbar = () => {
   //   }
   // }, [userId]);
   return (
-    <nav className="w-full z-20 bg-[#fafafa]">
-      <div className="flex justify-between items-center py-3 lg:py-5 xl:px-30 md:px-20 px-6">
+    <nav className="w-full z-20 bg-[#FFFFFF1A] ">
+      <div className="flex justify-between items-center py-3 lg:py-5 xl:px-30 md:px-20 px-6 border-b border-b-neutral300">
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
-            <img src={logo} alt="logo" className="h-8 md:h-10 lg:h-12 w-auto" />
+            <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>
 
@@ -45,9 +46,10 @@ const Navbar = () => {
         <div className="lg:hidden flex items-center gap-4">
           {authToken === null ? (
             <Link to="/signin">
-              <button className="bg-neutral200 hover:bg-black hover:text-white border px-3 py-1.5 md:px-5 md:py-2 text-sm text-black rounded-3xl">
-                Log In
-              </button>
+              <Button size={'sm'} className="bg-green100">
+                Sign In
+                <ArrowUpRight />
+              </Button>
             </Link>
           ) : (
             <>
@@ -100,28 +102,20 @@ const Navbar = () => {
         {authToken === null ? (
           <div className="hidden lg:flex lg:flex-row gap-8 flex-col">
             <Link to="/signup">
-              <button className="bg-black hover:bg-white hover:text-black border px-5 py-2 text-white rounded-3xl cursor-pointer">
-                Sign Up
-              </button>
+              <Button size={'lg'} variant="outline">
+                Become a Franchise
+              </Button>
             </Link>
 
             <Link to="/signin">
-              <button className="bg-neutral200  hover:bg-black hover:text-white border px-5 py-2 text-black rounded-3xl cursor-pointer">
-                Log In
-              </button>
+              <Button size={'sm'} className="bg-green100">
+                Sign In
+                <ArrowUpRight />
+              </Button>
             </Link>
           </div>
         ) : (
           <>
-            {/* <div
-                className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-purple500 cursor-pointer"
-                onClick={() => {
-                  role === "user" && navigate("/dashboard");
-                  role === "super_admin" && navigate("/admin-dashboard");
-                }}
-              >
-                {letter}
-              </div> */}
             <div
               className="hidden lg:flex items-center gap-2 text-orange500 cursor-pointer"
               onClick={() => {
@@ -134,9 +128,10 @@ const Navbar = () => {
             </div>
           </>
         )}
+
         {/* Links (mobile view) */}
         <div
-          className={`lg:hidden absolute top-0 left-0 w-full md:h-[70vh] h-[90vh] z-20 bg-white py-6 md:px-20 px-10 transition-transform duration-300 ${
+          className={`lg:hidden absolute top-0 left-0 w-full md:min-h-[70vh] h-[90vh] z-20 bg-white py-6 md:px-20 px-10 transition-transform duration-300 ${
             navOpen ? "transform translate-x-0" : "transform -translate-x-full"
           }`}
         >
@@ -171,20 +166,21 @@ const Navbar = () => {
 
           {authToken === null && (
             <>
-              <a href="/signup">
+              <a href="/signin">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-white bg-black rounded mb-4">
-                  Sign Up
+                  Sign In
                 </button>
               </a>
 
-              <a href="/signin">
+              <a href="/signup">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-black bg-white rounded">
-                  Log In
+                  Become a Franchise
                 </button>
               </a>
             </>
           )}
         </div>
+
       </div>
     </nav>
   );

@@ -15,6 +15,11 @@
     format("opentype");
 }
 
+@font-face{
+  font-family: Arial, Helvetica, sans-serif;
+  src: local("Arial"), local("Helvetica"), sans-serif;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -146,7 +151,9 @@
 
   /* Micro-interaction utilities */
   .hover-lift {
-    transition: transform var(--transition-base), box-shadow var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
   }
 
   .hover-lift:hover {
@@ -155,7 +162,9 @@
   }
 
   .hover-lift-subtle {
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+      transform var(--transition-fast),
+      box-shadow var(--transition-fast);
   }
 
   .hover-lift-subtle:hover {
@@ -164,7 +173,9 @@
   }
 
   .hover-glow {
-    transition: box-shadow var(--transition-base), border-color var(--transition-base);
+    transition:
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
   }
 
   .hover-glow:hover {
@@ -208,7 +219,10 @@
 
   /* Card hover effect */
   .card-interactive {
-    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base),
+      border-color var(--transition-base);
   }
 
   .card-interactive:hover {
@@ -218,7 +232,9 @@
 
   /* Input focus animation */
   .input-focus {
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition:
+      border-color var(--transition-fast),
+      box-shadow var(--transition-fast);
   }
 
   .input-focus:focus {
@@ -227,22 +243,22 @@
   }
 }
 
-
 @theme {
   --font-instrument: "Instrument Sans", "sans-serif";
   --font-outfit: "Outfit", "sans-serif";
   --font-clash: "Clash Display", "sans-serif";
   --font-tiempos: "Test Tiempos Fine", "sans-serif";
   --font-inter: "Inter", "sans-serif";
-
-  --color-black: #1A1C1D;
+  --font-arial: "Arial", "Helvetica", "sans-serif";
+  
+  --color-black: #1a1c1d;
   --color-neutral100: #fafafa;
   --color-neutral200: #eeeeee;
   --color-neutral300: #e1e1e1;
-  --color-neutral400: #FEFEFE;
+  --color-neutral400: #fefefe;
   --color-neutral500: #8e8e8e;
   --color-neutral600: #4b4b4b;
-  --color-neutral700: #CACACA;
+  --color-neutral700: #cacaca;
   --color-neutral800: #121212;
   --color-purple100: #e0d8ff;
   --color-purple200: #ede9ff;
@@ -250,10 +266,10 @@
   --color-purple400: #714eff;
   --color-purple500: #7b43ea;
   --color-purple600: #e6e0ff;
-  --color-purple700: #432F9C;
-  --color-purple800: #2E206D;
-  --color-purple900: #F2F0FF;
-  --color-blue100: #f1f8ff;
+  --color-purple700: #432f9c;
+  --color-purple800: #2e206d;
+  --color-purple900: #f2f0ff;
+  --color-blue100: #0f172b;
   --color-blue200: #cef0ff;
   --color-blue300: #3edffb;
   --color-blue400: #0ba5ec;
@@ -264,11 +280,21 @@
   --color-orange400: #ff8c1a;
   --color-orange500: #f59e0b;
   --color-brown100: #573312;
-  --color-green100: #F2FAF6;
-  --color-green200: #C0E5D1;
-  --color-green400: #0F973D;
-  --color-green500: #0C9D61;
-  --color-grey100: #F0F2F5;
+  --color-green100: #064e3b;
+  --color-green200: #c0e5d1;
+  --color-green300: #ecfdf5;
+  --color-green400: #0f973d;
+  --color-green500: #0c9d61;
+  --color-green600: #d1fae5;
+  --color-green700: #059669;
+  --color-green800: #047857;
+  --color-green900: #009966;
+  --color-green1000: #022C22;
+  --color-green2000: #00D492;
+  --color-grey100: #f0f2f5;
+  --color-grey200: #6b7280;
+  --color-grey300: #45556c;
+  --color-grey400: #f8fafc;
   --color-grey500: #667185;
   --color-grey900: #101928;
 
@@ -288,13 +314,57 @@
   --transition-base: 300ms ease-out;
   --transition-slow: 500ms ease-out;
 
-/* box-shadow: 0px 2px 20px 0px #0000000A; */
-
-
+  /* box-shadow: 0px 2px 20px 0px #0000000A; */
 }
 
-.bg-about{
+.bg-about {
   background-image: url(/public/about-bg.png);
   background-size: cover;
   background-position: center;
+}
+
+.bg-hero {
+  background-image: url(/public/hero-bg.png);
+  background-size: cover;
+  background-position: center;
+}
+
+.bg-service {
+  background-image: url(/public/services.png);
+  background-size: cover;
+  background-position: right;
+}
+
+.hero-gradient {
+  background:
+    linear-gradient(90deg, #009966 0%, #00a63e 50%, #00bba7 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+}
+
+.form-shadow {
+  position: relative;
+  background: linear-gradient(90deg, #a4f4cf 0%, #dcfce7 50%, #cbfbf1 100%);
+  border-radius: 30px;
+}
+
+.form-shadow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+
+  background: linear-gradient(90deg, #a4f4cf 0%, #dcfce7 50%, #cbfbf1 100%);
+
+  transform: translateY(20px);
+  filter: blur(50px);
+  opacity: 0.6;
+}
+
+.direct-gradient {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.89) 72%
+  );
 }

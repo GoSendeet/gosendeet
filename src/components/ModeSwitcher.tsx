@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Rocket } from "lucide-react";
 import { IconType } from "react-icons";
-import { FiSend, FiBarChart2, FiPackage } from "react-icons/fi";
+import { GoArrowSwitch } from "react-icons/go";
+import { SlLocationPin } from "react-icons/sl";
 
 export type FormMode = "gosendeet" | "compare" | "tracking";
 
@@ -21,9 +23,9 @@ interface ModeSwitcherProps {
 }
 
 const DEFAULT_TABS: ModeTab[] = [
-  { key: "gosendeet", label: "Direct", icon: FiSend },
-  { key: "compare", label: "Compare", icon: FiBarChart2 },
-  { key: "tracking", label: "Tracking", icon: FiPackage },
+  { key: "gosendeet", label: "Send Direct", icon: Rocket },
+  { key: "compare", label: "Compare", icon: GoArrowSwitch },
+  { key: "tracking", label: "Tracking", icon: SlLocationPin },
 ];
 
 export const ModeSwitcher = ({
@@ -44,7 +46,7 @@ export const ModeSwitcher = ({
   if (variant === "pill") {
     return (
       <div className={containerClasses}>
-        <div className="inline-flex items-center bg-white rounded-full shadow-sm border border-amber-100">
+        <div className="inline-flex items-center px-1 py-1 bg-white rounded-full shadow-sm border border-gray-300">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = mode === tab.key;
@@ -60,9 +62,9 @@ export const ModeSwitcher = ({
                 type="button"
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
-                  "px-4 py-2 text-xs font-semibold rounded-full flex items-center gap-2 transition-all",
+                  "md:px-6 px-4 py-2 text-xs font-semibold rounded-full flex items-center gap-2 transition-all",
                   isActive
-                    ? "bg-amber-50 text-amber-600 ring-1 ring-amber-200"
+                    ? "bg-green900 text-white "
                     : "text-gray-600 hover:text-gray-800"
                 )}
                 {...wrapperProps}

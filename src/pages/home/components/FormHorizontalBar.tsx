@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import {
   FiChevronRight,
   FiCalendar,
-  FiTruck,
   FiBarChart2,
   FiSearch,
 } from "react-icons/fi";
@@ -24,6 +23,7 @@ import { SlLocationPin } from "react-icons/sl";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
+import { GoArrowRight } from "react-icons/go";
 
 const normalizeStateKey = (value: string) =>
   value
@@ -377,15 +377,15 @@ const FormHorizontalBar = ({
   const containerStyles = cn(
     // Dashboard uses a tighter, card-like container with subtle border
     isDashboard
-      ? "w-full max-w-3xl mx-auto pt-10 px-6 pb-8 rounded-2xl bg-white border border-amber-100 shadow-sm relative"
-      : "w-full max-w-6xl mx-auto pt-16 px-6 pb-10 rounded-3xl",
+      ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
+      : "w-full max-w-6xl mx-auto py-10 px-6 rounded-3xl",
     !isDashboard &&
       variant === "bold" &&
-      "bg-white shadow-2xl border-2 border-[#1a1f3a]",
+      "bg-white border shadow-md",
     !isDashboard &&
       variant === "minimal" &&
-      "bg-white shadow-2xl border-2 border-amber-200/40 ring-1 ring-amber-100/30",
-    !isDashboard && variant === "floating" && "bg-white shadow-2xl"
+      "bg-white border border-gray-200 shadow-sm",
+    !isDashboard && variant === "floating" && "bg-white"
   );
 
   const labelStyles = cn(
@@ -397,9 +397,9 @@ const FormHorizontalBar = ({
   const inputStyles = cn(
     "w-full outline-0 bg-transparent text-base py-2 px-3 border-b-2 transition-colors",
     variant === "bold" &&
-      "border-[#e5e5e5] hover:border-amber-400 focus:border-amber-400 text-[#1a1a1a] placeholder:text-[#9ca3af]",
+      "border-[#e5e5e5] hover:border-green-400 focus:border-green-400 text-[#1a1a1a] placeholder:text-[#9ca3af]",
     (variant === "minimal" || variant === "floating") &&
-      "border-[#e5e5e5] hover:border-amber-300 focus:border-amber-300 text-[#1a1a1a] placeholder:text-[#9ca3af]"
+      "border-[#e5e5e5] hover:border-green-300 focus:border-green-300 text-[#1a1a1a] placeholder:text-[#9ca3af]"
   );
 
   // Determine if form should be vertical (dashboard route)
@@ -542,8 +542,8 @@ const FormHorizontalBar = ({
                   errors.pickupLocation
                     ? "border-red-500"
                     : pickupLocation
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <span
@@ -554,7 +554,7 @@ const FormHorizontalBar = ({
                 >
                   {pickupLocation || "Where from?"}
                 </span>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {errors.pickupLocation && (
                 <p className="text-xs text-red-500 mt-1">
@@ -580,8 +580,8 @@ const FormHorizontalBar = ({
                   errors.dropOffLocation
                     ? "border-red-500"
                     : dropOffLocation
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <span
@@ -592,7 +592,7 @@ const FormHorizontalBar = ({
                 >
                   {dropOffLocation || "Where to?"}
                 </span>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {errors.dropOffLocation && (
                 <p className="text-xs text-red-500 mt-1">
@@ -621,8 +621,8 @@ const FormHorizontalBar = ({
                   errors.packageTypeId || errors.weight
                     ? "border-red-500"
                     : packageTypeId && weight && dimensions
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <div className="flex-1 min-w-0">
@@ -642,7 +642,7 @@ const FormHorizontalBar = ({
                     </span>
                   )}
                 </div>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {(errors.packageTypeId || errors.weight) && (
                 <p className="text-xs text-red-500 mt-1">
@@ -663,8 +663,8 @@ const FormHorizontalBar = ({
                 className={cn(
                   "w-full text-left py-2 px-3 border-b-2 transition-colors flex items-center justify-between group",
                   pickupDate
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 {pickupDate ? (
@@ -686,7 +686,7 @@ const FormHorizontalBar = ({
                     Select pickup
                   </span>
                 )}
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
             </div>
 
@@ -694,10 +694,10 @@ const FormHorizontalBar = ({
             <div className={isDashboard ? "w-full" : "flex gap-3 items-end"}>
               <Button
                 type="button"
-                variant={"secondary"}
+                
                 size={"custom"}
                 className={cn(
-                  "font-bold whitespace-nowrap",
+                  "font-bold whitespace-nowrap bg-green800",
                   isDashboard
                     ? "w-full px-6 py-3 justify-center"
                     : "flex-1 px-5 py-2.5 h-auto justify-center text-sm"
@@ -742,9 +742,9 @@ const FormHorizontalBar = ({
                   ], direct:true});
                 })}
               >
-                <FiTruck className="text-white mr-1.5 w-4 h-4" />
+                <GoArrowRight className="text-white mr-1.5 w-4 h-4" />
                 <span className="text-white">
-                  {isDashboard ? "Ship Now" : "Ship Now"}
+                  Get Price
                 </span>
               </Button>
             </div>
@@ -769,8 +769,8 @@ const FormHorizontalBar = ({
                   errors.pickupLocation
                     ? "border-red-500"
                     : pickupLocation
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <span
@@ -781,7 +781,7 @@ const FormHorizontalBar = ({
                 >
                   {pickupLocation || "Where from?"}
                 </span>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {errors.pickupLocation && (
                 <p className="text-xs text-red-500 mt-1">
@@ -805,8 +805,8 @@ const FormHorizontalBar = ({
                   errors.dropOffLocation
                     ? "border-red-500"
                     : dropOffLocation
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <span
@@ -817,7 +817,7 @@ const FormHorizontalBar = ({
                 >
                   {dropOffLocation || "Where to?"}
                 </span>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {errors.dropOffLocation && (
                 <p className="text-xs text-red-500 mt-1">
@@ -846,8 +846,8 @@ const FormHorizontalBar = ({
                   errors.packageTypeId || errors.weight
                     ? "border-red-500"
                     : packageTypeId && weight && dimensions
-                    ? "border-amber-400"
-                    : "border-[#e5e5e5] hover:border-amber-400"
+                    ? "border-green-400"
+                    : "border-[#e5e5e5] hover:border-green-400"
                 )}
               >
                 <div className="flex-1 min-w-0">
@@ -867,7 +867,7 @@ const FormHorizontalBar = ({
                     </span>
                   )}
                 </div>
-                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-amber-500 transition-colors flex-shrink-0" />
+                <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-500 transition-colors flex-shrink-0" />
               </button>
               {(errors.packageTypeId || errors.weight) && (
                 <p className="text-xs text-red-500 mt-1">

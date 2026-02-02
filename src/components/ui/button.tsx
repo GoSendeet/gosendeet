@@ -15,7 +15,7 @@ const buttonVariants = cva(
         destructive:
           "bg-[#EC2D30] text-white shadow-xs hover:bg-destructive/90 hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:-translate-y-0.5 hover:shadow-md dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+          "border border-grey200 bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:-translate-y-0.5 hover:shadow-md dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         secondary: "bg-[#1A1C1D] text-white shadow-xs hover:bg-[#000010] hover:-translate-y-0.5 hover:shadow-lg",
         ghost: "hover:text-accent-foreground hover:bg-accent/10 p-0",
         link: "text-primary underline-offset-4 hover:underline",
@@ -23,8 +23,8 @@ const buttonVariants = cva(
       size: {
         default:
           "md:px-6 px-4 md:py-3 py-2 md:has-[>svg]:px-6 has-[>svg]:px-4 rounded-full",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        sm: "h-9 rounded-full py-4 gap-1.5 px-4 has-[>svg]:px-4",
+        lg: "h-10 rounded-full px-6 has-[>svg]:px-4",
         icon: "size-9",
         ghost: "px-0",
         large: "md:px-16 px-6 md:py-3 py-2 rounded-full",

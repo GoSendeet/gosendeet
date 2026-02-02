@@ -1,20 +1,20 @@
 export const MENU = [
   {
-    title: "About",
+    title: "About Us",
     route: "/about",
-  },
-  {
-    title: "Cost Calculator",
-    route: "/cost-calculator",
-  },
-  {
-    title: "FAQ",
-    route: "/faq",
   },
   {
     title: "Track A Delivery",
     route: "/track",
   },
+  {
+    title: "Get a quote",
+    route: "/cost-calculator",
+  },
+  // {
+  //   title: "FAQ",
+  //   route: "/faq",
+  // },
 ];
 
 export const QuickLinks = [
