@@ -8,6 +8,8 @@ import FAQMinimal from "./FAQMinimal";
 import "./styles.css";
 import Header from "./Header";
 import Services from "./Services";
+import Compare from "./Compare";
+import Logistics from "./Logistics";
 
 const Home = () => {
   return (
@@ -15,6 +17,8 @@ const Home = () => {
       <Layout>
         <Header />
         <Services />
+        <Compare />
+        <Logistics />
         <ProcessFlow />
         <ServicesMinimal />
         <Benefits />

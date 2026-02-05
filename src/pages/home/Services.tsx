@@ -7,12 +7,12 @@ const Services = () => {
     <>
       <div className="font-arial bg-[#F8FAFC] md:px-20 px-6 md:py-20 py-10">
         {/* Subheading */}
-        <p className="text-center text-green2000 bg-green300 w-fit px-3 py-1 rounded-full font-inter font-bold text-xs mx-auto uppercase tracking-wider mb-6 md:mb-8">
+        <p className="text-center text-green800 bg-green-100 w-fit px-3 py-1 rounded-full font-inter font-bold text-xs mx-auto uppercase tracking-wider mb-6 md:mb-8">
           Our Services
         </p>
 
         {/* Main Heading */}
-        <h2 className="text-center text-3xl font-arial md:text-6xl lg:text-6xl tracking-[-1.5px] font-[900] text-blue100 mb-6 md:mb-8 leading-tight">
+        <h2 className="text-center text-3xl font-arial md:text-4xl lg:text-6xl tracking-[-1.5px] font-[900] text-blue100 mb-6 md:mb-8 leading-tight">
           One Platform. <br />
           Two Powerful Ways to Ship.
         </h2>
@@ -24,7 +24,7 @@ const Services = () => {
           covered.
         </p>
       </div>
-      <div className="relative min-h-[100vh] w-full bg-service bg-green1000 md:px-20 px-6 md:py-20 py-10">
+      <div className="relative min-h-[100vh] w-full bg-service bg-green1000 md:px-20 px-6 md:py-20 py-10 font-arial">
         <div className="flex lg:flex-row lg:gap-0 gap-12 flex-col justify-between items-center">
           <div className="lg:w-1/2 w-full flex flex-col items-center">
             <div className="flex flex-col gap-8 mx-auto xl:w-[500px]">
@@ -37,7 +37,7 @@ const Services = () => {
                   PREMIUM SERVICE
                 </p>
               </div>
-              <p className="font-extrabold md:text-6xl text-3xl">
+              <p className="font-extrabold lg:text-6xl md:text-4xl text-3xl">
                 <span className="text-white">Gosendeet</span>
                 <br />
                 <span className="text-green2000">Direct</span>
