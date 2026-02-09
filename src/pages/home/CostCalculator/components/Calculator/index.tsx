@@ -27,6 +27,12 @@ import { LIVE_URL } from "@/services/axios";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/sendeet-logo.png";
 
+const parsePrice = (price: string | number | undefined | null): number => {
+  if (!price) return 0;
+  if (typeof price === 'number') return price;
+  return parseFloat(String(price).replace(/[^\d.]/g, "")) || 0;
+};
+
 const Calculator = () => {
   const navigate = useNavigate();
   const userId = sessionStorage.getItem("userId") || "";
@@ -95,7 +101,7 @@ const Calculator = () => {
     // Filter by price range
     if (priceRange !== "all") {
       filtered = filtered.filter((item: any) => {
-        const price = parseFloat(item?.price?.replace(/[^\d.]/g, ""));
+        const price = parsePrice(item?.price);
         if (priceRange === "0-5000") return price <= 5000;
         if (priceRange === "5000-10000") return price > 5000 && price <= 10000;
         if (priceRange === "10000-20000")
@@ -108,14 +114,14 @@ const Calculator = () => {
     // Sort data
     if (sortBy === "price-asc") {
       filtered.sort((a: any, b: any) => {
-        const priceA = parseFloat(a?.price?.replace(/[^\d.]/g, ""));
-        const priceB = parseFloat(b?.price?.replace(/[^\d.]/g, ""));
+        const priceA = parsePrice(a?.price);
+        const priceB = parsePrice(b?.price);
         return priceA - priceB;
       });
     } else if (sortBy === "price-desc") {
       filtered.sort((a: any, b: any) => {
-        const priceA = parseFloat(a?.price?.replace(/[^\d.]/g, ""));
-        const priceB = parseFloat(b?.price?.replace(/[^\d.]/g, ""));
+        const priceA = parsePrice(a?.price);
+        const priceB = parsePrice(b?.price);
         return priceB - priceA;
       });
     } else if (sortBy === "delivery-fastest") {
@@ -519,7 +525,7 @@ const Calculator = () => {
                             ₦
                           </span>
                           <p className="text-2xl md:text-3xl font-clash font-bold text-amber-600">
-                            {item.price.replace(/^NGN\s?/, "")}
+                            {parsePrice(item.price).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -714,7 +720,7 @@ const Calculator = () => {
                   <span className="text-gray-700 font-medium">Total Cost</span>
                   <span className="text-blue-500 font-bold">
                     {/* removes NGN */}₦{" "}
-                    {data?.data?.[0]?.price?.replace(/ngn/i, "") || "0"}
+                    {parsePrice(data?.data?.[0]?.price).toFixed(2)}
                   </span>
                 </div>
               </div>
