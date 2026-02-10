@@ -368,3 +368,8 @@
     rgba(0, 0, 0, 0.89) 72%
   );
 }
+
+.btn-gradient {
+  background: linear-gradient(180deg, #064E3B 0%, #022C22 100%);
+
+} 

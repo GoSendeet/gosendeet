@@ -1,15 +1,16 @@
 import Layout from "@/layouts/HomePageLayout";
 // import Hero from "./Hero";
-import ProcessFlow from "./ProcessFlow";
-import ServicesMinimal from "./ServicesMinimal";
-import Benefits from "./Benefits";
-import TestimonialsV3 from "./TestimonialsV3";
-import FAQMinimal from "./FAQMinimal";
+// import ProcessFlow from "./ProcessFlow";
+// import ServicesMinimal from "./ServicesMinimal";
+// import Benefits from "./Benefits";
+// import TestimonialsV3 from "./TestimonialsV3";
+// import FAQMinimal from "./FAQMinimal";
 import "./styles.css";
 import Header from "./Header";
 import Services from "./Services";
 import Compare from "./Compare";
 import Logistics from "./Logistics";
+import Visibility from "./Visibility";
 
 const Home = () => {
   return (
@@ -19,11 +20,12 @@ const Home = () => {
         <Services />
         <Compare />
         <Logistics />
-        <ProcessFlow />
+        <Visibility />
+        {/* <ProcessFlow />
         <ServicesMinimal />
         <Benefits />
         <TestimonialsV3 />
-        <FAQMinimal />
+        <FAQMinimal /> */}
       </Layout>
     </div>
   );
