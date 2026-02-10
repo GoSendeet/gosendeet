@@ -1,33 +1,68 @@
+import { Button } from "@/components/ui/button";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+
 const Header = () => {
+  const stats = [
+    { value: "50k+", label: "Packages Delivered" },
+    { value: "99.8%", label: "Reliability Rate" },
+    { value: "12", label: "Cities Covered" },
+    { value: "24/7", label: "Support Active" },
+  ];
+
   return (
     <>
-      <div className="h-[90vh] bg-about md:px-20 px-6 py-20">
-        <div className="h-full flex flex-col justify-end items-end">
-          <div className="flex lg:flex-row flex-col lg:justify-between gap-8 items-center">
-            <h1 className="lg:w-[45%] font-clash xl:text-[46px] lg:text-[40px] text-[30px] font-semibold leading-[130%]">
-              About{" "}
-              <span className="font-tiempos font-normal italic">GoSendeet</span>
-            </h1>
-            <p className="lg:w-[55%] leading-[140%] lg:text-left font-medium text-center">
-              Our journey began with a simple idea: the frustration of juggling
-              multiple delivery apps, Gosendeet was created to streamline the
-              shipping experience. Our founders envisioned a platform where all
-              shipment and delivery organizations come together, so you can
-              compare options, view prices, and book services without ever
-              leaving one dashboard.
-            </p>
+      <div className="relative min-h-[100vh] bg-about md:px-20 px-6 py-20 flex flex-col justify-between">
+        <div className="absolute inset-0 about-gradient z-10"></div>
+        {/* Hero Content */}
+        <div className="flex-1 flex flex-col justify-center max-w-4xl relative z-20">
+          {/* Badge */}
+          <div className="flex items-center gap-2 text-white  mb-8 bg-white/10 px-4 py-1 border rounded-full w-fit">
+            <ShieldCheck size={20} />
+            <span className="text-sm font-semibold uppercase tracking-wider">
+              Trusted by 50k+ Nigerians
+            </span>
+          </div>
+
+          {/* Main Heading */}
+          <h1 className="font-extrabold text-white lg:text-[64px] md:text-5xl text-4xl leading-[110%] mb-6">
+            Logistics built on <br />
+            <span className="text-green-400">Trust.</span>
+          </h1>
+
+          {/* Description */}
+          <p className="text-green-100 text-lg md:text-xl leading-relaxed mb-8 max-w-xl">
+            We are solving the reliability crisis in African logistics.
+            Gosendeet combines technology with integrity to ensure your package
+            arrives, every time.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4">
+            <Button className="bg-green3000 text-white md:w-fit w-full hover:bg-green300 font-semibold rounded-2xl">
+              Join Our Network
+
+              <ArrowRight size={20} />  
+            </Button>
+            <Button
+              className="bg-white text-green100 md:w-fit w-full hover:bg-white/90 font-semibold rounded-2xl"
+            >
+              Read Our Story
+            </Button>
           </div>
         </div>
       </div>
-      <div className="lg:px-40 md:px-20 px-6 py-20 white bg-neutral-50">
-        <p className="font-clash lg:text-[36px] text-2xl font-medium leading-[130%] text-center">
-          Gosendeet is more than just a tracking tool. We’ve built a one-stop
-          hub that connects you with a vast array of shipment and delivery
-          providers. Simply input and filter your shipment details to receive a
-          curated list of available services, complete with pricing information.
-          Whether you need to book a shipment or monitor its progress,
-          everything is available in one place.
-        </p>
+      {/* Stats Section */}
+      <div className="mt-[-50px] bg-white rounded-3xl shadow-2xl relative z-20 md:mx-20 mx-6">
+        <div className="grid md:grid-cols-4 grid-cols-2 gap-8 md:gap-4 px-8 py-10">
+          {stats.map((stat, index) => (
+            <div key={index} className="flex flex-col items-center text-center">
+              <h3 className="text-green3000 font-bold text-3xl md:text-4xl mb-2">
+                {stat.value}
+              </h3>
+              <p className="text-grey300 text-sm font-medium">{stat.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );

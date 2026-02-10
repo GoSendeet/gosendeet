@@ -3,9 +3,8 @@ import {
   FileText,
   ShieldCheck,
   CircleCheckBig,
-  ArrowRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CTA from "./CTA";
 
 const Visibility = () => {
   return (
@@ -26,12 +25,27 @@ const Visibility = () => {
 
         {/* Features Grid with Phone */}
         <div className="relative max-w-7xl mx-auto">
+          <div className="flex lg:hidden justify-center items-center lg:order-2 order-1 my-4">
+            <div className="relative">
+              <img
+                src={phone}
+                alt="GoSendeet App Interface"
+                className="w-full max-w-[300px] md:max-w-[350px] h-auto drop-shadow-2xl"
+              />
+              {/* Optional: Add overlay content on phone if needed */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {/* This is where the phone screen content would go if you want to customize it */}
+              </div>
+            </div>
+          </div>
           <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-8 items-center">
             {/* Left Column - Features */}
             <div className="flex flex-col gap-12 lg:order-1 order-2">
               {/* Live Map */}
               <div className="flex flex-col gap-3 lg:text-right text-left lg:items-end items-start">
-                <h3 className="md:text-2xl text-xl font-bold text-blue100">Live Map</h3>
+                <h3 className="md:text-2xl text-xl font-bold text-blue100">
+                  Live Map
+                </h3>
                 <p className="text-grey300 md:text-base text-sm max-w-xs">
                   Real-time GPS tracking. Watch your package move street by
                   street.
@@ -79,7 +93,9 @@ const Visibility = () => {
 
               {/* Escrow Pay */}
               <div className="flex flex-col gap-3 lg:text-left text-left lg:items-start items-start">
-                <h3 className="md:text-2xl text-xl font-bold text-blue100">Escrow Pay</h3>
+                <h3 className="md:text-2xl text-xl font-bold text-blue100">
+                  Escrow Pay
+                </h3>
                 <p className="text-grey300 md:text-base text-sm max-w-xs">
                   We hold your funds securely. Carrier gets paid only after
                   success.
@@ -150,31 +166,7 @@ const Visibility = () => {
       </div>
 
       {/* CTA Section - Ready to move it */}
-      <div className="bg-white md:px-20 px-6 md:py-20 py-10">
-        <div className="max-w-5xl mx-auto btn-gradient rounded-[32px] md:px-16 px-8 md:py-16 py-12 shadow-2xl">
-          <div className="flex flex-col items-center text-center gap-6">
-            <h2 className="font-extrabold text-white tracking-tight lg:text-5xl md:text-4xl text-3xl">
-              Ready to move it?
-            </h2>
-            <p className="text-green-100 text-base max-w-2xl">
-              Join thousands of businesses and individuals who have switched to
-              the most trusted network in Nigeria.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
-              <Button className="bg-white text-black">
-                Get Started Now
-                <ArrowRight size={20} />
-              </Button>
-              <Button
-                variant="outline"
-                className="text-white hover:text-white bg-transparent hover:bg-transparent"
-              >
-                Contact Sales
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CTA/>
     </>
   );
 };

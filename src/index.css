@@ -291,6 +291,7 @@
   --color-green900: #009966;
   --color-green1000: #022C22;
   --color-green2000: #00D492;
+  --color-green3000: #15803D;
   --color-grey100: #f0f2f5;
   --color-grey200: #6b7280;
   --color-grey300: #45556c;
@@ -318,7 +319,7 @@
 }
 
 .bg-about {
-  background-image: url(/public/about-bg.png);
+  background-image: url(/public/aboutBg.png);
   background-size: cover;
   background-position: center;
 }
@@ -373,3 +374,10 @@
   background: linear-gradient(180deg, #064E3B 0%, #022C22 100%);
 
 } 
+
+.about-gradient {
+ background: linear-gradient(90deg, rgba(3, 46, 21, 0.9) 0%, rgba(13, 84, 43, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
+ /* background-image: url(/public/aboutBg.png);
+  background-size: cover;
+  background-position: center; */
+}
