@@ -18,7 +18,7 @@ export function SignupModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-clash mb-2">
+        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
           Thanks for signing up!
         </DialogTitle>
         <DialogDescription className="font-semibold text-sm text-black">

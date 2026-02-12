@@ -260,6 +260,7 @@
   --color-neutral600: #4b4b4b;
   --color-neutral700: #cacaca;
   --color-neutral800: #121212;
+  --color-neutral900: #F6F8F6;
   --color-purple100: #e0d8ff;
   --color-purple200: #ede9ff;
   --color-purple300: #f9f8ff;
@@ -292,6 +293,7 @@
   --color-green1000: #022c22;
   --color-green2000: #00d492;
   --color-green3000: #15803d;
+  --color-green4000: #E8EFEC;
   --color-grey100: #f0f2f5;
   --color-grey200: #6b7280;
   --color-grey300: #45556c;
@@ -398,4 +400,40 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+.bg-signup {
+  background-image: url(/public/bike.jpg);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.sign-gradient{
+ background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%),
+linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
+
+}
+
+.custom-phone-container {
+  border: 1px solid #6b7280; /* light grey border */
+  border-radius: 12px; /* full rounded */
+  padding: 16px 12px;
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+  height: 52px;
+}
+.custom-phone-container:has(input:focus) {
+  border: 1px solid #319207;
+}
+
+.custom-phone-container .flag-dropdown {
+  border: none !important;
+  padding-right: 10px !important;
+  border-right: 1px solid #cfd8d3 !important; /* divider line */
+}
+
+.custom-phone-container input {
+  padding-left: 60px !important;
 }
