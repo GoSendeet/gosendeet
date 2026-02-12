@@ -15,7 +15,7 @@
     format("opentype");
 }
 
-@font-face{
+@font-face {
   font-family: Arial, Helvetica, sans-serif;
   src: local("Arial"), local("Helvetica"), sans-serif;
 }
@@ -250,7 +250,7 @@
   --font-tiempos: "Test Tiempos Fine", "sans-serif";
   --font-inter: "Inter", "sans-serif";
   --font-arial: "Arial", "Helvetica", "sans-serif";
-  
+
   --color-black: #1a1c1d;
   --color-neutral100: #fafafa;
   --color-neutral200: #eeeeee;
@@ -289,9 +289,9 @@
   --color-green700: #059669;
   --color-green800: #047857;
   --color-green900: #009966;
-  --color-green1000: #022C22;
-  --color-green2000: #00D492;
-  --color-green3000: #15803D;
+  --color-green1000: #022c22;
+  --color-green2000: #00d492;
+  --color-green3000: #15803d;
   --color-grey100: #f0f2f5;
   --color-grey200: #6b7280;
   --color-grey300: #45556c;
@@ -371,13 +371,31 @@
 }
 
 .btn-gradient {
-  background: linear-gradient(180deg, #064E3B 0%, #022C22 100%);
-
-} 
+  background: linear-gradient(180deg, #064e3b 0%, #022c22 100%);
+}
 
 .about-gradient {
- background: linear-gradient(90deg, rgba(3, 46, 21, 0.9) 0%, rgba(13, 84, 43, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
- /* background-image: url(/public/aboutBg.png);
+  background: linear-gradient(
+    90deg,
+    rgba(3, 46, 21, 0.9) 0%,
+    rgba(13, 84, 43, 0.8) 50%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  /* background-image: url(/public/aboutBg.png);
   background-size: cover;
   background-position: center; */
+}
+
+.bg-terms {
+  background-image: url(/public/terms-bg.png);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.bg-privacy {
+  background-image: url(/public/terms-bg.png);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
