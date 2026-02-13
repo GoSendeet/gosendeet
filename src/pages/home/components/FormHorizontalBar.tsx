@@ -505,10 +505,9 @@ const FormHorizontalBar = ({
             <Button
               type="submit"
               loading={loading}
-              variant="secondary"
               size="custom"
               className={cn(
-                "font-bold",
+                "font-bold bg-green800",
                 isDashboard
                   ? "w-full px-6 py-3 justify-center"
                   : "px-5 py-2.5 h-auto justify-center text-sm whitespace-nowrap"
@@ -880,10 +879,9 @@ const FormHorizontalBar = ({
             <div className={isDashboard ? "w-full" : "flex gap-3 items-end"}>
               <Button
                 type="button"
-                variant={"secondary"}
                 size={"custom"}
                 className={cn(
-                  "font-bold whitespace-nowrap",
+                  "font-bold whitespace-nowrap bg-green800",
                   isDashboard
                     ? "w-full px-6 py-3 justify-center"
                     : "flex-1 px-5 py-2.5 h-auto justify-center text-sm"
