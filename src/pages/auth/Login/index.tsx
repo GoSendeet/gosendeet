@@ -69,13 +69,13 @@ const Login = () => {
   return (
     <AuthLayout>
       <div className="md:px-20 px-6 md:py-20 py-8">
-        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-orange-50 py-12 md:px-10 px-4">
-          <h1 className="lg:text-[40px] text-[30px] font-semibold font-clash mb-1">
+        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4 rounded-3xl">
+          <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter mb-1 tracking-tight">
             Welcome {username}
           </h1>
           <Link
             to={"/signin"}
-            className="text-orange500 border-b border-b-orange500 text-base"
+            className="text-green500 border-b border-b-green500 text-base"
           >
             Not you?
           </Link>
@@ -83,9 +83,9 @@ const Login = () => {
           <div className="py-4 text-sm mt-8">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                <MdOutlineMailOutline className="text-orange400 text-2xl" />
+                <MdOutlineMailOutline className="text-green500 text-2xl" />
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="email" className="font-clash font-semibold">
+                  <label htmlFor="email" className="font-inter font-semibold">
                     Email Address
                   </label>
                   <input
@@ -105,11 +105,11 @@ const Login = () => {
               </div>
 
               <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                <TbLockPassword className="text-orange400 text-2xl" />
+                <TbLockPassword className="text-green500 text-2xl" />
                 <div className="flex flex-col gap-2 w-full">
                   <label
                     htmlFor="password"
-                    className="font-clash font-semibold"
+                    className="font-inter font-semibold"
                   >
                     Your Password
                   </label>
@@ -122,7 +122,7 @@ const Login = () => {
                     />
 
                     <span
-                      className="cursor-pointer text-orange500 text-xl"
+                      className="cursor-pointer text-green500 text-xl"
                       onClick={() => setToggle(!toggle)}
                     >
                       {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -144,7 +144,7 @@ const Login = () => {
 
                 <Link
                   to={"/forgot-password"}
-                  className="text-orange500 border-b border-b-orange500"
+                  className="text-green500 border-b border-b-green500"
                 >
                   Forgot Password?
                 </Link>
@@ -153,7 +153,7 @@ const Login = () => {
               <Button
                 // variant={"secondary"}
                 loading={isPending}
-                className=" w-full my-5"
+                className=" w-full my-5 bg-green100 hover:bg-green800"
               >
                 Continue
               </Button>
