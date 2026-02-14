@@ -25,7 +25,7 @@ import { useMutation } from "@tanstack/react-query";
 import { shareQuotes } from "@/services/user";
 import { LIVE_URL } from "@/services/axios";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
-import logo from "@/assets/images/sendeet-logo.png";
+import logo from "@/assets/images/gosendeet-black-logo.png";
 
 const parsePrice = (price: string | number | undefined | null): number => {
   if (!price) return 0;
@@ -243,11 +243,11 @@ const Calculator = () => {
   return (
     <div className="md:px-20 px-6 py-4 bg-white min-h-screen">
       {/* Mode Switcher Tabs - Top of Calculator */}
-      <div className="w-full -mb-12 flex justify-center">
+      <div className="w-full mb-6 flex justify-center">
         <ModeSwitcher
           mode={mode}
           onModeChange={setMode}
-          variant="card"
+          variant="pill"
           animate
         />
       </div>
@@ -303,7 +303,7 @@ const Calculator = () => {
                     </p>
 
                     <Button
-                      className="w-fit"
+                      className="w-fit bg-green800"
                       loading={shareLoading}
                       onClick={shareUrl ? copyUrl : handleShare}
                     >
@@ -639,7 +639,7 @@ const Calculator = () => {
               </h1>
             </div>
             <Button
-              className="w-fit"
+              className="w-fit bg-green800"
               loading={shareLoading}
               onClick={shareUrl ? copyUrl : handleShare}
             >

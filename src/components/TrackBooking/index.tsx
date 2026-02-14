@@ -33,11 +33,11 @@ const TrackBooking = () => {
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex gap-3 items-center py-3 px-4 border-b">
-          <PiGpsFixFill className="text-orange-500 text-xl" />
+          <PiGpsFixFill className="text-green500 text-xl" />
           <div className="flex flex-col gap-2 w-full">
             <label
               htmlFor="trackingNumber"
-              className="font-clash font-semibold"
+              className="font-inter font-semibold"
             >
               Tracking Number
             </label>
@@ -62,7 +62,7 @@ const TrackBooking = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.4 }}
           ><Button
-          className="md:px-6 px-4 py-3 mt-4 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-bold text-lg shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/40"
+          className="md:px-6 px-4 py-3 mt-4 rounded-full bg-green100 hover:bg-green800 text-white font-bold text-lg shadow-2xl transition-all duration-300 hover:-translate-y-1 "
           size={"large"}
           loading={loading}
         >

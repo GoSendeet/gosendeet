@@ -60,7 +60,7 @@ const Tracking = () => {
   return (
     <Layout>
       <div className="md:px-20 px-6 md:py-16 py-8">
-        <div className="xl:w-[65%] md:w-[90%] mx-auto bg-purple300 md:py-16 py-4 xl:px-24 md:px-10 px-4">
+        <div className="xl:w-[65%] md:w-[90%] mx-auto bg-neutral900 md:py-16 py-4 xl:px-24 md:px-10 px-4">
           {isLoading && !isSuccess && (
             <div className="h-[50vh] w-full flex items-center justify-center">
               <Spinner />
@@ -78,7 +78,7 @@ const Tracking = () => {
           {!isLoading && isSuccess && data && data?.data?.length > 0 && (
             <>
               <div className="flex lg:flex-row flex-col lg:items-center gap-4 mb-6 lg:justify-between">
-                <h1 className="lg:text-[40px] md:text-[30px] flex items-center md:gap-3 gap-2 text-2xl font-semibold font-clash">
+                <h1 className="lg:text-[40px] md:text-[30px] flex items-center md:gap-3 gap-2 text-2xl font-semibold font-inter tracking-tight">
                   Tracking <span>{data?.data?.trackingNumber}</span>
                 </h1>
 
@@ -95,21 +95,21 @@ const Tracking = () => {
 
               <div className="grid md:grid-cols-2 gap-4 md:text-base text-sm">
                 <div className="flex flex-col gap-1">
-                  <p className="text-md font-semibold font-clash">
+                  <p className="text-md font-semibold font-inter tracking-tight">
                     Package Type
                   </p>
                   <p>{data?.data?.packageType?.name}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-md font-semibold font-clash">Weight</p>
+                  <p className="text-md font-semibold font-inter tracking-tight">Weight</p>
                   <p>{`${data?.data?.maxWeight} ${data?.data?.weightUnit} | ${data?.data?.length}x${data?.data?.width}x${data?.data?.height} ${data?.data?.dimensionsUnit}`}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-md font-semibold font-clash">Courier</p>
+                  <p className="text-md font-semibold font-inter tracking-tight">Courier</p>
                   <p>{data?.data?.company?.name}</p>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p className="text-md font-semibold font-clash">
+                  <p className="text-md font-semibold font-inter tracking-tight">
                     Pickup Created
                   </p>
                   <p>{formatDateTime(data?.data?.bookingDate)}</p>
@@ -125,7 +125,7 @@ const Tracking = () => {
                       tabRefs.current[index] = el;
                     }}
                     className={`relative z-10 px-4 font-medium md:text-base text-sm outline-white transition-colors duration-300 cursor-pointer ${
-                      activeTab === tab.key ? "text-purple500" : "text-black"
+                      activeTab === tab.key ? "text-green500" : "text-black"
                     }`}
                     onClick={() => {
                       updateUnderline(index);
@@ -138,7 +138,7 @@ const Tracking = () => {
 
                 {/* Active underline */}
                 <div
-                  className="absolute bottom-0 h-[1px] bg-purple500 transition-all duration-300 rounded-full"
+                  className="absolute bottom-0 h-[1px] bg-green500 transition-all duration-300 rounded-full"
                   style={{
                     left: underlineLeft,
                     width: underlineWidth,

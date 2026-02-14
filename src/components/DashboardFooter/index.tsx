@@ -1,4 +1,5 @@
 import logo from "@/assets/images/sendeet-black-logo.png";
+import { Link } from "react-router-dom";
 
 const DashboardFooter = () => {
   const currentYear = new Date().getFullYear();
@@ -12,8 +13,8 @@ const DashboardFooter = () => {
       </p>
 
       <div className="flex gap-4 font-medium text-purple500">
-        <a href="#">Terms of Use</a>
-        <a href="#">Privacy Policy</a>
+        <Link to="/terms">Terms of Use</Link>
+        <Link to="/privacy">Privacy Policy</Link>
       </div>
     </div>
   );

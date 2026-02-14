@@ -1,12 +1,20 @@
 import Layout from "@/layouts/HomePageLayout";
 import Header from "./components/Header";
-import Mission from "./components/Mission";
+import Purpose from "./components/Purpose";
+import Values from "./components/Values";
+import Journey from "./components/Journey";
+import MeetTheBuilders from "./components/MeetTheBuilders";
+import CTA from "../CTA";
 
 const About = () => {
   return (
     <Layout>
       <Header />
-      <Mission />
+      <Purpose />
+      <Values />
+      <Journey />
+      <MeetTheBuilders />
+      <CTA/>
     </Layout>
   );
 };
