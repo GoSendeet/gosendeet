@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo, useState } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
-import empty from "@/assets/images/white-empty.png";
+import empty from "@/assets/images/green-empty-bg.png";
 import Rating from "@/components/Rating";
 import { FiCalendar, FiTruck, FiFilter, FiX, FiPackage } from "react-icons/fi";
 import { SiFedex, SiDhl, SiUps } from "react-icons/si";
@@ -265,7 +265,7 @@ const Calculator = () => {
         <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
           <img src={empty} alt="empty quotes" className="h-[200px]" />
 
-          <p className="text-center font-bold text-amber-600 text-lg mb-1">
+          <p className="text-center font-bold text-green-600 text-lg mb-1">
             No courier services available
           </p>
           <p className="text-center text-gray-600 text-sm">
