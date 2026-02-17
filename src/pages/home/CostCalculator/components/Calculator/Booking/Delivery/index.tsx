@@ -20,8 +20,8 @@ const Delivery = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const [bookingData, setBookingData] = useState({});
 
-  const [_, currency, amount] =
-    bookingDetails?.price?.match(/^([A-Za-z]+)([\d.]+)$/) || [];
+  const currency = bookingDetails?.currency || "NGN";
+  const amount = String(bookingDetails?.price || "0").replace(/[^\d.]/g, "");
 
   const navigate = useNavigate();
   useEffect(() => {
