@@ -47,8 +47,8 @@ const ForgotPassword = () => {
   return (
     <AuthLayout>
       <div className="md:px-20 px-6 md:py-20 py-8">
-        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-purple300 py-12 md:px-10 px-4">
-          <h1 className="lg:text-[40px] text-[30px] font-semibold font-clash mb-1">
+        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4">
+          <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter tracking-tight mb-1">
             Reset your password
           </h1>
           <p className="font-medium text-neutral800 lg:w-[90%]">
@@ -59,9 +59,9 @@ const ForgotPassword = () => {
           <div className="py-4 text-sm">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                <MdOutlineMailOutline className="text-purple400 text-xl" />
+                <MdOutlineMailOutline className="text-green500 text-xl" />
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="email" className="font-clash font-semibold">
+                  <label htmlFor="email" className="font-inter tracking-tight font-semibold">
                     Email Address
                   </label>
                   <input
@@ -79,15 +79,14 @@ const ForgotPassword = () => {
               </div>
 
               <Button
-                variant={"secondary"}
-                className=" w-full my-5"
+                className=" w-full my-5 bg-green100 hover:bg-green800"
                 loading={isPending}
               >
                 Get reset link
               </Button>
             </form>
           </div>
-          <p className="font-medium text-neutral800 text-center lg:text-base text-sm">
+          <p className="font-medium text-neutral500 text-center lg:text-base text-sm">
             By continuing, you accept our{" "}
             <span className="border-b border-b-neutral800">Terms of Use</span>{" "}
             and{" "}

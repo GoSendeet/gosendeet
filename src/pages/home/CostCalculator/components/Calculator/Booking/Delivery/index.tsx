@@ -15,8 +15,8 @@ import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 const Delivery = () => {
   const location = useLocation();
   const { bookingRequest, bookingDetails } = location?.state || {};
-  console.log(bookingRequest)
-  console.log(bookingDetails)
+  console.log(bookingRequest);
+  console.log(bookingDetails);
   const userId = sessionStorage.getItem("userId") || "";
   const [bookingData, setBookingData] = useState({});
 
@@ -55,11 +55,11 @@ const Delivery = () => {
       .email({ message: "Invalid email address" })
       .or(z.literal("")) // allow empty string
       .optional(),
-receiver_name: z
-  .string({ required_error: "Receiver’s name is required" })
-  .trim()
-  .min(1, { message: "Name cannot be empty" })
-  .regex(/^[A-Za-z\s'-]+$/, { message: "Name must contain only letters" }),
+    receiver_name: z
+      .string({ required_error: "Receiver’s name is required" })
+      .trim()
+      .min(1, { message: "Name cannot be empty" })
+      .regex(/^[A-Za-z\s'-]+$/, { message: "Name must contain only letters" }),
 
     receiver_phone: z
       .string({ required_error: "Receiver’s number is required" })
@@ -69,9 +69,9 @@ receiver_name: z
 
     receiver_email: z
       .string()
-      .email({ message: "Receiver’s email is required" })
-      // .or(z.literal("")) // allow empty string
-      // .optional(),
+      .email({ message: "Receiver’s email is required" }),
+    // .or(z.literal("")) // allow empty string
+    // .optional(),
   });
 
   const {
@@ -134,7 +134,7 @@ receiver_name: z
       pickupDate: parseDateInput(bookingDetails?.pickUpdateDate),
       companyId: bookingDetails?.courier?.id,
       estimatedDeliveryDate: parseDateInput(
-        bookingDetails?.estimatedDeliveryDate
+        bookingDetails?.estimatedDeliveryDate,
       ),
     };
     setBookingData({
@@ -269,7 +269,7 @@ receiver_name: z
           <div className="">
             <Button
               type="submit"
-              className=" rounded-full py-3 px-8 text-white"
+              className=" rounded-full py-3 px-8 bg-green100 hover:bg-green800"
               loading={isPending}
             >
               {/* {isPending && <Loader2 className="h-6 w-6 animate-spin" />}  */}

@@ -7,12 +7,11 @@ import { TbLockPassword } from "react-icons/tb";
 import { FaRegEye } from "react-icons/fa";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { useState } from "react";
-import purple from "@/assets/icons/big-purple-checkmark.png";
 import { Link, useLocation } from "react-router-dom";
 import { resetPassword } from "@/services/auth";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-
+import {Check} from 'lucide-react'
 const ResetPassword = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -65,24 +64,26 @@ const ResetPassword = () => {
   return (
     <AuthLayout>
       <div className="md:px-20 px-6 md:py-20 py-8">
-        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-purple300 py-12 md:px-10 px-4">
+        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4">
           {isSuccess ? (
             // ✅ Success Screen
             <div className="flex flex-col justify-center items-center text-center min-h-[350px] my-auto">
-              <img src={purple} alt="purple" />
-              <h1 className="text-2xl text-neutral600 font-semibold font-clash my-3">
+              <div className="bg-green500 w-20 h-20 mx-auto flex rounded-full font-bold justify-center items-center text-white">
+            <Check size={40}/>
+              </div>
+              <h1 className="text-2xl text-neutral600 font-semibold font-inter tracking-tight my-3">
                 Password reset was successful!
               </h1>
               <p className="text-neutral600 lg:w-3/4">
                 You have successfully reset password for your account
               </p>
               <Link to={"/signin"}>
-                <Button className="mt-6">Proceed to Login</Button>
+                <Button className="mt-6 bg-green500 hover:bg-green800">Proceed to Login</Button>
               </Link>
             </div>
           ) : (
             <>
-              <h1 className="lg:text-[40px] text-[30px] font-semibold font-clash mb-1">
+              <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter tracking-tight mb-1">
                 Choose a Password
               </h1>
               <p className="font-medium text-neutral800">
@@ -93,11 +94,11 @@ const ResetPassword = () => {
               <div className="py-4 text-sm mt-8">
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                    <TbLockPassword className="text-purple400 text-2xl" />
+                    <TbLockPassword className="text-green500 text-2xl" />
                     <div className="flex flex-col gap-2 w-full">
                       <label
                         htmlFor="password"
-                        className="font-clash font-semibold"
+                        className="font-inter tracking-tight font-semibold"
                       >
                         Create Your Password
                       </label>
@@ -110,7 +111,7 @@ const ResetPassword = () => {
                         />
 
                         <span
-                          className="cursor-pointer text-purple400 text-xl"
+                          className="cursor-pointer text-green500 text-xl"
                           onClick={() => setToggle(!toggle)}
                         >
                           {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -125,11 +126,11 @@ const ResetPassword = () => {
                   </div>
 
                   <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                    <TbLockPassword className="text-purple400 text-2xl" />
+                    <TbLockPassword className="text-green500 text-2xl" />
                     <div className="flex flex-col gap-2 w-full">
                       <label
                         htmlFor="confirmPassword"
-                        className="font-clash font-semibold"
+                        className="font-inter tracking-tight font-semibold"
                       >
                         Confirm Password
                       </label>
@@ -142,7 +143,7 @@ const ResetPassword = () => {
                         />
 
                         <span
-                          className="cursor-pointer text-purple400 text-xl"
+                          className="cursor-pointer text-green500 text-xl"
                           onClick={() => setToggle(!toggle)}
                         >
                           {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -157,8 +158,7 @@ const ResetPassword = () => {
                   </div>
 
                   <Button
-                    variant={"secondary"}
-                    className=" w-full my-1"
+                    className=" w-full my-1 bg-green100 hover:bg-green800"
                     loading={isPending}
                   >
                     Reset Password
