@@ -91,10 +91,10 @@ useEffect(() => {
         <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
           <div className="flex lg:flex-row flex-col gap-6 justify-between ">
             <div className="lg:w-[65%] flex flex-col gap-6">
-              <div className="px-4 py-20 bg-purple300 rounded-xl">
+              <div className="px-4 py-20 bg-neutral900 rounded-xl">
                 <div className="flex flex-col gap-2 justify-center items-center text-center">
                  
-                  <div className="w-[70px] h-[70px] rounded-full bg-orange500 text-white flex justify-center items-center">
+                  <div className="w-[70px] h-[70px] rounded-full bg-green500 text-white flex justify-center items-center">
                     <Check size={50}/>
                   </div>
                   <h2 className="font-clash font-semibold text-2xl mt-1">
@@ -108,7 +108,7 @@ useEffect(() => {
                       from us in approximately 15 minutes.
                     </p>
                   </div>
-                  <Button onClick={onSubmit} loading={loading}>
+                  <Button onClick={onSubmit} loading={loading} className=" bg-green500 hover:bg-green800 text-white">
                     Track Order Progress
                   </Button>
                 </div>

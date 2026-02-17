@@ -1,7 +1,3 @@
-import purple from "@/assets/icons/purple-checkmark.png";
-import green from "@/assets/icons/green-checkmark.png";
-// import avatar1 from "@/assets/images/avatar1.png";
-// import { DetailsModal } from "./modals/details";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,17 +6,18 @@ import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
 import empty from "@/assets/images/green-empty-bg.png";
 import Rating from "@/components/Rating";
-import { FiCalendar, FiTruck, FiFilter, FiX, FiPackage } from "react-icons/fi";
-import { SiFedex, SiDhl, SiUps } from "react-icons/si";
+import { FiPackage } from "react-icons/fi";
+// import { SiFedex, SiDhl, SiUps } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Copy, MapPin, Share2, Shield } from "lucide-react";
+  ArrowRight,
+  Box,
+  Copy,
+  MapPin,
+  Share2,
+  Shield,
+  ShieldCheck,
+} from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { shareQuotes } from "@/services/user";
 import { LIVE_URL } from "@/services/axios";
@@ -29,7 +26,7 @@ import logo from "@/assets/images/gosendeet-black-logo.png";
 
 const parsePrice = (price: string | number | undefined | null): number => {
   if (!price) return 0;
-  if (typeof price === 'number') return price;
+  if (typeof price === "number") return price;
   return parseFloat(String(price).replace(/[^\d.]/g, "")) || 0;
 };
 
@@ -46,7 +43,9 @@ const Calculator = () => {
   const { data: sharedQuote } = useGetSharedQuotes(shareId);
 
   const { results, inputData: stateInputData } = location.state || {};
-  const [mode, setMode] = useState<FormMode>(location?.state?.mode ?? "gosendeet");
+  const [mode, setMode] = useState<FormMode>(
+    location?.state?.mode ?? "gosendeet",
+  );
 
   const storedInputData = useMemo(() => {
     try {
@@ -69,6 +68,7 @@ const Calculator = () => {
   const [filterPickupDate, setFilterPickupDate] = useState("");
   const [filterDeliveryDate, setFilterDeliveryDate] = useState("");
   const [priceRange, setPriceRange] = useState("all");
+  const [activeTab, setActiveTab] = useState("recommended");
 
   useEffect(() => {
     if (shareId && sharedQuote) {
@@ -87,14 +87,14 @@ const Calculator = () => {
     // Filter by pickup date
     if (filterPickupDate) {
       filtered = filtered.filter(
-        (item: any) => item?.pickUpdateDate === filterPickupDate
+        (item: any) => item?.pickUpdateDate === filterPickupDate,
       );
     }
 
     // Filter by delivery date
     if (filterDeliveryDate) {
       filtered = filtered.filter(
-        (item: any) => item?.estimatedDeliveryDate === filterDeliveryDate
+        (item: any) => item?.estimatedDeliveryDate === filterDeliveryDate,
       );
     }
 
@@ -138,20 +138,20 @@ const Calculator = () => {
   }, [data, sortBy, filterPickupDate, filterDeliveryDate, priceRange]);
 
   // Get unique pickup dates for filter
-  const uniquePickupDates = useMemo(() => {
-    if (!data?.data) return [];
-    return [
-      ...new Set(data.data.map((item: any) => item?.pickUpdateDate)),
-    ].filter(Boolean);
-  }, [data]);
+  // const uniquePickupDates = useMemo(() => {
+  //   if (!data?.data) return [];
+  //   return [
+  //     ...new Set(data.data.map((item: any) => item?.pickUpdateDate)),
+  //   ].filter(Boolean);
+  // }, [data]);
 
   // Get unique delivery dates for filter
-  const uniqueDeliveryDates = useMemo(() => {
-    if (!data?.data) return [];
-    return [
-      ...new Set(data.data.map((item: any) => item?.estimatedDeliveryDate)),
-    ].filter(Boolean);
-  }, [data]);
+  // const uniqueDeliveryDates = useMemo(() => {
+  //   if (!data?.data) return [];
+  //   return [
+  //     ...new Set(data.data.map((item: any) => item?.estimatedDeliveryDate)),
+  //   ].filter(Boolean);
+  // }, [data]);
 
   const clearFilters = () => {
     setFilterPickupDate("");
@@ -167,17 +167,17 @@ const Calculator = () => {
   ].filter(Boolean).length;
 
   // Get courier logo based on name
-  const getCourierLogo = (courierName: string) => {
-    const name = courierName?.toLowerCase() || "";
+  // const getCourierLogo = (courierName: string) => {
+  //   const name = courierName?.toLowerCase() || "";
 
-    // Match known courier services with their icons
-    if (name.includes("fedex")) return SiFedex;
-    if (name.includes("dhl")) return SiDhl;
-    if (name.includes("ups")) return SiUps;
+  //   // Match known courier services with their icons
+  //   if (name.includes("fedex")) return SiFedex;
+  //   if (name.includes("dhl")) return SiDhl;
+  //   if (name.includes("ups")) return SiUps;
 
-    // Default fallback icon
-    return FiPackage;
-  };
+  //   // Default fallback icon
+  //   return FiPackage;
+  // };
 
   const handleClick = (data: any) => {
     if (!userId) {
@@ -280,348 +280,305 @@ const Calculator = () => {
       {mode === "compare" && (
         <>
           {data?.data && data?.data?.length > 0 && (
-            <div className="max-w-5xl mx-auto mt-4 mb-3">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                <div className="md:w-5xl">
-                  <h2 className="font-clash font-bold text-2xl md:text-3xl text-[#1a1a1a] mb-2">
-                    Available Courier Services
-                  </h2>
-                  <div className="flex md:flex-row flex-col gap-2 justify-between md:items-center">
-                    <p className="text-gray-600 text-sm md:text-base">
-                      Found{" "}
-                      <span className="font-bold text-amber-600">
-                        {filteredAndSortedData.length}
-                      </span>{" "}
-                      courier{filteredAndSortedData.length !== 1 ? "s" : ""} for
-                      your route
-                      {activeFiltersCount > 0 && (
-                        <span className="ml-2 text-xs text-gray-500">
-                          ({activeFiltersCount} filter
-                          {activeFiltersCount !== 1 ? "s" : ""} active)
-                        </span>
-                      )}
-                    </p>
+            <div className="flex xl:flex-row md:flex-col gap-6 mb-6">
+              {/* Left Sidebar - Filters */}
+              <div className="hidden md:block xl:w-64 w-full flex-shrink-0">
+                <div className="bg-white rounded-lg p-6 border border-gray-200 sticky top-4">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-semibold text-lg text-gray-900">
+                      Filters
+                    </h3>
+                    {activeFiltersCount > 0 && (
+                      <button
+                        onClick={clearFilters}
+                        className="text-xs font-semibold text-green-700 hover:text-green-800 transition-colors"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
 
-                    <Button
-                      className="w-fit bg-green800"
-                      loading={shareLoading}
-                      onClick={shareUrl ? copyUrl : handleShare}
-                    >
-                      {shareUrl ? <Copy /> : <Share2 />}
-                      {shareUrl ? "Copy Link" : "Share Quote"}
-                    </Button>
+                  {/* Price Range */}
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-sm text-gray-900 mb-3 uppercase tracking-wider">
+                      Price Range
+                    </h4>
+                    <div className="space-y-2">
+                      <select
+                        value={priceRange}
+                        onChange={(e) => setPriceRange(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                      >
+                        <option value="all">All prices</option>
+                        <option value="0-5000">₦0 - ₦5,000</option>
+                        <option value="5000-10000">₦5,000 - ₦10,000</option>
+                        <option value="10000-20000">₦10,000 - ₦20,000</option>
+                        <option value="20000+">₦20,000+</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Sort By */}
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-sm text-gray-900 mb-3 uppercase tracking-wider">
+                      Sort By
+                    </h4>
+                    <div className="space-y-2">
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+                      >
+                        <option value="price-asc">Price: Low to High</option>
+                        <option value="price-desc">Price: High to Low</option>
+                        <option value="delivery-fastest">
+                          Fastest Delivery
+                        </option>
+                      </select>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Filters & Sort Section */}
-              <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <FiFilter className="w-4 h-4 text-gray-600" />
-                  <h3 className="font-semibold text-sm text-gray-700">
-                    Filter & Sort Results
-                  </h3>
-                  {activeFiltersCount > 0 && (
-                    <button
-                      onClick={clearFilters}
-                      className="ml-auto flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 font-semibold transition-colors"
+              {/* Right Content Area */}
+              <div className="flex-1">
+                {/* Header Section */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      {/* <h2 className="text-lg font-semibold text-gray-600 mb-1">
+                        <span className="text-gray-500">ROUTE</span>{" "}
+                        {bookingRequest?.pickupLocation} —{" "}
+                        {bookingRequest?.dropOffLocation}
+                      </h2> */}
+                      <p className="text-sm text-gray-600">
+                        Showing{" "}
+                        <span className="font-semibold text-gray-900">
+                          {filteredAndSortedData.length}
+                        </span>{" "}
+                        option{filteredAndSortedData.length !== 1 ? "s" : ""}{" "}
+                        available
+                      </p>
+                    </div>
+                    <Button
+                      className="w-fit bg-green800 hover:bg-green-800"
+                      loading={shareLoading}
+                      onClick={shareUrl ? copyUrl : handleShare}
                     >
-                      <FiX className="w-3 h-3" />
-                      Clear All
+                      {shareUrl ? <Copy size={16} /> : <Share2 size={16} />}
+                      <span className="ml-2">
+                        {shareUrl ? "Copy Link" : "Share Quote"}
+                      </span>
+                    </Button>
+                  </div>
+
+                  {/* Tabs */}
+                  <div className="flex gap-3 mb-6 bg-neutral900 w-fit px-2 py-2 rounded-3xl">
+                    <button
+                      onClick={() => {
+                        setActiveTab("recommended");
+                        setSortBy("price-asc");
+                      }}
+                      className={`md:px-6 px-2 py-2 md:font-bold font-medium text-sm rounded-2xl transition-all ${
+                        activeTab === "recommended"
+                          ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Recommended
                     </button>
-                  )}
+                    <button
+                      onClick={() => {
+                        setActiveTab("cheapest");
+                        setSortBy("price-asc");
+                      }}
+                      className={`md:px-6 px-2 py-2 md:font-bold font-medium text-sm rounded-2xl transition-all ${
+                        activeTab === "cheapest"
+                          ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Cheapest
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab("fastest");
+                        setSortBy("delivery-fastest");
+                      }}
+                      className={`md:px-6 px-2 py-2 md:font-bold font-medium text-sm rounded-2xl transition-all ${
+                        activeTab === "fastest"
+                          ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                          : "text-gray-500 hover:text-gray-700"
+                      }`}
+                    >
+                      Fastest
+                    </button>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {/* Sort By */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
-                      Sort By
-                    </label>
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="h-9 text-sm bg-white border-gray-300">
-                        <SelectValue placeholder="Sort by..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="price-asc">
-                          Price: Low to High
-                        </SelectItem>
-                        <SelectItem value="price-desc">
-                          Price: High to Low
-                        </SelectItem>
-                        <SelectItem value="delivery-fastest">
-                          Fastest Delivery
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Results Cards */}
+                <div className="flex flex-col gap-4">
+                  {filteredAndSortedData.length === 0 &&
+                    data?.data &&
+                    data?.data?.length > 0 && (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <p className="text-center font-bold text-gray-600 text-lg mb-2">
+                          No results match your filters
+                        </p>
+                        <button
+                          onClick={clearFilters}
+                          className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
+                        >
+                          Clear all filters
+                        </button>
+                      </div>
+                    )}
 
-                  {/* Pickup Date Filter */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
-                      Pickup Date
-                    </label>
-                    <Select
-                      value={filterPickupDate || "all"}
-                      onValueChange={(val) =>
-                        setFilterPickupDate(val === "all" ? "" : val)
-                      }
-                    >
-                      <SelectTrigger className="h-9 text-sm bg-white border-gray-300">
-                        <SelectValue placeholder="All dates" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All dates</SelectItem>
-                        {uniquePickupDates.map((date: any) => (
-                          <SelectItem key={date} value={date}>
-                            {date}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {filteredAndSortedData.map((item: any, index: number) => {
+                    // const badgeType =
+                    //   index === 0
+                    //     ? "TOP PICK"
+                    //     : index === 1
+                    //       ? "BEST"
+                    //       : index === 2
+                    //         ? "FASTEST"
+                    //         : "STANDARD";
+                    // const badgeColor =
+                    //   badgeType === "TOP PICK"
+                    //     ? "bg-green-600"
+                    //     : badgeType === "BEST"
+                    //       ? "bg-green-700"
+                    //       : badgeType === "FASTEST"
+                    //         ? "bg-gray-900"
+                    //         : "bg-gray-600";
 
-                  {/* Delivery Date Filter */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
-                      Delivery Date
-                    </label>
-                    <Select
-                      value={filterDeliveryDate || "all"}
-                      onValueChange={(val) =>
-                        setFilterDeliveryDate(val === "all" ? "" : val)
-                      }
-                    >
-                      <SelectTrigger className="h-9 text-sm bg-white border-gray-300">
-                        <SelectValue placeholder="All dates" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All dates</SelectItem>
-                        {uniqueDeliveryDates.map((date: any) => (
-                          <SelectItem key={date} value={date}>
-                            {date}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    return (
+                      <div
+                        key={index}
+                        className={cn(
+                          "bg-white rounded-xl overflow-hidden",
+                          "border-2 border-gray-300",
+                          "shadow-md",
+                          "transition-all duration-300",
+                          "hover:shadow-lg hover:-translate-y-1 hover:border-green800",
+                          "relative",
+                        )}
+                      >
+                        {/* Top Badge */}
+                        {/* <div className="absolute top-4 right-4 z-10">
+                          <span
+                            className={`${badgeColor} text-white text-xs font-bold px-3 py-1 rounded-full`}
+                          >
+                            {badgeType}
+                          </span>
+                        </div> */}
 
-                  {/* Price Range Filter */}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
-                      Price Range
-                    </label>
-                    <Select value={priceRange} onValueChange={setPriceRange}>
-                      <SelectTrigger className="h-9 text-sm bg-white border-gray-300">
-                        <SelectValue placeholder="All prices" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All prices</SelectItem>
-                        <SelectItem value="0-5000">₦0 - ₦5,000</SelectItem>
-                        <SelectItem value="5000-10000">
-                          ₦5,000 - ₦10,000
-                        </SelectItem>
-                        <SelectItem value="10000-20000">
-                          ₦10,000 - ₦20,000
-                        </SelectItem>
-                        <SelectItem value="20000+">₦20,000+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between p-6 gap-6">
+                          {/* Left - Courier Logo & Info */}
+                          <div className="xl:w-1/4">
+                            <div className="flex-1 flex items-center gap-1">
+                              {item?.courier?.logo ? (
+                                <img
+                                  src={item?.courier?.logo}
+                                  alt=""
+                                  className="w-[57px] rounded-lg"
+                                />
+                              ) : (
+                                <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
+                                  <Box className="w-8 h-8 text-gray-700" />
+                                </div>
+                              )}
+                              <div className="flex flex-col gap-2">
+                                <h3 className="text-lg font-bold text-gray-900">
+                                  {item?.courier?.name}
+                                </h3>
+                                <div className="flex items-center gap-1">
+                                  <Rating
+                                    value={item?.courier?.averageRatingScore}
+                                    readOnly
+                                  />
+                                  <div className="text-xs text-gray-600 space-y-1">
+                                    <p>({item?.courier?.totalRatings})</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-2xl">
+                              <ShieldCheck size={14} /> Verified
+                            </div>
+                          </div>
+
+                          {/* Center - Pickup/Delivery Timeline */}
+                          <div className="xl:w-1/2 ">
+                            <div className="flex lg:flex-row flex-col items-center justify-center gap-6">
+                              <div className="lg:text-left text-center">
+                                <p className="text-xs font-semibold text-gray-600 uppercase mb-1">
+                                  PICKUP
+                                </p>
+                                <p className="text-sm font-bold text-gray-900">
+                                  {item?.pickUpdateDate || "Not specified"}
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col justify-center items-center gap-2">
+                                <p className="text-xs text-gray-600 font-semibold pt-2">
+                                  {item?.pickupOptions?.[0] ||
+                                    "Standard Delivery"}
+                                </p>
+                                <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
+                              </div>
+
+                              <div className="lg:text-left text-center">
+                                <p className="text-xs font-semibold text-gray-600 uppercase mb-1">
+                                  DELIVERY
+                                </p>
+                                <p className="text-sm font-bold text-gray-900">
+                                  {item?.estimatedDeliveryDate ||
+                                    "Not specified"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right - Price & CTA */}
+                          <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4">
+                            <div className="mb-4">
+                              <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
+                                ₦{parsePrice(item.price).toLocaleString()}
+                              </p>
+                              {/* {index === 0 && (
+                                <p className="text-xs font-bold text-green-700 mt-1">
+                                  15% Savings
+                                </p>
+                              )} */}
+                            </div>
+
+                            <Button
+                              onClick={() => handleClick(item)}
+                              className={cn(
+                                index === 0
+                                  ? "bg-green100 hover:bg-green800 submit-btn-shadow"
+                                  : "bg-white text-green100 border-2",
+                                "rounded-2xl md:w-[170px] w-full",
+                              )}
+                            >
+                              {index === 0 ? (
+                                <span className="flex items-center gap-2">
+                                  Select Option <ArrowRight />
+                                </span>
+                              ) : (
+                                "Select"
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           )}
-
-          <div className="flex flex-col gap-4 mb-6 max-w-5xl mx-auto">
-            {filteredAndSortedData.length === 0 &&
-              data?.data &&
-              data?.data?.length > 0 && (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-center font-bold text-gray-600 text-lg mb-2">
-                    No results match your filters
-                  </p>
-                  <button
-                    onClick={clearFilters}
-                    className="text-amber-600 hover:text-amber-700 font-semibold text-sm underline"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            {filteredAndSortedData.map((item: any, index: number) => (
-              <div
-                className={cn(
-                  "bg-white rounded-2xl overflow-hidden",
-                  "border-2 border-gray-200",
-                  "shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-                  "transition-all duration-300",
-                  "hover:shadow-[0_12px_40px_rgba(251,146,60,0.25)] hover:border-amber-300 hover:-translate-y-1"
-                )}
-                key={index}
-              >
-                {/* Header Section - Courier Info & Price */}
-                <div className="px-6 py-4 border-b border-gray-100">
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                    {/* Courier Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        {/* Courier Logo */}
-                        {(() => {
-                          const LogoIcon = getCourierLogo(item?.courier?.name);
-                          return (
-                            <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex items-center justify-center">
-                              <LogoIcon className="w-9 h-9 text-gray-700" />
-                            </div>
-                          );
-                        })()}
-
-                        {/* Courier Name & Rating */}
-                        <div className="flex-1">
-                          <div className="flex flex-col md:flex-row md:items-center gap-2">
-                            <h3 className="font-clash font-bold text-xl text-[#1a1a1a]">
-                              {item?.courier?.name}
-                            </h3>
-                            <Rating
-                              value={item?.courier?.totalRatings}
-                              readOnly
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Pickup & Delivery Info */}
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <FiCalendar className="w-4 h-4 text-blue-500" />
-                          <span>
-                            Pickup Date:{" "}
-                            <span className="font-semibold text-[#1a1a1a]">
-                              {item?.pickUpdateDate}
-                            </span>
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <FiTruck className="w-4 h-4 text-emerald-500" />
-                          <span>
-                            Estimated Delivery:{" "}
-                            <span className="font-semibold text-[#1a1a1a]">
-                              {item?.estimatedDeliveryDate}
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Price & Badge Section */}
-                    <div className="flex flex-col gap-3 items-end">
-                      {/* Price - Prominent Position */}
-                      <div className="text-right">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                          Total Cost
-                        </p>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xs font-semibold text-gray-500">
-                            ₦
-                          </span>
-                          <p className="text-2xl md:text-3xl font-clash font-bold text-amber-600">
-                            {parsePrice(item.price).toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Next Day Delivery Badge */}
-                      {item?.nextDayDelivery && (
-                        <div className="flex gap-2 items-center bg-gradient-to-r from-emerald-50 to-teal-50 py-2 px-3 rounded-full border border-emerald-300/50">
-                          <img
-                            src={green}
-                            alt="check"
-                            className="w-[16px] h-[16px] rounded-full"
-                          />
-                          <p className="text-xs font-bold text-emerald-700">
-                            Next Day
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Features Section */}
-                {item?.pickupOptions && item?.pickupOptions.length > 0 && (
-                  <div className="px-6 py-3 bg-gray-50/50">
-                    <div className="flex flex-wrap gap-3">
-                      {item?.pickupOptions?.map(
-                        (option: string, idx: number) => (
-                          <div
-                            className="flex gap-2 items-center bg-white py-2 px-3 rounded-lg border border-amber-200/50 shadow-sm"
-                            key={idx}
-                          >
-                            <img
-                              src={purple}
-                              alt="check"
-                              className="w-[16px] h-[16px] rounded-full"
-                            />
-                            <p className="text-xs font-semibold text-gray-700">
-                              {option}
-                            </p>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Footer Section - CTA */}
-                <div className="px-6 py-3 bg-gradient-to-r from-gray-50 to-amber-50/30">
-                  <div className="flex items-center justify-between gap-4">
-                    {/* Additional Info */}
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <FiTruck className="w-4 h-4 text-amber-500" />
-                      <span className="font-medium">
-                        Fast & Reliable Service
-                      </span>
-                    </div>
-
-                    {/* Book Now Button - Modern Design */}
-                    <Button
-                      onClick={() => {
-                        handleClick(item);
-                      }}
-                      className={cn(
-                        "group relative px-8 py-2.5 rounded-xl font-bold text-sm",
-                        "bg-[#1a1a1a] hover:bg-amber-600",
-                        "text-white transition-all duration-300",
-                        "shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(251,146,60,0.4)]",
-                        "border border-transparent hover:border-amber-400",
-                        "outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2",
-                        "overflow-hidden"
-                      )}
-                    >
-                      <span className="relative z-10 flex items-center gap-2">
-                        <span>Book Now</span>
-                        <svg
-                          className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 7l5 5m0 0l-5 5m5-5H6"
-                          />
-                        </svg>
-                      </span>
-                      {/* Hover effect overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </>
       )}
 
@@ -735,7 +692,7 @@ const Calculator = () => {
                   "w-full py-3 rounded-xl font-bold text-base",
                   "bg-[#1a1a1a] hover:bg-amber-600",
                   "text-white transition-all duration-300",
-                  "shadow-[0_4px_14px_0_rgba(0,0,0,0.1)]"
+                  "shadow-[0_4px_14px_0_rgba(0,0,0,0.1)]",
                 )}
               >
                 Book Now

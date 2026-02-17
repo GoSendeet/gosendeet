@@ -133,15 +133,15 @@ const Checkout = () => {
                     type="checkbox"
                     className="mt-1 h-5 w-5 rounded
                       appearance-none cursor-pointer
-                      border-2 border-orange500 bg-white
-                      hover:border-orange500 hover:bg-purple50
+                      border-2 border-green500 bg-white
+                      hover:border-green500 hover:bg-purple50
                       transition-all duration-200
-                      checked:bg-orange500 checked:border-orange500
-                      checked:hover:bg-orange500 checked:hover:border-orange500
+                      checked:bg-green500 checked:border-green500
+                      checked:hover:bg-green500 checked:hover:border-green500
                       checked:before:content-['✔']
                       checked:before:text-white checked:before:text-xs
                       checked:before:flex checked:before:items-center checked:before:justify-center
-                      shadow-sm focus:ring-2 focus:ring-orange500 focus:ring-offset-1"
+                      shadow-sm focus:ring-2 focus:ring-green500 focus:ring-offset-1"
                     onChange={(e) => setIsChecked(e.target.checked)}
                   />
                   <p className="text-sm">
@@ -153,7 +153,7 @@ const Checkout = () => {
                 {/* Submit Button */}
                 <Button
                   type="submit"
-                  className="rounded-full py-3 px-8 text-white"
+                  className="rounded-full py-3 px-8 text-white bg-green100 hover:bg-green800"
                   disabled={!isChecked}
                   onClick={submit}
                   loading={isPending}

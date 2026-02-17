@@ -437,3 +437,10 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
 .custom-phone-container input {
   padding-left: 60px !important;
 }
+
+.submit-btn-shadow{
+  box-shadow: 0px 4.78px 7.16px -4.78px #0A4F3233;
+
+box-shadow: 0px 11.94px 17.91px -3.58px #0A4F3233;
+
+}

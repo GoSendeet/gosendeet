@@ -46,7 +46,7 @@ const Navbar = () => {
         <div className="lg:hidden flex items-center gap-4">
           {authToken === null ? (
             <Link to="/signin">
-              <Button size={'sm'} className="bg-green100">
+              <Button size={"sm"} className="bg-green100">
                 Sign In
                 <ArrowUpRight />
               </Button>
@@ -63,7 +63,7 @@ const Navbar = () => {
                 {letter}
               </div> */}
               <Home
-                className="text-orange500"
+                className="text-green500"
                 size={24}
                 onClick={() => {
                   role === "user" && navigate("/dashboard");
@@ -102,13 +102,13 @@ const Navbar = () => {
         {authToken === null ? (
           <div className="hidden lg:flex lg:flex-row gap-8 flex-col">
             <Link to="/signup">
-              <Button size={'lg'} variant="outline">
+              <Button size={"lg"} variant="outline">
                 Become a Franchise
               </Button>
             </Link>
 
             <Link to="/signin">
-              <Button size={'sm'} className="bg-green100">
+              <Button size={"sm"} className="bg-green100">
                 Sign In
                 <ArrowUpRight />
               </Button>
@@ -117,13 +117,13 @@ const Navbar = () => {
         ) : (
           <>
             <div
-              className="hidden lg:flex items-center gap-2 text-orange500 cursor-pointer"
+              className="hidden lg:flex items-center gap-2 text-green500 cursor-pointer"
               onClick={() => {
                 role === "user" && navigate("/dashboard");
                 role === "super_admin" && navigate("/admin-dashboard");
               }}
             >
-              <Home className="text-orange500" size={24} />
+              <Home className="text-green500" size={24} />
               <span>Dashboard</span>
             </div>
           </>
@@ -154,7 +154,7 @@ const Navbar = () => {
                 >
                   <li
                     className={` w-full  hover:bg-white cursor-pointer ${
-                      isActive ? " text-orange500 " : ""
+                      isActive ? " text-green500 " : ""
                     }`}
                   >
                     {link.title}
@@ -180,7 +180,6 @@ const Navbar = () => {
             </>
           )}
         </div>
-
       </div>
     </nav>
   );
