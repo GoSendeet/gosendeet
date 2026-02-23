@@ -49,7 +49,7 @@ const ValidateGoogleLogin = () => {
           navigate("/cost-calculator");
         } else {
           user.role === "user" && navigate("/dashboard");
-          user.role === "super_admin" && navigate("/admin-dashboard");
+          ["admin", "super_admin"].includes(user.role) && navigate("/admin-dashboard");
         }
       } catch (err) {
         console.error("Google login validation failed:", err);

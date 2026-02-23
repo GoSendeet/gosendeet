@@ -8,7 +8,7 @@ const PublicRoutes = () => {
     return <Navigate to={"/dashboard"} />;
   }
 
-  if (authToken && role === "super_admin") {
+  if (authToken && ["admin", "super_admin"].includes(role || "")) {
     return <Navigate to={"/admin-dashboard"} />;
   }
 
