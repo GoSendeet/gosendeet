@@ -12,13 +12,13 @@ const AdminRoutes = () => {
     if (!authToken) {
       navigate("signin");
     }
-    if (authToken && role !== "super_admin") {
+    if (authToken && !["admin", "super_admin"].includes(role || "")) {
       navigate(-1); // Go back to the previous page
     }
   }, [authToken, role, navigate]);
 
   // Authenticated 'user' role can access
-  if (authToken && role === "super_admin") {
+  if (authToken && ["admin", "super_admin"].includes(role || "")) {
     return <Outlet />;
   }
 

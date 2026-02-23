@@ -57,7 +57,7 @@ const Navbar = () => {
                 className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-purple500 cursor-pointer"
                 onClick={() => {
                   role === "user" && navigate("/dashboard");
-                  role === "super_admin" && navigate("/admin-dashboard");
+                  ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
                 }}
               >
                 {letter}
@@ -67,7 +67,7 @@ const Navbar = () => {
                 size={24}
                 onClick={() => {
                   role === "user" && navigate("/dashboard");
-                  role === "super_admin" && navigate("/admin-dashboard");
+                  ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
                 }}
               />
             </>
@@ -120,7 +120,7 @@ const Navbar = () => {
               className="hidden lg:flex items-center gap-2 text-green500 cursor-pointer"
               onClick={() => {
                 role === "user" && navigate("/dashboard");
-                role === "super_admin" && navigate("/admin-dashboard");
+                ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
               }}
             >
               <Home className="text-green500" size={24} />

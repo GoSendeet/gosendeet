@@ -54,7 +54,7 @@ const Login = () => {
         navigate("/cost-calculator");
       } else {
         data.data.user.role === "user" && navigate("/dashboard");
-        data.data.user.role === "super_admin" && navigate("/admin-dashboard");
+        ["admin", "super_admin"].includes(data.data.user.role) && navigate("/admin-dashboard");
       }
     },
     onError: (data) => {
