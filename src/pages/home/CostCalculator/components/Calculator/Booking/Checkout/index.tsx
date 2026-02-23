@@ -6,14 +6,14 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { payForBooking } from "@/services/user";
-import { LIVE_URL } from "@/services/axios";
+import { APP_BASE_URL } from "@/services/axios";
 const Checkout = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const location = useLocation();
 
   const { bookingId, bookingData } = location?.state || {};
-  const successUrl = `${LIVE_URL}/success-page?bookingId=${bookingId}`;
-  const errorUrl = `${LIVE_URL}/error-page?bookingId=${bookingId}`;
+  const successUrl = `${APP_BASE_URL}/success-page?bookingId=${bookingId}`;
+  const errorUrl = `${APP_BASE_URL}/error-page?bookingId=${bookingId}`;
 
   const [isChecked, setIsChecked] = useState(false);
 
