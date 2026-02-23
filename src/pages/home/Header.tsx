@@ -26,8 +26,18 @@ const Header = () => {
 
   return (
     <>
-      <div className="min-h-[100vh] bg-white flex flex-col justify-between md:px-20 px-6 pt-6 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 relative overflow-hidden bg-hero">
-        <p className="bg-green300 border border-green600 w-fit mx-auto px-6 py-2 flex items-center gap-2 rounded-full md:text-sm text-xs font-bold my-10 shadow-md relative z-10">
+      <div className="min-h-[100vh] bg-white flex flex-col justify-between items-center md:px-20 px-6 pt-6 md:pt-8 lg:pt-6 pb-8 md:pb-10 lg:pb-12 relative overflow-hidden bg-hero">
+        {/* Top-right gradient blob */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 w-[600px] h-[200px] lg:h-[500px] rounded-full bg-[linear-gradient(135deg,#A4F4CF_0%,#DCFCE7_50%,#CBFBF1_100%)] blur-[80px] opacity-30 z-0"
+        />
+        {/* Bottom-left gradient blob */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 -left-24 w-[400px] h-[200px] rounded-full bg-[linear-gradient(315deg,#A4F4CF_0%,#DCFCE7_50%,#CBFBF1_100%)] blur-[80px] opacity-4 z-0"
+        />
+        <p className="bg-green300 border border-green600 w-fit h-8.5 mx-auto px-4 py-2 flex items-center gap-2 rounded-full md:text-xs text-xs font-bold my-8 shadow-md relative z-10">
           <span className="w-2.5 h-2.5 bg-green700 rounded-full"></span>
           <span className="uppercase text-green800 font-inter md:block hidden">
             Nigeria's Most Trusted Logistics Network
@@ -36,34 +46,31 @@ const Header = () => {
             Nigeria's Top Logistics
           </span>
         </p>
-        <h1 className="xl:text-8xl lg:text-7xl md:text-6xl text-4xl font-inter font-extrabold text-center tracking-[-2.4px] mb-5">
-          <span className="text-blue100">Deliver with</span> <br />
-          <span
-            className="text-transparent bg-clip-text 
-           bg-[linear-gradient(90deg,#00A651_0%,#00C389_55%,#00D1C1_100%)]"
-          >
+        <div className="relative z-10 text-center mx-auto font-sans font-black text-[36px] leading-[34.2px] tracking-[-0.9px] lg:font-inter lg:font-black lg:text-[96px] lg:leading-[91.2px] lg:tracking-[-2.4px] mb-5">
+          <span className="block text-blue100 -mb-7 lg:mb-0">Deliver with</span> <br />
+          <span className="block lg:-mt-24 text-transparent bg-clip-text bg-[linear-gradient(90deg,#009966_0%,#00A63E_50%,#00BBA7_100%)]">
             absolute certainty.
           </span>
-        </h1>
+        </div>
 
-        <p className="text-grey300 text-center text-md md:w-[500px] mx-auto mb-5">
+        <p className="relative z-10 text-[#45556C] font-sans font-normal text-[16px] leading-6.5 text-center md:font-inter md:text-md md:leading-[26.3px] md:w-125 mx-auto mb-8">
           The only platform combining direct franchise reliability with
           marketplace flexibility.
         </p>
 
-        <p className="w-fit text-center mx-auto mb-8 px-4 py-2 text-md font-bold bg-neutral200 rounded-full">
+        <p className="relative z-10 w-fit text-center mx-auto mb-6 px-4 py-2 text-sm lg:text-md font-bold bg-neutral200 rounded-full">
           Secure. Fast. Verified.
         </p>
 
-        <div className="flex justify-center mb-8">
+        <div className="relative z-10 flex justify-center items-center flex-col mb-5 w-[386px] lg:w-[1024px]">
           <ModeSwitcher
             mode={formMode}
             onModeChange={setFormMode}
             variant="pill"
           />
-        </div>
-        <div className="p-4 mb-8">
-          <FormHorizontalBar variant="minimal" activeMode={formMode} />
+          <div className="w-96.75 lg:w-5xl px-2 py-8 mb-8">
+            <FormHorizontalBar variant="minimal" activeMode={formMode} />
+          </div>
         </div>
       </div>
       <div className="bg-white flex flex-col justify-between md:px-20 px-6 pt-6 md:pt-10 lg:pt-12 pb-8 md:pb-10 lg:pb-12 relative overflow-hidden">
