@@ -84,6 +84,9 @@ export function PickupDateModal({
     }
   };
 
+  // Centralized focus border color for all inputs
+  const INPUT_FOCUS_BORDER = "focus:border-[#0A4F32]";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
@@ -115,33 +118,33 @@ export function PickupDateModal({
                     className={cn(
                       "p-3 rounded-xl border-2 transition-all text-center",
                       isSelected
-                        ? "border-amber-500 bg-amber-50"
-                        : "border-gray-200 hover:border-amber-300 hover:bg-amber-50"
+                        ? `${INPUT_FOCUS_BORDER} bg-[#ECFDF5] border-[#0A4F32]`
+                        : "border-gray-200 hover:border-[#0A4F32] hover:bg-[#ECFDF5]"
                     )}
                   >
                     {dayLabel && (
                       <div className={cn(
                         "text-xs font-bold mb-1",
-                        isSelected ? "text-amber-600" : "text-gray-500"
+                        isSelected ? "text-[#0A4F32]" : "text-gray-500"
                       )}>
                         {dayLabel}
                       </div>
                     )}
                     <div className={cn(
                       "text-xs font-medium mb-0.5",
-                      isSelected ? "text-amber-600" : "text-gray-500"
+                      isSelected ? "text-[#0A4F32]" : "text-gray-500"
                     )}>
                       {date.toLocaleDateString('en-US', { weekday: 'short' })}
                     </div>
                     <div className={cn(
                       "text-lg font-bold",
-                      isSelected ? "text-amber-700" : "text-gray-900"
+                      isSelected ? "text-[#0A4F32]" : "text-gray-900"
                     )}>
                       {date.getDate()}
                     </div>
                     <div className={cn(
                       "text-xs",
-                      isSelected ? "text-amber-600" : "text-gray-500"
+                      isSelected ? "text-[#0A4F32]" : "text-gray-500"
                     )}>
                       {date.toLocaleDateString('en-US', { month: 'short' })}
                     </div>
@@ -167,8 +170,8 @@ export function PickupDateModal({
                     className={cn(
                       "py-3 px-4 rounded-xl border-2 transition-all font-semibold text-sm",
                       selectedTimeSlot === time
-                        ? "border-amber-500 bg-amber-50 text-amber-700"
-                        : "border-gray-200 hover:border-amber-300 hover:bg-amber-50 text-gray-700"
+                        ? `${INPUT_FOCUS_BORDER} bg-[#ECFDF5] text-[#0A4F32] border-[#0A4F32]`
+                        : "border-gray-200 hover:border-[#0A4F32] hover:bg-[#ECFDF5] text-gray-700"
                     )}
                   >
                     {time}
@@ -180,8 +183,8 @@ export function PickupDateModal({
 
           {/* Selected Summary */}
           {selectedDate && (
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-              <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 mb-1">
+            <div className="p-3 bg-[#ECFDF5] border border-[#0A4F32] rounded-xl">
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#0A4F32] mb-1">
                 <FiCalendar className="w-3.5 h-3.5" />
                 Selected Pickup
               </div>

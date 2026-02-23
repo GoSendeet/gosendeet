@@ -75,7 +75,7 @@ export function SpecsModal({
 
   const navigate = useNavigate();
   const { mutate, isPending } = useMutation({
-    mutationFn: getQuotes,
+    mutationFn: (data: any) => getQuotes(data),
     onSuccess: (data: any) => {
       if (data?.data?.length > 0) {
         toast.success("Successful");
