@@ -81,7 +81,7 @@ const CreateBooking = ({
     isPending: isQuoteLoading,
     reset: resetQuoteMutation,
   } = useMutation({
-    mutationFn: getQuotes,
+    mutationFn: (data: any) => getQuotes(data),
     onSuccess: (data: any) => {
       if (data?.data?.length === 0 && !isCostCalculator) {
         toast.error("No quotes found! Please try a different package type.");

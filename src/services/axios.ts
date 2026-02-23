@@ -1,9 +1,9 @@
 import axios from "axios";
 import { toast } from "sonner";
-// export const BASE_URL= window.location.hostname === "localhost"
-//     ? "http://localhost:8080/api/v1"
-//     : "https://dev.gosendeet.com/api/v1"
-export const BASE_URL= "https://dev.gosendeet.com/api/v1"
+export const BASE_URL= window.location.hostname === "localhost"
+    ? "http://localhost:8080/api/v1"
+    : "https://dev.gosendeet.com/api/v1"
+//export const BASE_URL= "https://dev.gosendeet.com/api/v1"
 export const LIVE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5173"

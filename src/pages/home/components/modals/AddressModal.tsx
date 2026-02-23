@@ -16,37 +16,42 @@ import { validateManualAddress } from "@/utils/form-validators";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { toast } from "sonner";
 
+// Centralized focus border color for all inputs
+const INPUT_FOCUS_BORDER = "focus:border-[#0A4F32]";
+
 const normalizeStateKey = (value: string) =>
-  value.toLowerCase().replace(/\s+/g, " ").replace(/\s*state$/, "").trim();
+  value
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/\s*state$/, "")
+    .trim();
 
 const normalizeCityKey = (value: string) =>
   value.toLowerCase().replace(/\s+/g, " ").trim();
 
-const STATE_CITY_MAP = NIGERIAN_STATES_AND_CITIES.reduce<Record<string, string[]>>(
-  (acc, { state, cities }) => {
-    acc[state] = [...cities].sort((a, b) => a.localeCompare(b));
-    return acc;
-  },
-  {}
-);
+const STATE_CITY_MAP = NIGERIAN_STATES_AND_CITIES.reduce<
+  Record<string, string[]>
+>((acc, { state, cities }) => {
+  acc[state] = [...cities].sort((a, b) => a.localeCompare(b));
+  return acc;
+}, {});
 
 const STATE_LOOKUP = Object.keys(STATE_CITY_MAP).reduce<Record<string, string>>(
   (acc, state) => {
     acc[normalizeStateKey(state)] = state;
     return acc;
   },
-  {}
+  {},
 );
 
-const CITY_STATE_MAP = NIGERIAN_STATES_AND_CITIES.reduce<Record<string, string>>(
-  (acc, { state, cities }) => {
-    cities.forEach((city) => {
-      acc[city] = state;
-    });
-    return acc;
-  },
-  {}
-);
+const CITY_STATE_MAP = NIGERIAN_STATES_AND_CITIES.reduce<
+  Record<string, string>
+>((acc, { state, cities }) => {
+  cities.forEach((city) => {
+    acc[city] = state;
+  });
+  return acc;
+}, {});
 
 const NORMALIZED_CITY_LOOKUP = Object.keys(CITY_STATE_MAP).reduce<
   Record<string, string>
@@ -56,11 +61,11 @@ const NORMALIZED_CITY_LOOKUP = Object.keys(CITY_STATE_MAP).reduce<
 }, {});
 
 const STATE_OPTIONS = Object.keys(STATE_CITY_MAP).sort((a, b) =>
-  a.localeCompare(b)
+  a.localeCompare(b),
 );
 
 const ALL_CITIES = Object.keys(CITY_STATE_MAP).sort((a, b) =>
-  a.localeCompare(b)
+  a.localeCompare(b),
 );
 
 const DELIVERY_RESTRICTION_MESSAGE =
@@ -69,8 +74,7 @@ const DELIVERY_RESTRICTION_MESSAGE =
 const isLagosState = (state?: string) =>
   normalizeStateKey(state || "") === "lagos";
 
-const isOyoState = (state?: string) =>
-  normalizeStateKey(state || "") === "oyo";
+const isOyoState = (state?: string) => normalizeStateKey(state || "") === "oyo";
 
 const isIbadanCity = (city?: string) =>
   normalizeCityKey(city || "").startsWith("ibadan");
@@ -111,11 +115,13 @@ const resolveCityValue = (city?: string, state?: string) => {
     return canonical;
   }
 
-  const canonicalState = state ? STATE_LOOKUP[normalizeStateKey(state)] : undefined;
+  const canonicalState = state
+    ? STATE_LOOKUP[normalizeStateKey(state)]
+    : undefined;
 
   if (canonicalState && STATE_CITY_MAP[canonicalState]) {
     const fromState = STATE_CITY_MAP[canonicalState].find(
-      (stateCity) => normalizeCityKey(stateCity) === normalizedCity
+      (stateCity) => normalizeCityKey(stateCity) === normalizedCity,
     );
 
     if (fromState) {
@@ -145,12 +151,12 @@ export function AddressModal({
   onSelect,
 }: AddressModalProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [manualAddress, setManualAddress] = useState<ManualAddressData>({
-    street: '',
-    apartment: '',
-    city: '',
-    state: '',
+    street: "",
+    apartment: "",
+    city: "",
+    state: "",
   });
   const suggestionsRef = useRef<HTMLDivElement>(null!);
 
@@ -160,7 +166,7 @@ export function AddressModal({
     clearSuggestions,
   } = usePlacesAutocomplete({
     requestOptions: {
-      componentRestrictions: { country: 'ng' },
+      componentRestrictions: { country: "ng" },
     },
     debounce: 300,
   });
@@ -171,23 +177,23 @@ export function AddressModal({
   useEffect(() => {
     if (open && value) {
       // Parse the formatted address: "street, apartment, city, state"
-      const parts = value.split(',').map(p => p.trim());
+      const parts = value.split(",").map((p) => p.trim());
       if (parts.length >= 4) {
         const [street, apartment, city, state] = parts;
         setManualAddress({
-          street: street || '',
-          apartment: apartment || '',
-          city: city || '',
-          state: state || '',
+          street: street || "",
+          apartment: apartment || "",
+          city: city || "",
+          state: state || "",
         });
       }
     } else if (open && !value) {
       // Reset to blank when opening without a value
       setManualAddress({
-        street: '',
-        apartment: '',
-        city: '',
-        state: '',
+        street: "",
+        apartment: "",
+        city: "",
+        state: "",
       });
     }
   }, [open, value]);
@@ -196,51 +202,53 @@ export function AddressModal({
    * Parse address from Google Places address_components
    * Extracts structured address data from Google Places API response
    */
-  const parseAddressComponents = (components: google.maps.GeocoderAddressComponent[]): Partial<ManualAddressData> => {
-    let premise = '';
-    let streetNumber = '';
-    let route = '';
-    let sublocality = '';
-    let sublocalityLevel1 = '';
-    let sublocalityLevel2 = '';
-    let neighborhood = '';
-    let city = '';
-    let state = '';
+  const parseAddressComponents = (
+    components: google.maps.GeocoderAddressComponent[],
+  ): Partial<ManualAddressData> => {
+    let premise = "";
+    let streetNumber = "";
+    let route = "";
+    let sublocality = "";
+    let sublocalityLevel1 = "";
+    let sublocalityLevel2 = "";
+    let neighborhood = "";
+    let city = "";
+    let state = "";
 
     for (const component of components) {
       const type = component.types[0];
 
       switch (type) {
-        case 'premise':
+        case "premise":
           premise = component.long_name;
           break;
-        case 'street_number':
+        case "street_number":
           streetNumber = component.long_name;
           break;
-        case 'route':
+        case "route":
           route = component.long_name;
           break;
-        case 'sublocality_level_2':
+        case "sublocality_level_2":
           sublocalityLevel2 = component.long_name;
           break;
-        case 'sublocality_level_1':
+        case "sublocality_level_1":
           sublocalityLevel1 = component.long_name;
           break;
-        case 'sublocality':
+        case "sublocality":
           sublocality = component.long_name;
           break;
-        case 'neighborhood':
+        case "neighborhood":
           neighborhood = component.long_name;
           break;
-        case 'locality':
+        case "locality":
           city = component.long_name;
           break;
-        case 'administrative_area_level_2':
+        case "administrative_area_level_2":
           if (!city) {
             city = component.long_name;
           }
           break;
-        case 'administrative_area_level_1':
+        case "administrative_area_level_1":
           state = component.long_name;
           break;
       }
@@ -261,17 +269,17 @@ export function AddressModal({
     if (sublocality) streetParts.push(sublocality);
     if (neighborhood) streetParts.push(neighborhood);
 
-    const fullStreet = streetParts.join(', ');
+    const fullStreet = streetParts.join(", ");
     const canonicalState = resolveStateValue(state);
     const normalizedCity = resolveCityValue(city, canonicalState || state);
     const resolvedState =
       canonicalState ||
-      (normalizedCity ? CITY_STATE_MAP[normalizedCity] : '') ||
+      (normalizedCity ? CITY_STATE_MAP[normalizedCity] : "") ||
       state;
 
     return {
       street: fullStreet,
-      apartment: '', // Leave empty for user to fill
+      apartment: "", // Leave empty for user to fill
       city: normalizedCity,
       state: resolvedState,
     };
@@ -288,12 +296,12 @@ export function AddressModal({
     try {
       const parameter = {
         placeId: placeId,
-        fields: ['address_components', 'formatted_address']
+        fields: ["address_components", "formatted_address"],
       };
 
       const details = await getDetails(parameter);
 
-      if (typeof details !== 'string' && details.address_components) {
+      if (typeof details !== "string" && details.address_components) {
         const parsed = parseAddressComponents(details.address_components);
 
         if (!isDeliveryLocationAllowed(parsed.state, parsed.city)) {
@@ -302,10 +310,10 @@ export function AddressModal({
           setManualAddress((prev) => ({ ...prev, ...parsed }));
         }
 
-        setSearchValue('');
+        setSearchValue("");
       }
     } catch (error) {
-      console.error('Error fetching place details:', error);
+      console.error("Error fetching place details:", error);
     } finally {
       clearSuggestions();
       setShowSuggestions(false);
@@ -347,8 +355,11 @@ export function AddressModal({
         };
       }
 
-      const canonicalCityKey = NORMALIZED_CITY_LOOKUP[normalizeCityKey(prev.city)] || "";
-      const cityState = canonicalCityKey ? CITY_STATE_MAP[canonicalCityKey] : "";
+      const canonicalCityKey =
+        NORMALIZED_CITY_LOOKUP[normalizeCityKey(prev.city)] || "";
+      const cityState = canonicalCityKey
+        ? CITY_STATE_MAP[canonicalCityKey]
+        : "";
       const cityBelongsToLagos =
         cityState && normalizeStateKey(cityState) === "lagos";
 
@@ -372,16 +383,16 @@ export function AddressModal({
     if (apartment.trim()) {
       addressParts.push(apartment);
     }
-    addressParts.push(city, state, 'Nigeria');
-    const formattedAddress = addressParts.join(', ');
+    addressParts.push(city, state, "Nigeria");
+    const formattedAddress = addressParts.join(", ");
 
     onSelect(formattedAddress);
     onOpenChange(false);
     setManualAddress({
-      street: '',
-      apartment: '',
-      city: '',
-      state: '',
+      street: "",
+      apartment: "",
+      city: "",
+      state: "",
     });
   };
 
@@ -392,14 +403,17 @@ export function AddressModal({
 
   const isLocationServiceable = isDeliveryLocationAllowed(
     manualAddress.state,
-    manualAddress.city
+    manualAddress.city,
   );
 
   const isFormValid = Boolean(hasRequiredFields) && isLocationServiceable;
 
   // Type-specific content
-  const title = type === 'pickup' ? 'Pickup Location' : 'Destination';
-  const buttonText = type === 'pickup' ? 'Confirm Pickup Address' : 'Confirm Destination Address';
+  const title = type === "pickup" ? "Pickup Location" : "Destination";
+  const buttonText =
+    type === "pickup"
+      ? "Confirm Pickup Address"
+      : "Confirm Destination Address";
 
   const stateOptions =
     manualAddress.state && !STATE_OPTIONS.includes(manualAddress.state)
@@ -433,7 +447,7 @@ export function AddressModal({
                 onChange={handleSearchChange}
                 onFocus={() => setShowSuggestions(true)}
                 placeholder="Search for a place..."
-                className="w-full pl-10 pr-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm focus:border-amber-400 focus:outline-none transition-colors"
+                className={`w-full pl-10 pr-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm ${INPUT_FOCUS_BORDER} focus:outline-none transition-colors`}
                 autoFocus
               />
             </div>
@@ -458,7 +472,10 @@ export function AddressModal({
 
           <div className="flex items-start gap-2 text-xs text-gray-500 bg-blue-50 p-2.5 rounded-lg border border-blue-100">
             <FiSearch className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-500" />
-            <p>Start typing to see suggestions, or enter your address manually below.</p>
+            <p>
+              Start typing to see suggestions, or enter your address manually
+              below.
+            </p>
           </div>
 
           {/* Street Address - Manual Entry */}
@@ -469,9 +486,11 @@ export function AddressModal({
             <input
               type="text"
               value={manualAddress.street}
-              onChange={(e) => setManualAddress({ ...manualAddress, street: e.target.value })}
+              onChange={(e) =>
+                setManualAddress({ ...manualAddress, street: e.target.value })
+              }
               placeholder="e.g., 123 Main Street"
-              className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm focus:border-amber-400 focus:outline-none transition-colors"
+              className={`w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm ${INPUT_FOCUS_BORDER} focus:outline-none transition-colors`}
             />
           </div>
 
@@ -483,9 +502,14 @@ export function AddressModal({
             <input
               type="text"
               value={manualAddress.apartment}
-              onChange={(e) => setManualAddress({ ...manualAddress, apartment: e.target.value })}
+              onChange={(e) =>
+                setManualAddress({
+                  ...manualAddress,
+                  apartment: e.target.value,
+                })
+              }
               placeholder="e.g., Apt 5, Unit 3B, Floor 2"
-              className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm focus:border-amber-400 focus:outline-none transition-colors"
+              className={`w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm ${INPUT_FOCUS_BORDER} focus:outline-none transition-colors`}
             />
           </div>
 
@@ -498,7 +522,9 @@ export function AddressModal({
               value={manualAddress.city || undefined}
               onValueChange={handleCityChange}
             >
-              <SelectTrigger className="w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl focus:border-amber-400">
+              <SelectTrigger
+                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
+              >
                 <SelectValue placeholder="Select city" />
               </SelectTrigger>
               <SelectContent className="max-h-64">
@@ -520,7 +546,9 @@ export function AddressModal({
               value={manualAddress.state || undefined}
               onValueChange={handleStateChange}
             >
-              <SelectTrigger className="w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl focus:border-amber-400">
+              <SelectTrigger
+                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
+              >
                 <SelectValue placeholder="Select state" />
               </SelectTrigger>
               <SelectContent className="max-h-64">
