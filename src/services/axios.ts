@@ -1,13 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
-export const BASE_URL= window.location.hostname === "localhost"
-    ? "http://localhost:8080/api/v1"
-    : "https://dev.gosendeet.com/api/v1"
-//export const BASE_URL= "https://dev.gosendeet.com/api/v1"
-export const LIVE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5173"
-    : "https://gosendeet.vercel.app";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
 export const authApi = axios.create({
   baseURL: BASE_URL,

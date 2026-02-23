@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { shareQuotes } from "@/services/user";
-import { LIVE_URL } from "@/services/axios";
+import { APP_BASE_URL } from "@/services/axios";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/gosendeet-black-logo.png";
 
@@ -199,7 +199,7 @@ const Calculator = () => {
     mutationFn: shareQuotes,
     onSuccess: (data: any) => {
       const shareId = data?.data?.shareId;
-      setShareUrl(`${LIVE_URL}/cost-calculator?shareId=${shareId}`);
+      setShareUrl(`${APP_BASE_URL}/cost-calculator?shareId=${shareId}`);
       toast.success("Share link created");
     },
     onError: (error: any) => {
