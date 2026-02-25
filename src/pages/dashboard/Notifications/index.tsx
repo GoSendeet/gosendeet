@@ -97,7 +97,7 @@ const Notifications = ({ setActiveTab }: any) => {
               <div className="flex flex-col gap-6 text-sm ">
                 <div className="flex justify-end gap-4 mb-4">
                   <p
-                    className="text-sm font-medium text-purple500 hover:font-semibold text-right cursor-pointer"
+                    className="text-sm font-medium text-brand hover:font-semibold text-right cursor-pointer"
                     onClick={markAllAsRead}
                   >
                     Mark all as read

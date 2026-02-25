@@ -128,7 +128,7 @@ const Reports = ({ setActiveTab }: any) => {
                   }, 500);
                 }}
               >
-                <MdArrowForwardIos color="#F56630" size={20} />
+                <MdArrowForwardIos color="#064E3B" size={20} />
               </p>
             </div>
             <hr />

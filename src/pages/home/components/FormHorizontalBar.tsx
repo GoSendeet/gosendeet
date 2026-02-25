@@ -399,13 +399,13 @@ const FormHorizontalBar = ({
 
   // Determine if form should be vertical (dashboard route)
   const containerClass = isDashboard
-    ? `space-y-8`
+    ? `space-y-2`
     : "grid grid-cols-1 gap-y-2 lg:gap-8 items-end lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_auto]";
 
   // Compare mode has 3 cards + button, so use a different grid
   const compareContainerClass = isDashboard
-    ? `space-y-8`
-    : "grid grid-cols-1 gap-y-2 items-end lg:flex items-end lg:gap-4 ";
+    ? `space-y-2`
+    : "grid grid-cols-1 gap-y-2 items-end  lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] ";
 
   // Show loading skeleton while hydrating
   if (!isHydrated) {
@@ -472,7 +472,7 @@ const FormHorizontalBar = ({
                   blur-[40px] opacity-50 z-0 translate-y-5"></div>
       <div className={cn(containerStyles, "relative z-10")}>
         {isDashboard && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 top-[-20px]">
+          <div className="absolute left-1/2 transform -translate-x-1/2 top-[-39px]">
             <ModeSwitcher
               mode={mode}
               onModeChange={setCurrentMode}
@@ -491,7 +491,7 @@ const FormHorizontalBar = ({
                   : "flex flex-col lg:flex-row lg:items-end gap-4",
               )}
             >
-              <div className={isDashboard ? "w-full" : "flex-1"}>
+              <div className={isDashboard ? "mt-4 w-full" : "flex-1"}>
                 <div className="tracking-section">
                   <label
                     htmlFor="trackingNumber"
@@ -547,7 +547,7 @@ const FormHorizontalBar = ({
               {/* Pickup Location - Modal Trigger */}
               <div
                 onClick={() => setPickupModalOpen(true)}
-                className="direct-send"
+                className={cn("direct-send", isDashboard && "mt-4 w-full!")}
               >
                 <label
                   className={cn(
@@ -589,7 +589,7 @@ const FormHorizontalBar = ({
 
               {/* Destination - Modal Trigger */}
               <div
-                className="direct-send"
+                className={cn("direct-send", isDashboard && "w-full!")}
                 onClick={() => setDestinationModalOpen(true)}
               >
                 <label
@@ -638,7 +638,7 @@ const FormHorizontalBar = ({
 
               {/* Package Details - Single Modal Trigger */}
               <div
-                className="direct-send-package"
+                className={cn("direct-send-package", isDashboard && "w-full!")}
                 onClick={() => setPackageModalOpen(true)}
               >
                 <label
@@ -680,7 +680,7 @@ const FormHorizontalBar = ({
 
               {/* Pickup - Modal Trigger (Only for gosendeet mode) */}
               <div
-                className="direct-send-pickup"
+                className={cn("direct-send-pickup", isDashboard && "w-full!")}
                 onClick={() => setDateModalOpen(true)}
               >
                 <label
@@ -725,7 +725,7 @@ const FormHorizontalBar = ({
               </div>
 
               {/* Buttons */}
-              <div className={isDashboard ? "w-full" : "flex gap-3 items-end"}>
+              <div className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}>
                 <Button
                   type="button"
                   size={"custom"}
@@ -795,7 +795,7 @@ const FormHorizontalBar = ({
             <div className={compareContainerClass}>
               {/* Pickup Location - Modal Trigger */}
               <div
-                className="compare-pickup-from cursor-pointer"
+                className={cn("compare-pickup-from cursor-pointer", isDashboard && "mt-4 w-full!")}
                 onClick={() => setPickupModalOpen(true)}
               >
                 <label
@@ -837,7 +837,7 @@ const FormHorizontalBar = ({
 
               {/* Destination - Modal Trigger */}
               <div
-                className="compare-pickup-destination"
+                className={cn("compare-pickup-destination", isDashboard && "!w-full")}
                 onClick={() => setDestinationModalOpen(true)}
               >
                 <label
@@ -883,7 +883,7 @@ const FormHorizontalBar = ({
 
               {/* Package Details - Single Modal Trigger */}
               <div
-                className="direct-send-package"
+                className={cn("direct-send-package", isDashboard && "!w-full")}
                 onClick={() => setPackageModalOpen(true)}
               >
                 <label
@@ -927,7 +927,7 @@ const FormHorizontalBar = ({
               </div>
 
               {/* Compare Button */}
-              <div className={isDashboard ? "w-full" : "flex gap-3 items-end"}>
+              <div className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}>
                 <Button
                   type="button"
                   size={"custom"}

@@ -47,7 +47,7 @@ const Settings = () => {
             <p
               key={tab.key}
               className={`p-2 font-medium text-sm transition-colors duration-300 cursor-pointer ${
-                activeTab === tab.key ? "text-purple500" : "text-black"
+                activeTab === tab.key ? "text-brand bg-brand-light" : "text-black"
               }`}
               onClick={() => {
                 setActiveTab(tab.key);
@@ -69,7 +69,7 @@ const Settings = () => {
                     tabRefs.current[index] = el;
                   }}
                   className={`relative z-10 px-4 font-medium md:text-base text-sm outline-white transition-colors duration-300 cursor-pointer ${
-                    activeTab === tab.key ? "text-purple500" : "text-black"
+                    activeTab === tab.key ? "text-brand bg-brand-light" : "text-black"
                   }`}
                   onClick={() => {
                     setActiveTab(tab.key);
@@ -82,7 +82,7 @@ const Settings = () => {
 
               {/* Active underline */}
               <div
-                className="absolute bottom-0 h-[1px] bg-purple500 transition-all duration-300 rounded-full"
+                className="absolute bottom-0 h-[1px] bg-brand transition-all duration-300 rounded-full"
                 style={{
                   left: underlineLeft,
                   width: underlineWidth,

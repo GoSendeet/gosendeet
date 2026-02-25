@@ -66,7 +66,7 @@ const PickupOption = () => {
 
         <Button
           variant={"secondary"}
-          className="h-[42px]"
+          className="h-[42px] bg-brand"
           onClick={() => {
             setOpen(true);
             setType("create");
@@ -114,7 +114,7 @@ const PickupOption = () => {
                   <div className="w-[5%] flex items-center gap-4">
                     <FiEdit
                       size={20}
-                      className="cursor-pointer text-purple500"
+                      className="cursor-pointer text-brand"
                       onClick={() => {
                         setOpen(true);
                         setType("edit");

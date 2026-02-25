@@ -80,7 +80,7 @@ const Services = ({
             setType("create");
             setOpenService(true);
           }}
-          className="lg:text-base text-sm"
+          className="lg:text-base text-sm bg-brand"
         >
           <FiEdit /> Add <span className="md:block hidden">New</span> Service
         </Button>

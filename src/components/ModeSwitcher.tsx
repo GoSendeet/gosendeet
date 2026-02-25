@@ -99,7 +99,7 @@ export const ModeSwitcher = ({
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
                   "flex items-center gap-2 px-4 py-3 font-semibold transition-all relative",
-                  isActive ? "text-amber-600" : "text-gray-600 hover:text-gray-800"
+                  isActive ? "text-[#064E3B]" : "text-gray-600 hover:text-gray-800"
                 )}
                 {...wrapperProps}
               >
@@ -107,7 +107,7 @@ export const ModeSwitcher = ({
                 {showLabels && <span className="text-sm">{tab.label}</span>}
                 {isActive && (
                   <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-amber-600 rounded-t"
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-[#064E3B] rounded-t"
                     layoutId="underline"
                     transition={{ duration: 0.3 }}
                   />

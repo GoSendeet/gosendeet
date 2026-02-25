@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import purple from "@/assets/icons/purple-checkmark.png";
+import { Check } from "lucide-react";
 // import blue from "@/assets/icons/blue-checkmark.png";
 // import orange from "@/assets/icons/orange-checkmark.png";
 import CoverSheet from "./components/CoverSheet";
@@ -91,7 +91,7 @@ const CompanyDetails = () => {
 
             <Button
               variant={"secondary"}
-              className="md:text-base text-sm"
+              className="md:text-base text-sm bg-brand"
               onClick={() => setOpenStatus(true)}
             >
               <BiEditAlt />
@@ -129,14 +129,13 @@ const CompanyDetails = () => {
                   companyServices?.content?.map((item: any, index: number) => (
                     <div
                       key={index}
-                      className="flex gap-2 items-center bg-purple200 w-fit py-[6px] px-[8px] rounded-full md:justify-self-end"
+                      className="flex gap-2 items-center bg-brand-light w-fit py-[6px] px-[8px] rounded-full md:justify-self-end"
                     >
-                      <img
-                        src={purple}
-                        alt="check"
-                        className="w-[20px] h-[20px] rounded-full"
-                      />
-                      <p className="text-xs mr-1 text-purple500">
+                      <div className="bg-brand p-1 rounded-full">
+                        <Check className="w-[20px] h-[20px] text-brand-light" />
+
+                      </div>
+                      <p className="text-xs mr-1 text-brand">
                         {item.companyServiceLevel.name}
                       </p>
                     </div>
@@ -176,7 +175,7 @@ const CompanyDetails = () => {
                     tabRefs.current[index] = el;
                   }}
                   className={`relative z-10 px-4 font-medium md:text-base text-nowrap text-sm outline-white transition-colors duration-300 cursor-pointer ${
-                    activeTab === tab.key ? "text-purple500" : "text-black"
+                    activeTab === tab.key ? "text-brand" : "text-black"
                   }`}
                   // onMouseEnter={() => {
                   //   updateUnderline(index);
@@ -195,7 +194,7 @@ const CompanyDetails = () => {
 
               {/* Active underline */}
               <div
-                className="absolute bottom-0 h-[1px] bg-purple500 transition-all duration-300 rounded-full"
+                className="absolute bottom-0 h-[1px] bg-brand transition-all duration-300 rounded-full"
                 style={{
                   left: underlineLeft,
                   width: underlineWidth,

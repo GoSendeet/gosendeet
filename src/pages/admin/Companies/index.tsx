@@ -250,7 +250,7 @@ const Companies = () => {
           </div> */}
           <div>
             <Link to={"companies/add-company"}>
-              <Button variant={"secondary"} className="h-[42px]">
+              <Button variant={"secondary"} className="h-[42px] bg-brand">
                 <Plus /> Add new company
               </Button>
             </Link>

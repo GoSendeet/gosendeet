@@ -89,7 +89,7 @@ const Pricing = ({
             setOpenPricing(true);
           }}
           disabled={companyId === "" || companyServices?.length === 0}
-          className="lg:text-base text-sm"
+          className="lg:text-base text-sm bg-brand"
         >
           <FiEdit /> Add <span className="md:block hidden">New Custom</span>{" "}
           Pricing
