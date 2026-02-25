@@ -69,7 +69,7 @@ export function ChangePassword() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"secondary"}>Change password</Button>
+        <Button variant={"secondary"} className="w-fit bg-brand text-white py-2 px-3">Change password</Button>
       </DialogTrigger>
       <DialogContent className="gap-0">
         <DialogTitle className="text-[20px] font-semibold font-clash mb-2">
@@ -166,7 +166,7 @@ export function ChangePassword() {
 
               <Button
                 variant={"secondary"}
-                className=" w-fit"
+                className=" w-fit bg-brand text-white"
                 loading={isPending}
               >
                 Change Password

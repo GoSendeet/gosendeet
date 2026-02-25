@@ -15,7 +15,7 @@ const CoverSheet = ({ data }: { data: any }) => {
 
         <Button
           variant={"secondary"}
-          className="md:text-base text-sm"
+          className="md:text-base text-sm bg-brand"
           onClick={() => setOpen(true)}
         >
           <BiEditAlt />

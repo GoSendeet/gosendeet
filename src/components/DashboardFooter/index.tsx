@@ -12,7 +12,7 @@ const DashboardFooter = () => {
         © {currentYear} GoSendeet. All rights reserved
       </p>
 
-      <div className="flex gap-4 font-medium text-purple500">
+      <div className="flex gap-4 font-medium text-neutral600">
         <Link to="/terms">Terms of Use</Link>
         <Link to="/privacy">Privacy Policy</Link>
       </div>

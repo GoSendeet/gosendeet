@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddressModalProps, ManualAddressData } from "@/types/forms";
-import { validateManualAddress } from "@/utils/form-validators";
+import { validateManualAddress, ADDRESS_LIMITS } from "@/utils/form-validators";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { toast } from "sonner";
 
@@ -406,7 +406,15 @@ export function AddressModal({
     manualAddress.city,
   );
 
-  const isFormValid = Boolean(hasRequiredFields) && isLocationServiceable;
+  // Check character limits
+  const isStreetTooLong =
+    manualAddress.street.length > ADDRESS_LIMITS.STREET_MAX_LENGTH;
+  const isApartmentTooLong =
+    manualAddress.apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH;
+  const hasValidLengths = !isStreetTooLong && !isApartmentTooLong;
+
+  const isFormValid =
+    Boolean(hasRequiredFields) && isLocationServiceable && hasValidLengths;
 
   // Type-specific content
   const title = type === "pickup" ? "Pickup Location" : "Destination";
@@ -480,9 +488,16 @@ export function AddressModal({
 
           {/* Street Address - Manual Entry */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Street Address <span className="text-red-500">*</span>
-            </label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700">
+                Street Address <span className="text-red-500">*</span>
+              </label>
+              <span
+                className={`text-xs ${isStreetTooLong ? "text-red-500 font-medium" : "text-gray-400"}`}
+              >
+                {manualAddress.street.length}/{ADDRESS_LIMITS.STREET_MAX_LENGTH}
+              </span>
+            </div>
             <input
               type="text"
               value={manualAddress.street}
@@ -490,15 +505,36 @@ export function AddressModal({
                 setManualAddress({ ...manualAddress, street: e.target.value })
               }
               placeholder="e.g., 123 Main Street"
-              className={`w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm ${INPUT_FOCUS_BORDER} focus:outline-none transition-colors`}
+              maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
+              className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
+                isStreetTooLong
+                  ? "border-red-400 focus:border-red-500"
+                  : `border-gray-200 ${INPUT_FOCUS_BORDER}`
+              }`}
             />
+            {isStreetTooLong && (
+              <p className="text-xs text-red-500 mt-1">
+                Street address cannot exceed {ADDRESS_LIMITS.STREET_MAX_LENGTH}{" "}
+                characters
+              </p>
+            )}
           </div>
 
           {/* Apartment/House Number */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Apartment/House Number
-            </label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-semibold text-gray-700">
+                Apartment/House Number
+              </label>
+              {manualAddress.apartment.length > 0 && (
+                <span
+                  className={`text-xs ${isApartmentTooLong ? "text-red-500 font-medium" : "text-gray-400"}`}
+                >
+                  {manualAddress.apartment.length}/
+                  {ADDRESS_LIMITS.APARTMENT_MAX_LENGTH}
+                </span>
+              )}
+            </div>
             <input
               type="text"
               value={manualAddress.apartment}
@@ -509,8 +545,19 @@ export function AddressModal({
                 })
               }
               placeholder="e.g., Apt 5, Unit 3B, Floor 2"
-              className={`w-full px-3 py-2 border-2 border-gray-200 rounded-xl text-sm ${INPUT_FOCUS_BORDER} focus:outline-none transition-colors`}
+              maxLength={ADDRESS_LIMITS.APARTMENT_MAX_LENGTH + 50}
+              className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
+                isApartmentTooLong
+                  ? "border-red-400 focus:border-red-500"
+                  : `border-gray-200 ${INPUT_FOCUS_BORDER}`
+              }`}
             />
+            {isApartmentTooLong && (
+              <p className="text-xs text-red-500 mt-1">
+                Apartment/House number cannot exceed{" "}
+                {ADDRESS_LIMITS.APARTMENT_MAX_LENGTH} characters
+              </p>
+            )}
           </div>
 
           {/* City Selection */}

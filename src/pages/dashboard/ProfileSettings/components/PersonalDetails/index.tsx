@@ -63,8 +63,8 @@ const PersonalDetails = ({ data }: { data: any }) => {
         </div>
 
         <Button
-          className="text-purple500 hover:text-purple700"
-          variant={"ghost"}
+          className="w-fit bg-brand text-white py-2 px-3"
+          variant={"secondary"}
           size={"ghost"}
           onClick={() => setOpen(true)}
         >

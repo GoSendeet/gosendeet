@@ -6,16 +6,20 @@ import { Button } from "@/components/ui/button";
 import packageIcon from "@/assets/icons/size.png";
 import { useState, useEffect } from "react";
 
-// Step Indicator Component
+// Step Indicator Component (brand color and number for complete)
 const StepIndicator = ({ stepNumber, isComplete, isActive }: { stepNumber: number; isComplete: boolean; isActive: boolean }) => {
   return (
-    <div className={cn(
-      "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
-      isComplete && "bg-green-500 text-white",
-      isActive && !isComplete && "bg-blue-500 text-white",
-      !isComplete && !isActive && "bg-gray-200 text-gray-500"
-    )}>
-      {isComplete ? <FiCheck className="w-4 h-4" /> : stepNumber}
+    <div
+      className={cn(
+        "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 transition-colors",
+        isComplete
+          ? "bg-brand text-white border-2 border-brand"
+          : isActive
+            ? "bg-[#E5E7EB] text-gray150 border-2 border-grey100"
+            : "bg-gray-200 text-gray-500 border-2 border-gray-200"
+      )}
+    >
+      {stepNumber}
     </div>
   );
 };
@@ -175,19 +179,21 @@ export function PackageTypeModal({
           <div className="flex gap-3 relative transition-opacity">
             <div className="flex flex-col items-center">
               <StepIndicator stepNumber={1} isComplete={step1Complete} isActive={true} />
-              {/* Vertical connecting line */}
-              <div className="w-0.5 h-full bg-gray-300 absolute top-8 left-4"></div>
+              {/* No vertical connecting line */}
             </div>
 
             <div className="flex-1 overflow-x-hidden">
               <h3 className="font-semibold text-sm text-gray-900 mb-1">How big is your package?</h3>
 
               {/* Package Type Label - Outside Scroll */}
-              <label className="block text-xs text-gray-600 mb-2">Select package type</label>
+              <label className="block text-xs text-brand mb-2">Select package type</label>
 
               {/* Package Cards - Horizontal Scroll ONLY */}
-              <div className="overflow-x-auto overflow-y-visible mb-3 -mx-2 px-2">
-                <div className="flex gap-2 py-1 min-w-max">
+              <div
+                className="overflow-x-auto overflow-y-visible mb-3 -mx-2 px-2 custom-scrollbar"
+                style={{ WebkitOverflowScrolling: 'touch' }}
+              >
+                <div className="flex gap-4 py-2 min-w-max">
                 {packages.map((pkg: any) => {
                   const isSelected = selectedPackage?.id === pkg.id;
                   return (
@@ -196,26 +202,26 @@ export function PackageTypeModal({
                       type="button"
                       onClick={() => handlePackageSelect(pkg)}
                       className={cn(
-                        "relative flex-shrink-0 w-24 p-2 rounded-lg border transition-all flex flex-col items-center",
+                        "relative shrink-0 w-[108px] h-[94px] p-2 rounded-lg border flex flex-col items-center",
                         isSelected
-                          ? "border-amber-500 bg-amber-50"
-                          : "border-gray-300 hover:border-amber-300 bg-white"
+                          ? "border-brand bg-[#F0FDF480]"
+                          : "border-gray-300 hover:border-brand bg-white"
                       )}
                     >
                       {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
                           <FiCheck className="w-2.5 h-2.5 text-white" />
                         </div>
                       )}
 
-                      <div className={cn(
-                        "w-8 h-8 rounded mb-1 flex items-center justify-center",
-                        isSelected ? "bg-amber-100" : "bg-gray-100"
-                      )}>
+                      <div className=
+                        "w-8 h-8 mt-3 rounded mb-1 flex justify-center items-center "
+                        
+                      >
                         <img
                           src={pkg.imageUrl || packageIcon}
                           alt={pkg.name}
-                          className="w-5 h-5 object-contain"
+                          className="w-5 h-5 object-center"
                           onError={(e) => {
                             // Fallback to default icon if custom image fails to load
                             (e.target as HTMLImageElement).src = packageIcon;
@@ -224,8 +230,8 @@ export function PackageTypeModal({
                       </div>
 
                       <h4 className={cn(
-                        "font-medium text-xs text-center line-clamp-1 w-full",
-                        isSelected ? "text-amber-700" : "text-gray-900"
+                        "font-medium py-3 text-xs text-center truncate line-clamp-1 w-full",
+                        isSelected ? "text-brand" : "text-gray-900"
                       )}>
                         {pkg.name}
                       </h4>
@@ -247,7 +253,7 @@ export function PackageTypeModal({
                       value={length}
                       onChange={(e) => handleNumberInput(e.target.value, setLength)}
                       placeholder="L"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-amber-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-brand focus:outline-none"
                     />
                     <span className="text-gray-400 text-sm">×</span>
                     <input
@@ -255,7 +261,7 @@ export function PackageTypeModal({
                       value={width}
                       onChange={(e) => handleNumberInput(e.target.value, setWidth)}
                       placeholder="W"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-amber-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-brand focus:outline-none"
                     />
                     <span className="text-gray-400 text-sm">×</span>
                     <input
@@ -263,7 +269,7 @@ export function PackageTypeModal({
                       value={height}
                       onChange={(e) => handleNumberInput(e.target.value, setHeight)}
                       placeholder="H"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-amber-400 focus:outline-none"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded text-center focus:border-brand focus:outline-none"
                     />
                   </div>
                 </div>
@@ -272,11 +278,10 @@ export function PackageTypeModal({
           </div>
 
           {/* Step 2: Weight */}
-          <div className={cn("flex gap-3 relative mt-6 transition-opacity", !step1Complete && "opacity-80 pointer-events-none")}>
+          <div className={cn("flex gap-3 relative mt-6 transition-opacity", !step1Complete && "opacity-80 pointer-events-none")}>            
             <div className="flex flex-col items-center">
               <StepIndicator stepNumber={2} isComplete={step2Complete} isActive={step1Complete && !step2Complete} />
-              {/* Vertical connecting line */}
-              <div className="w-0.5 h-full bg-gray-300 absolute top-8 left-4"></div>
+              {/* No vertical connecting line */}
             </div>
 
             <div className="flex-1">
@@ -290,7 +295,7 @@ export function PackageTypeModal({
               <div className={cn(
                 "relative p-4 rounded-lg border-2 transition-all overflow-hidden mb-3",
                 step1Complete
-                  ? "border-amber-400 bg-white shadow-sm"
+                  ? "border-brand bg-white shadow-sm"
                   : "border-gray-200 bg-gray-50"
               )}>
                 <label className={cn("block text-xs font-medium mb-1", step1Complete ? "text-gray-700" : "text-gray-400")}>
@@ -325,8 +330,8 @@ export function PackageTypeModal({
                     className={cn(
                       "py-2.5 px-3 rounded-lg text-xs font-semibold transition-all shadow-sm",
                       weight === String(preset.value)
-                        ? "border border-amber-500 bg-amber-50 text-amber-700"
-                        : "bg-white text-gray-700 border border-gray-200 hover:border-amber-400 hover:bg-amber-50 hover:text-amber-700"
+                        ? "border border-brand bg-brand-light text-brand"
+                        : "bg-white cursor-pointer text-gray-700 border border-gray-200 hover:border-brand hover:bg-brand-light hover:text-brand"
                     )}
                   >
                     {preset.label}
@@ -341,7 +346,7 @@ export function PackageTypeModal({
           </div>
 
           {/* Step 3: Insurance Value */}
-          <div className={cn("flex gap-3 mt-6 transition-opacity", !step2Complete && "opacity-80 pointer-events-none")}>
+          <div className={cn("flex gap-3 mt-6 transition-opacity", !step2Complete && "opacity-80 pointer-events-none")}>            
             <StepIndicator stepNumber={3} isComplete={step3Complete} isActive={step2Complete && !step3Complete} />
 
             <div className="flex-1">
@@ -355,7 +360,7 @@ export function PackageTypeModal({
               <div className={cn(
                 "relative p-4 rounded-lg border-2 transition-all overflow-hidden",
                 step2Complete
-                  ? "border-amber-400 bg-white shadow-sm"
+                  ? "border-brand bg-white shadow-sm"
                   : "border-gray-200 bg-gray-50"
               )}>
                 <label className={cn("block text-xs font-medium mb-1", step2Complete ? "text-gray-700" : "text-gray-400")}>

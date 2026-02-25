@@ -262,7 +262,7 @@ export function UpdateProfileModal({
 
               <Button
                 variant={"secondary"}
-                className=" w-fit"
+                className=" w-fit bg-brand text-white "
                 loading={pendingUpdate}
               >
                 Update
