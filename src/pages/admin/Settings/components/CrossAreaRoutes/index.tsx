@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { usePaginationSync } from "@/hooks/usePaginationSync";
 import { PaginationComponent } from "@/components/Pagination";
+import MobileCard from "@/components/MobileCard";
 
 const CrossAreaRoutes = () => {
   const [lastPage, setLastPage] = useState(1);
@@ -66,7 +67,7 @@ const CrossAreaRoutes = () => {
 
         <Button
           variant={"secondary"}
-          className="h-[42px]"
+          className="h-[42px] bg-brand"
           onClick={() => {
             setOpen(true);
             setType("create");
@@ -92,9 +93,46 @@ const CrossAreaRoutes = () => {
 
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
         <>
-          <div className="overflow-x-auto">
+          {/* mobile cards */}
+          <div className="lg:hidden flex flex-col gap-4 mb-8">
+            {data?.data?.content?.map((item: any, idx: number) => (
+              <MobileCard key={idx}>
+                <div className="flex justify-end mb-2">
+                  <FiEdit
+                    size={20}
+                    className="cursor-pointer text-brand mr-2"
+                    onClick={() => {
+                      setOpen(true);
+                      setType("edit");
+                      setInfo(item);
+                    }}
+                  />
+                  <BiSolidTrashAlt
+                    size={20}
+                    className="cursor-pointer text-[#F56630]"
+                    onClick={() => {
+                      setOpenDelete(true);
+                      setInfo(item);
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p className="font-medium text-brand">Area A</p>
+                    <p className="truncate">{item?.areaA?.name}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Area B</p>
+                    <p className="truncate">{item?.areaB?.name}</p>
+                  </div>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
+
+          <div className="hidden lg:block overflow-x-auto">
             <div className="min-w-[700px] w-full relative">
-              <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-brand-light w-full">
                 <span className="flex-1">Cross Area Routes</span>
                 <span className="w-[5%]"></span>
               </div>
@@ -107,7 +145,7 @@ const CrossAreaRoutes = () => {
                       index === 0
                         ? "border-t-0"
                         : "border-t border-t-neutral300"
-                    } hover:bg-purple300`}
+                    } hover:bg-brand-light`}
                   >
                     <div className="flex-1 flex items-center gap-2">
                       <p>{item?.areaA?.name}</p>

@@ -161,7 +161,7 @@ export function AddPricingModal({
   return (
     <Dialog open={openPricing} onOpenChange={setOpenPricing}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           Set Up Delivery Pricing
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -178,7 +178,7 @@ export function AddPricingModal({
                 <div className="flex flex-col w-full">
                   <label
                     htmlFor="serviceLevel"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Select service level
                   </label>
@@ -189,9 +189,9 @@ export function AddPricingModal({
                       disabled={type === "edit"}
                     >
                       <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select option" />
+                        <SelectValue placeholder="Select option"  />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent >
                         {type === "create" &&
                           company_services &&
                           company_services?.data?.content?.map(
@@ -228,7 +228,7 @@ export function AddPricingModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="basePrice"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Base Price
                   </label>
@@ -252,7 +252,7 @@ export function AddPricingModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="discountPercent"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Discount Percent
                   </label>
@@ -278,7 +278,7 @@ export function AddPricingModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="weightMultiplier"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Weight Multiplier
                   </label>
@@ -302,7 +302,7 @@ export function AddPricingModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="zoneMultiplier"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Zone Multiplier
                   </label>
@@ -326,7 +326,7 @@ export function AddPricingModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col w-full">
-                  <label htmlFor="notes" className="font-inter font-semibold">
+                  <label htmlFor="notes" className="font-inter text-brand font-semibold">
                     Notes
                   </label>
                   <div className="border-b mb-2">
@@ -348,7 +348,7 @@ export function AddPricingModal({
 
               <Button
                 variant={"secondary"}
-                className=" w-fit"
+                className=" w-fit bg-brand"
                 loading={type === "create" ? pendingCreate : pendingUpdate}
               >
                 {type === "create" ? "Add pricing" : "Edit pricing"}

@@ -166,7 +166,7 @@ const TaskManagementSection = ({
     <section className="bg-white rounded-2xl border border-neutral200 p-4 mt-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
         <div>
-          <p className="text-base font-semibold font-clash">
+          <p className="text-base font-semibold font-clash text-brand">
             Task Management
           </p>
           <p className="text-sm text-neutral600">
@@ -176,17 +176,18 @@ const TaskManagementSection = ({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
-            className="border-neutral300 text-neutral800"
+            className="border-brand text-brand"
             onClick={() => refetch()}
           >
             <RefreshCw className="size-4" />
             Refresh
           </Button>
-          <Button variant="outline" onClick={() => setPreviewOpen(true)}>
-            <Eye className="size-4" />
+          <Button variant="outline" className="border-brand text-brand" 
+            onClick={() => setPreviewOpen(true)}>
+            <Eye className="size-4 text-brand" />
             Preview Dispatch
           </Button>
-          <Button onClick={() => setIsCreateOpen(true)}>
+          <Button className="border-brand text-white bg-brand" onClick={() => setIsCreateOpen(true)}>
             + Create Tasks
           </Button>
         </div>

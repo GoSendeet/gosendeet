@@ -255,7 +255,7 @@ const AddCompany = () => {
             Back
           </Button>
 
-          <h2 className="font-semibold md:text-[20px] text-md font-inter">
+          <h2 className="font-semibold md:text-[20px] text-brand text-md font-inter">
             Add New Company
           </h2>
         </div>
@@ -269,7 +269,7 @@ const AddCompany = () => {
               className="flex flex-col gap-5 text-sm"
             >
               <div className="flex flex-col w-full">
-                <label htmlFor="name" className="font-inter font-semibold px-4">
+                <label htmlFor="name" className="font-inter text-brand font-semibold px-4">
                   Company Name
                 </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -290,7 +290,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="website"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   Company Website
                 </label>
@@ -312,7 +312,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="email"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   Company Email
                 </label>
@@ -334,7 +334,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="phone"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   Company Contact Number
                 </label>
@@ -357,7 +357,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="address"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   Company Address
                 </label>
@@ -377,7 +377,7 @@ const AddCompany = () => {
                 )}
               </div>
               <div className="flex flex-col w-full">
-                <label htmlFor="city" className="font-inter font-semibold px-4">
+                <label htmlFor="city" className="font-inter text-brand font-semibold px-4">
                   City
                 </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -398,7 +398,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="state"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   State
                 </label>
@@ -420,7 +420,7 @@ const AddCompany = () => {
               <div className="flex flex-col w-full">
                 <label
                   htmlFor="country"
-                  className="font-inter font-semibold px-4"
+                  className="font-inter text-brand font-semibold px-4"
                 >
                   Country
                 </label>
@@ -556,7 +556,7 @@ const AddCompany = () => {
               <div className="flex gap-4 items-center w-full mt-8 justify-end">
                 <Button
                   variant={"outline"}
-                  className="md:text-base text-sm bg-neutral200 border-neutral700"
+                  className="md:text-base text-sm bg-brand-light border-brand text-brand"
                   onClick={() => {
                     handleSubmit((data) => {
                       setStatus("DRAFT");
@@ -569,7 +569,7 @@ const AddCompany = () => {
                 </Button>
                 <Button
                   variant={"secondary"}
-                  className="md:text-base text-sm"
+                  className="md:text-base text-sm bg-brand"
                   onClick={() => {
                     handleSubmit((data) => {
                       setStatus("PUBLISHED");
@@ -586,7 +586,7 @@ const AddCompany = () => {
         )}
         <div className="lg:w-1/2 flex flex-col gap-8">
           <div className="w-full border border-neutral700 rounded-2xl px-6 py-10">
-            <p className="font-semibold font-inter">Company Services</p>
+            <p className="font-semibold font-inter text-brand">Company Services</p>
             <p className="text-sm mt-4 mb-6">
               Configure your delivery rates by setting up pricing rules for
               diverse package options and service types.
@@ -681,7 +681,7 @@ const AddCompany = () => {
             </div>
           </div>
           <div className="w-full h-full  border border-neutral700 rounded-2xl px-6 py-10">
-            <p className="font-semibold font-inter">
+            <p className="font-semibold text-brand font-inter">
               Set Your Delivery Pricing
             </p>
             <p className="text-sm mt-4 mb-6">

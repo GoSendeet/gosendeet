@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import MobileCard from "@/components/MobileCard";
 
 const Services = ({
   companyId,
@@ -24,8 +25,8 @@ const Services = ({
   const [serviceInfo, setServiceInfo] = useState({});
   const [type, setType] = useState("");
 
-  const [openDeleteModal, setOpenDeleteModal] = useState<number | null>(null);
-  const handleDeleteModal = () => setOpenDeleteModal(null);
+  const [selectedDeleteIndex, setSelectedDeleteIndex] = useState<number | null>(null);
+  const handleDeleteModal = () => setSelectedDeleteIndex(null);
 
   const [activeModalId, setActiveModalId] = useState<number | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -70,7 +71,7 @@ const Services = ({
   return (
     <div className="py-4">
       <div className="flex justify-between items-center gap-4 mb-6">
-        <p className="text-neutral800 md:text-[20px] font-inter font-semibold">
+        <p className="text-brand md:text-[20px] font-inter font-semibold">
           Company Services
         </p>
 
@@ -86,110 +87,199 @@ const Services = ({
         </Button>
       </div>
       {companyServices && companyServices?.content?.length > 0 && (
-        <div className="overflow-auto mb-8">
-          <div className="min-w-[1000px] w-full">
-            <div className="flex justify-between text-left px-3 xl:px-4 py-4 lg:text-md font-inter font-semibold bg-purple300 w-full">
-              <span className="w-[1%] mr-4">
-                <input type="checkbox" name="" id="" className="mt-[2px]" />
-              </span>
-              <span className="flex-1">Service level</span>
-              {/* <span className="flex-1">Coverage Area</span> */}
-              <span className="flex-1">Weight Limit</span>
-              <span className="flex-1">Pickup</span>
-              <span className="flex-1">Delivery</span>
-              <span className="w-[2%]"></span>
-            </div>
-
-            {companyServices?.content?.map((item: any, index: number) => {
-              const isDeleteModalOpen = openDeleteModal === index;
-              return (
-                <div
-                  key={index}
-                  className={`relative min-h-[60px] gap-2 bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${
-                    index === 0 ? "border-t-0" : "border-t border-t-neutral300"
-                  } hover:bg-purple300`}
-                >
-                  <span className="w-[1%] mr-4">
-                    <input type="checkbox" name="" id="" className="mt-[2px]" />
-                  </span>
-                  <div className="flex-1">
-                    <p>{item?.companyServiceLevel?.name}</p>
-                  </div>
-                  {/* <div className="flex-1">
-                    <p>{item?.coverageArea?.name}</p>
-                  </div> */}
-
-                  <div className="flex-1">
-                    <p>{item?.weightLimit}</p>
-                  </div>
-                  <div className="flex-1">
-                    <p>{item?.numberOfDaysForPickup} days</p>
-                  </div>
-                  <div className="flex-1">
-                    <p>{item?.numberOfDaysForDelivery} days</p>
-                  </div>
-
-                  <div className="w-[2%]">
-                    <Popover
-                      open={activeModalId === index}
-                      onOpenChange={(open) =>
-                        setActiveModalId(open ? index : null)
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <button className="border p-1 rounded-md border-neutral200">
-                          <BsThreeDotsVertical
-                            size={20}
-                            className="p-1 cursor-pointer"
-                            onClick={() => {
-                              setActiveModalId(index);
-                            }}
-                          />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-fit p-1">
-                        <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
-                          onClick={() => {
-                            setServiceInfo(item);
-                            setOpenService(true);
-                            setType("edit");
-                          }}
-                        >
-                          Edit service
-                        </p>
-                        <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
-                          onClick={() => {
-                            setOpenDeleteModal(index);
-                          }}
-                        >
-                          Delete service
-                        </p>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <DeleteModal
-                    onOpenChange={(open) => {
-                      open
-                        ? setOpenDeleteModal(index)
-                        : setOpenDeleteModal(null);
-                    }}
-                    open={isDeleteModalOpen}
-                    title={"Delete company service"}
-                    data={item.companyServiceLevel.name ?? ""}
-                    id={item?.id ?? ""}
-                    handleDelete={handleDeleteService}
-                    loading={pendingDeleteService}
-                  />
+        <>
+        {/* Card for mobiel screen sizes */}
+          <div className="lg:hidden">
+            {companyServices?.content?.map((item: any, index: number) => (
+              
+              <MobileCard key={index}>
+                <div className="flex justify-end mb-2">
+                  <Popover onOpenChange={(open) => open && setServiceInfo(item)}>
+                    <PopoverTrigger asChild>
+                      <button className="border p-1 rounded-md border-neutral200">
+                        <BsThreeDotsVertical
+                          size={20}
+                          className="p-1 cursor-pointer"
+                        />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit p-1">
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setServiceInfo(item);
+                          setOpenService(true);
+                          setType("edit");
+                        }}
+                      >
+                        Edit service
+                      </p>
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setSelectedDeleteIndex(index);
+                        }}
+                      >
+                        Delete service
+                      </p>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              );
-            })}
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Service Level
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.companyServiceLevel?.name}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Weight Limit
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.weightLimit}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">Pickup</span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.numberOfDaysForPickup} days
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Delivery
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.numberOfDaysForDelivery} days
+                  </span>
+                </div>
+              </MobileCard>
+            ))}
           </div>
-        </div>
+
+            {/* table for large screen */}
+          <div className="hidden lg:block overflow-auto mb-8">
+            <div className="min-w-[1000px] w-full">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 lg:text-md font-inter font-semibold bg-brand-light w-full">
+                <span className="w-[1%] mr-4">
+                  <input type="checkbox" name="" id="" className="mt-[2px]" />
+                </span>
+                <span className="flex-1">Service level</span>
+                {/* <span className="flex-1">Coverage Area</span> */}
+                <span className="flex-1">Weight Limit</span>
+                <span className="flex-1">Pickup</span>
+                <span className="flex-1">Delivery</span>
+                <span className="w-[2%]"></span>
+              </div>
+
+              {companyServices?.content?.map((item: any, index: number) => {
+                return (
+                  <div
+                    key={index}
+                    className={`relative min-h-[60px] gap-2 bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${
+                      index === 0
+                        ? "border-t-0"
+                        : "border-t border-t-neutral300"
+                    } hover:bg-brand-light`}
+                  >
+                    <span className="w-[1%] mr-4">
+                      <input
+                        type="checkbox"
+                        name=""
+                        id=""
+                        className="mt-[2px]"
+                      />
+                    </span>
+                    <div className="flex-1">
+                      <p>{item?.companyServiceLevel?.name}</p>
+                    </div>
+
+                    <div className="flex-1">
+                      <p>{item?.weightLimit}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.numberOfDaysForPickup} days</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.numberOfDaysForDelivery} days</p>
+                    </div>
+
+                    <div className="w-[2%]">
+                      <Popover
+                        open={activeModalId === index}
+                        onOpenChange={(open) =>
+                          setActiveModalId(open ? index : null)
+                        }
+                      >
+                        <PopoverTrigger asChild>
+                          <button className="border p-1 rounded-md border-neutral200">
+                            <BsThreeDotsVertical
+                              size={20}
+                              className="p-1 cursor-pointer"
+                              onClick={() => {
+                                setActiveModalId(index);
+                              }}
+                            />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-fit p-1">
+                          <p
+                            className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                            onClick={() => {
+                              setServiceInfo(item);
+                              setOpenService(true);
+                              setType("edit");
+                            }}
+                          >
+                            Edit service
+                          </p>
+                          <p
+                            className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                            onClick={() => {
+                              setSelectedDeleteIndex(index);
+                            }}
+                          >
+                            Delete service
+                          </p>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
 
+      {/* render centralized delete modal */}
+      {selectedDeleteIndex !== null && (
+        <DeleteModal
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) handleDeleteModal();
+          }}
+          title={"Delete company service"}
+          data={
+            companyServices?.content?.[selectedDeleteIndex]
+              ?.companyServiceLevel?.name ??
+            ""
+          }
+          id={companyServices?.content?.[selectedDeleteIndex]?.id ?? ""}
+          handleDelete={() => {
+            handleDeleteService(
+              companyServices?.content?.[selectedDeleteIndex]?.id ?? ""
+            );
+          }}
+          loading={pendingDeleteService}
+        />
+      )}
       {companyServices && companyServices?.content?.length === 0 && (
         <div className="h-[50vh] w-full flex justify-center flex-col items-center">
           <p className="font-semibold font-inter text-xl text-center">

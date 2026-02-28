@@ -46,7 +46,7 @@ export const ModeSwitcher = ({
   if (variant === "pill") {
     return (
       <div className={containerClasses}>
-        <div className="inline-flex items-center px-1 py-2 bg-white rounded-full shadow-sm" style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}>
+        <div className="inline-flex items-center lg:w-[400px] px-1 py-2 lg:py-1 bg-white rounded-full shadow-sm" style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = mode === tab.key;
@@ -62,7 +62,7 @@ export const ModeSwitcher = ({
                 type="button"
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
-                  "md:px-6 px-4 py-3 text-xs font-semibold rounded-full flex items-center gap-2 transition-all",
+                  "md:px-6 px-4 py-3.5 lg:py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-all",
                   isActive
                     ? "bg-green900 text-white shadow-[0px_10px_15px_-3px_#00996640]"
                     : "text-[#62748E] hover:text-gray-800"

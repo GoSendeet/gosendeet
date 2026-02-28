@@ -64,7 +64,7 @@ export function MultiSelect({
                 <span className="flex justify-between items-center w-full">
                  <span className="max-w-[150px] truncate">{first}</span>
                   {remaining > 0 && (
-                    <span className="text-grey500 py-[2px] ml-1 px-2 mb-0 rounded-full text-xs bg-purple100">
+                    <span className="text-grey500 py-[2px] ml-1 px-2 mb-0 rounded-full text-xs bg-brand-light">
                       +{remaining} more
                     </span>
                   )}
@@ -83,14 +83,14 @@ export function MultiSelect({
 
       {open && options.length > 0 && (
         <div className="absolute z-[100] mt-1 w-full max-h-60 overflow-auto rounded-md border border-neutral-300 bg-white shadow-lg">
-          <ul className="flex flex-col gap-1 p-1">
+          <ul className="flex flex-col gap-1 p-1 ">
             {options.map((opt) => {
               const selected = value.includes(opt.value);
               return (
                 <li
                   key={opt.value}
                   onClick={() => toggleOption(opt.value)}
-                  className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-neutral-100 transition-colors"
+                  className="flex cursor-pointer hover:bg-brand-light items-center gap-2 rounded px-2 py-1.5  transition-colors"
                 >
                   <span className="border border-neutral-300 rounded p-[1px]">
                     <Check

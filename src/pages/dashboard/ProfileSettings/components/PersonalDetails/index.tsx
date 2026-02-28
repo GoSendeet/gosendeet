@@ -9,7 +9,7 @@ const PersonalDetails = ({ data }: { data: any }) => {
   return (
     <div className="flex lg:flex-row flex-col gap-8 mb-8">
       <div className="lg:w-[40%] md:px-4">
-        <h2 className="font-clash font-semibold text-[20px] mb-2">
+        <h2 className="font-clash font-semibold text-[20px] text-brand mb-2">
           Profile Settings
         </h2>
         <p className="text-neutral600 text-sm">Information about yourself</p>
@@ -17,13 +17,13 @@ const PersonalDetails = ({ data }: { data: any }) => {
       <div className="lg:w-[60%] md:px-4">
         <div className="flex mt-2 gap-4">
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">Username</h2>
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Username</h2>
             <p className="text-neutral800 text-sm">
               {userData?.username ?? "--"}
             </p>
           </div>
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
               Email Address
             </h2>
             <p className="text-neutral800 text-sm">{userData?.email ?? "--"}</p>
@@ -31,13 +31,13 @@ const PersonalDetails = ({ data }: { data: any }) => {
         </div>
         <div className="flex mt-2 gap-4">
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
               Phone number
             </h2>
             <p className="text-neutral800 text-sm">{userData?.phone ?? "--"}</p>
           </div>
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
               Postal code
             </h2>
             <p className="text-neutral800 text-sm">
@@ -47,18 +47,18 @@ const PersonalDetails = ({ data }: { data: any }) => {
         </div>
         <div className="flex mt-2 gap-4">
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">State</h2>
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">State</h2>
             <p className="text-neutral800 text-sm">{userData?.state ?? "--"}</p>
           </div>
           <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2">Country</h2>
+            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Country</h2>
             <p className="text-neutral800 text-sm">
               {userData?.country ?? "--"}
             </p>
           </div>
         </div>
         <div className="mb-8 w-1/2">
-          <h2 className="font-clash font-semibold text-sm mb-2">Address</h2>
+          <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Address</h2>
           <p className="text-neutral800 text-sm">{userData?.address ?? "--"}</p>
         </div>
 

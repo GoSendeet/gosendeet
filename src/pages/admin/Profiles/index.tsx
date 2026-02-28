@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import MobileCard from "@/components/MobileCard";
 import { DateRangePicker } from "@/components/DateRangePicker.tsx";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -65,7 +66,7 @@ const Profiles = () => {
     role,
     debouncedProfileSearchTerm,
     startStr || "",
-    endStr || ""
+    endStr || "",
   );
 
   useEffect(() => {
@@ -109,12 +110,14 @@ const Profiles = () => {
     },
   ];
 
-  const [activeModalId, setActiveModalId] = useState<number | null>(null);
+  // popover no longer needs explicit open state
 
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-inter font-semibold text-[20px] mb-2">Profiles</h2>
+        <h2 className="font-inter font-semibold text-[20px] mb-2 text-brand">
+          Profiles
+        </h2>
         <p className="text-sm text-neutral600">
           This contains all registered profiles
         </p>
@@ -122,7 +125,7 @@ const Profiles = () => {
       <div className="w-full bg-neutral200 p-4 md:flex items-center rounded-2xl mb-8">
         <div className="w-full flex flex-col gap-4 justify-between py-2">
           <p className="text-neutral500 text-sm">All Profiles</p>
-          <p className="text-[20px] font-inter font-semibold md:mb-6">
+          <p className="text-[20px] font-inter font-semibold md:mb-6 text-brand">
             {profileStats?.data?.totalUsers ?? 0}
           </p>
           {/* <hr className="border-neutral700" />
@@ -144,7 +147,7 @@ const Profiles = () => {
 
         <div className="w-full flex flex-col gap-4 justify-between py-2">
           <p className="text-neutral500 text-sm">Active Profiles</p>
-          <p className="text-[20px] font-inter font-semibold md:mb-6">
+          <p className="text-[20px] font-inter font-semibold md:mb-6 text-brand">
             {profileStats?.data?.activeUsers ?? 0}
           </p>
           {/* <hr className="border-neutral700" />
@@ -166,7 +169,7 @@ const Profiles = () => {
 
         <div className="w-full flex flex-col gap-4 justify-between py-2">
           <p className="text-neutral500 text-sm">Inactive Profiles</p>
-          <p className="text-[20px] font-inter font-semibold md:mb-6">
+          <p className="text-[20px] font-inter font-semibold md:mb-6 text-brand">
             {profileStats?.data?.inactiveUsers ?? 0}
           </p>
           {/* <hr className="border-neutral700" />
@@ -237,8 +240,86 @@ const Profiles = () => {
       {!isLoading && isSuccess && data && profiles?.length > 0 && (
         <>
           <div className="overflow-x-auto">
-            <div className="min-w-[1100px] w-full relative">
-              <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+            {/* mobile card layout */}
+            <div className="md:hidden">
+              {profiles?.map((item: any, index: number) => (
+                <MobileCard key={index}>
+                  <div className="flex justify-end mb-1">
+                    <Popover
+                      onOpenChange={(open) =>
+                        open && setUsername(item.username)
+                      }
+                    >
+                      <PopoverTrigger asChild>
+                        <button className="border p-1 rounded-md border-neutral200">
+                          <BsThreeDotsVertical
+                            size={20}
+                            className="p-1 cursor-pointer"
+                          />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-fit p-1">
+                        <Link
+                          to={`/admin-dashboard/user/${item.id}`}
+                          state={{ id: item.id }}
+                        >
+                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                            View Profile
+                          </p>
+                        </Link>
+                        <p
+                          className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                          onClick={() => {
+                            setUsername(item.username);
+                            setUserId(item.id);
+                            setOpenUpdateStatus(true);
+                            setSingleUserStatus(item.status);
+                          }}
+                        >
+                          Update status
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-brand">Customer</span>
+                    <span className="truncate ml-2">{item.username}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-brand">Email</span>
+                    <span className="truncate ml-2">{item.email}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-brand">Created</span>
+                    <span className="ml-2">
+                      {formatTimestampToReadable(item.createdAt)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-brand">Last login</span>
+                    <span className="ml-2">
+                      {item.lastLogin ? timeAgo(item.lastLogin) : "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-medium text-brand">Status</span>
+                    <p
+                      className={cn(
+                        item.status === "active"
+                          ? "bg-green100 text-white"
+                          : "bg-[#FEF2F2] text-[#EC2D30]",
+                        "px-4 py-1 w-fit font-medium rounded-2xl capitalize",
+                      )}
+                    >
+                      {item.status}
+                    </p>
+                  </div>
+                </MobileCard>
+              ))}
+            </div>
+            {/* For desktop and large screen view */}
+            <div className="hidden md:block min-w-[1100px] w-full relative">
+              <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md text-brand font-inter font-semibold bg-brand-light w-full">
                 <span className="w-[1%] mr-4">
                   <input type="checkbox" name="" id="" className="mt-[2px]" />
                 </span>
@@ -258,7 +339,7 @@ const Profiles = () => {
                       index === 0
                         ? "border-b-0"
                         : "border-b border-b-neutral300"
-                    } hover:bg-purple300`}
+                    } hover:bg-brand-light`}
                   >
                     <span className="w-[1%] mr-4">
                       <input type="checkbox" name="" id="" className="mt-1" />
@@ -280,9 +361,9 @@ const Profiles = () => {
                       <p
                         className={cn(
                           item.status === "active"
-                            ? "bg-green100 text-green500"
+                            ? "bg-green100 text-white"
                             : "bg-[#FEF2F2] text-[#EC2D30]",
-                          "px-4 py-1 w-fit font-medium rounded-2xl capitalize"
+                          "px-4 py-1 w-fit font-medium rounded-2xl capitalize",
                         )}
                       >
                         {item.status}
@@ -290,9 +371,8 @@ const Profiles = () => {
                     </div>
 
                     <Popover
-                      open={activeModalId === index}
                       onOpenChange={(open) =>
-                        setActiveModalId(open ? index : null)
+                        open && setUsername(item.username)
                       }
                     >
                       <PopoverTrigger asChild>
@@ -300,9 +380,6 @@ const Profiles = () => {
                           <BsThreeDotsVertical
                             size={20}
                             className="p-1 cursor-pointer"
-                            onClick={() => {
-                              setActiveModalId(index);
-                            }}
                           />
                         </button>
                       </PopoverTrigger>
@@ -311,12 +388,12 @@ const Profiles = () => {
                           to={`/admin-dashboard/user/${item.id}`}
                           state={{ id: item.id }}
                         >
-                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
                             View Profile
                           </p>
                         </Link>
                         <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
+                          className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                           onClick={() => {
                             setUsername(item.username);
                             setUserId(item.id);

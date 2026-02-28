@@ -39,7 +39,7 @@ const Settings = () => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-inter font-semibold text-[20px] mb-2">Settings</h2>
+        <h2 className="font-inter font-semibold text-brand text-[20px] mb-2">Settings</h2>
       </div>
       <div className="flex gap-4 justify-between">
         <div className="sidebar xl:block hidden p-4 bg-white w-[15%] min-h-[50vh]">

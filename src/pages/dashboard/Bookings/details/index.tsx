@@ -13,6 +13,7 @@ import { cn, formatDateTime, formatStatus } from "@/lib/utils";
 import { statusClasses } from "@/constants";
 import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
+import CurrencyFormatter from "@/components/CurrencyFormatter";
 
 export function BookingDetails({ bookingData }: any) {
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
@@ -21,7 +22,7 @@ export function BookingDetails({ bookingData }: any) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
           <BiDetail size={18} /> View Details
         </p>
       </DialogTrigger>
@@ -44,7 +45,7 @@ export function BookingDetails({ bookingData }: any) {
           <>
             <DialogHeader>
               <DialogTitle>
-                <p className="font-clash text-[20px] text-left font-semibold mt-2">
+                <p className="font-clash text-[20px] text-brand text-left font-semibold mt-2">
                   {bookingData?.trackingNumber}
                 </p>
               </DialogTitle>
@@ -52,7 +53,7 @@ export function BookingDetails({ bookingData }: any) {
             </DialogHeader>
             <div>
               <div className="flex justify-between items-center gap-2">
-                <p className="flex items-center gap-2 w-fit border-offset-1 font-medium text-purple500 border-b-[1.5px] border-b-purple500 cursor-pointer">
+                <p className="flex items-center gap-2 w-fit border-offset-1 font-medium text-brand border-b-[1.5px] border-b-brand cursor-pointer">
                   <FiDownloadCloud />
                   Download
                 </p>
@@ -72,7 +73,7 @@ export function BookingDetails({ bookingData }: any) {
               </div>
               <div className="grid md:grid-cols-3 gap-5 my-10">
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">From</p>
+                  <p className="font-clash font-semibold text-brand ">From</p>
                   <p className="text-sm font-medium">
                     {bookingData?.senderName}
                   </p>
@@ -81,61 +82,61 @@ export function BookingDetails({ bookingData }: any) {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">To</p>
+                  <p className="font-clash font-semibold text-brand">To</p>
                   <p className="text-sm font-medium">
                     {bookingData?.receiverName}
                   </p>
                   <p className="text-neutral600">{data?.data?.destination}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">Category</p>
+                  <p className="font-clash font-semibold text-brand">Category</p>
                   <p className="text-sm">{bookingData?.packageType}</p>
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-5">
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">Pickup Created</p>
+                  <p className="font-clash font-semibold text-brand">Pickup Created</p>
                   <p className="text-sm">
                     {formatDateTime(bookingData?.bookingDate)}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">Logistics</p>
+                  <p className="font-clash font-semibold text-brand">Logistics</p>
                   <p className="text-sm">{bookingData?.companyName}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold ">Parcel Weight</p>
+                  <p className="font-clash font-semibold text-brand">Parcel Weight</p>
                   <p className="text-sm">{`${bookingData?.weight} ${bookingData?.weightUnit} | ${bookingData?.length}x${bookingData?.width}x${bookingData?.height} ${bookingData?.dimensionsUnit}`}</p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 my-10 text-sm">
-                <p className="flex justify-between items-center md:px-8 px-4">
+                <p className="flex justify-between items-center md:px-8 px-4 text-brand">
                   Subtotal
                   <span className="font-clash font-semibold">
                     ₦ {data?.data?.cost?.subTotal}
                   </span>
                 </p>
-                <p className="flex justify-between items-center md:px-8 px-4">
+                <p className="flex justify-between items-center md:px-8 px-4 text-brand">
                   Shipping Fee
                   <span className="font-clash font-semibold">
-                    ₦ {data?.data?.cost?.shippingFee}
+                    ₦ {CurrencyFormatter(data?.data?.cost?.shippingFee)}
                   </span>
                 </p>
-                <p className="flex justify-between items-center md:px-8 px-4">
+                <p className="flex justify-between items-center md:px-8 px-4 text-brand">
                   Tax
                   <span className="font-clash font-semibold">
-                    ₦ {data?.data?.cost?.tax ?? 0}{" "}
+                    ₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}
                   </span>
                 </p>
-                <p className="flex justify-between items-center md:px-8 px-4 py-4 font-clash font-semibold bg-neutral200 rounded-full">
+                <p className="flex justify-between  items-center md:px-8 px-4 py-4 font-clash font-semibold bg-brand-light rounded-full">
                   TOTAL COSTS + VAT
-                  <span>₦ {data?.data?.cost?.total}</span>
+                  <span className="text-brand">₦ {CurrencyFormatter(data?.data?.cost?.total)}</span>
                 </p>
               </div>
               <div className="flex md:flex-row flex-col justify-center gap-2 items-center mb-10">
-                <p className="font-medium">Need help?</p>
-                <button className="flex items-center gap-2 font-medium bg-black border border-neutral300 rounded-full px-4 py-3 outline-neutral300">
+                <p className="font-medium text-brand">Need help?</p>
+                <button className="flex items-center gap-2 font-medium bg-brand border border-neutral300 rounded-full px-4 py-3 outline-neutral300">
                   <RxExternalLink className="text-white text-xl" />
                   <span className="text-white">Contact GoSendeet help</span>
                 </button>

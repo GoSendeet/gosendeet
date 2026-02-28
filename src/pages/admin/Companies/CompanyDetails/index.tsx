@@ -110,13 +110,13 @@ const CompanyDetails = () => {
           <div className="grid lg:grid-cols-3 md:grid-cols-2 md:gap-6 gap-6 mb-4">
             <div>
               <p className="text-neutral600 text-sm mb-2">COMPANY NAME</p>
-              <p className="text-neutral800 lg:text-[20px] md:text-base font-inter font-semibold mb-2">
+              <p className="text-brand lg:text-[20px] md:text-base font-inter font-semibold mb-2">
                 {data?.data?.name ?? ""}
               </p>
             </div>
             <div>
               <p className="text-neutral600 text-sm mb-2">STATUS</p>
-              <p className="text-neutral800 lg:text-[20px] md:text-base font-inter font-semibold break-all capitalize">
+              <p className="text-brand lg:text-[20px] md:text-base font-inter font-semibold break-all capitalize">
                 {data?.data?.status ?? ""}
               </p>
             </div>

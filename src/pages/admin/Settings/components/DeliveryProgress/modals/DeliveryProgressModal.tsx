@@ -106,10 +106,10 @@ export function DeliveryProgressModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent autoFocus={false} className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           Delivery Progress
         </DialogTitle>
-        <DialogDescription className="font-medium text-sm text-neutral600">
+        <DialogDescription className="font-medium text-sm text-brand">
           {type === "create" ? "Add a delivery progress." : "Edit a delivery progress."}
         </DialogDescription>
         <>
@@ -144,6 +144,7 @@ export function DeliveryProgressModal({
               <Button
                 variant={"secondary"}
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
+                className="bg-brand"
               >
                 {type === "edit" ? "Update" : "Add"}
               </Button>

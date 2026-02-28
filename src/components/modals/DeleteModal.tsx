@@ -32,7 +32,7 @@ const DeleteModal = ({
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="p-6 bg-white">
         <DialogHeader className="bg-white py-2 rounded-lg">
-          <DialogTitle className="text-[20px] font-semibold font-inter">
+          <DialogTitle className="text-[20px] text-brand font-semibold font-inter">
             {title}
           </DialogTitle>
           <DialogDescription className="font-medium text-base text-neutral600 mt-4">
@@ -49,14 +49,14 @@ const DeleteModal = ({
             variant={"secondary"}
             onClick={onSubmit}
             loading={loading}
-            className="h-[40px]"
+            className="h-[40px] bg-brand"
           >
             Delete
           </Button>
           <Button
             variant={"outline"}
             onClick={() => onOpenChange(false)}
-            className="h-[40px] border-neutral600"
+            className="h-[40px] border-brand text-brand"
           >
             Cancel
           </Button>

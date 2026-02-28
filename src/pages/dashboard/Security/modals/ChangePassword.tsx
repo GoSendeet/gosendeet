@@ -72,7 +72,7 @@ export function ChangePassword() {
         <Button variant={"secondary"} className="w-fit bg-brand text-white py-2 px-3">Change password</Button>
       </DialogTrigger>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-clash mb-2">
+        <DialogTitle className="text-[20px] font-semibold font-clash mb-2 text-brand">
           Change Your Password
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -85,7 +85,7 @@ export function ChangePassword() {
               className="flex flex-col gap-8"
             >
               <div className="flex flex-col gap-2 w-full ">
-                <label htmlFor="password" className="font-clash font-semibold">
+                <label htmlFor="password" className="font-clash font-semibold text-brand">
                   Current Password
                 </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -97,7 +97,7 @@ export function ChangePassword() {
                   />
 
                   <span
-                    className="cursor-pointer text-purple400 text-xl"
+                    className="cursor-pointer text-brand text-xl"
                     onClick={() => setToggle(!toggle)}
                   >
                     {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -110,7 +110,7 @@ export function ChangePassword() {
                 )}
               </div>
               <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="password" className="font-clash font-semibold">
+                <label htmlFor="password" className="font-clash font-semibold text-brand">
                   New Password
                 </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -122,7 +122,7 @@ export function ChangePassword() {
                   />
 
                   <span
-                    className="cursor-pointer text-purple400 text-xl"
+                    className="cursor-pointer text-brand text-xl"
                     onClick={() => setToggle(!toggle)}
                   >
                     {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -138,7 +138,7 @@ export function ChangePassword() {
               <div className="flex flex-col gap-2 w-full">
                 <label
                   htmlFor="confirmPassword"
-                  className="font-clash font-semibold"
+                  className="font-clash font-semibold text-brand"
                 >
                   Confirm New Password
                 </label>
@@ -151,7 +151,7 @@ export function ChangePassword() {
                   />
 
                   <span
-                    className="cursor-pointer text-purple400 text-xl"
+                    className="cursor-pointer text-brand text-xl"
                     onClick={() => setToggle(!toggle)}
                   >
                     {toggle ? <FaRegEye /> : <FaRegEyeSlash />}

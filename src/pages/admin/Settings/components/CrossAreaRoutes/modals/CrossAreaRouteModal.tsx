@@ -131,10 +131,10 @@ export function CrossAreaRoutesModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent autoFocus={false} className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           Cross Area Route
         </DialogTitle>
-        <DialogDescription className="font-medium text-sm text-neutral600">
+        <DialogDescription className="font-medium text-sm text-brand">
           {type === "create"
             ? "Add a cross area route."
             : "Edit a cross area route."}
@@ -146,7 +146,7 @@ export function CrossAreaRoutesModal({
               className="flex flex-col gap-8"
             >
               <div className="flex flex-col w-full">
-                <label htmlFor="name" className="font-inter font-semibold">
+                <label htmlFor="name" className="font-inter text-brand font-semibold">
                   From
                 </label>
                 <div className="border-b mb-2">
@@ -175,7 +175,7 @@ export function CrossAreaRoutesModal({
               </div>
 
               <div className="flex flex-col w-full">
-                <label htmlFor="name" className="font-inter font-semibold">
+                <label htmlFor="name" className="font-inter text-brand font-semibold">
                   To
                 </label>
                 <div className="border-b mb-2">
@@ -206,6 +206,7 @@ export function CrossAreaRoutesModal({
               <Button
                 variant={"secondary"}
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
+                className="bg-brand"
               >
                 {type === "edit" ? "Update" : "Add"}
               </Button>

@@ -81,7 +81,7 @@ const UserProfiles = () => {
 
             <Button
               variant={"secondary"}
-              className="md:text-base text-sm"
+              className="md:text-base text-sm bg-brand"
               onClick={() => setOpenUpdateStatus(true)}
             >
               <BiEditAlt />
@@ -100,25 +100,25 @@ const UserProfiles = () => {
           <div className="grid xl:grid-cols-5 md:grid-cols-3 md:gap-6 gap-6 mb-8">
             <div>
               <p className="text-neutral600 text-sm mb-2">CONTACT</p>
-              <p className="text-neutral800 md:text-[20px] text-md font-inter font-semibold mb-2">
+              <p className="text-brand md:text-[20px] text-md font-inter font-semibold mb-2">
                 {userData?.username ?? "--"}
               </p>
             </div>
             <div>
               <p className="text-neutral600 text-sm mb-2">EMAIL</p>
-              <p className="text-neutral800 md:text-[20px] text-md font-inter font-semibold ">
+              <p className="text-brand md:text-[20px] text-md font-inter font-semibold ">
                 {userData?.email ?? "--"}
               </p>
             </div>
             <div>
               <p className="text-neutral600 text-sm mb-2">PHONE</p>
-              <p className="text-neutral800 md:text-[20px] text-md font-inter font-semibold">
+              <p className="text-brand md:text-[20px] text-md font-inter font-semibold">
                 {userData?.phone ?? "--"}
               </p>
             </div>
             <div>
               <p className="text-neutral600 text-sm mb-2">ACCOUNT CREATED</p>
-              <p className="text-neutral800 md:text-[20px] text-md font-inter font-semibold">
+              <p className="text-brand md:text-[20px] text-md font-inter font-semibold">
                 {formatTimestampToReadable(userData.createdAt) ?? "--"}
               </p>
             </div>
@@ -127,7 +127,7 @@ const UserProfiles = () => {
               <p
                 className={cn(
                   userData.status === "active"
-                    ? "bg-green100 text-green500"
+                    ? "bg-green100 text-white"
                     : "bg-[#FEF2F2] text-[#EC2D30]",
                   "px-4 py-1 w-fit font-medium rounded-2xl capitalize"
                 )}
@@ -154,8 +154,8 @@ const UserProfiles = () => {
                     }}
                     className={`relative px-4 font-medium md:text-base text-sm outline-white transition-colors duration-300 cursor-pointer ${
                       activeTab === tab.key
-                        ? "text-purple500"
-                        : "text-neutral500"
+                        ? "text-brand"
+                        : "text-brand"
                     }`}
                     // onMouseEnter={() => {
                     //   updateUnderline(index);
@@ -175,7 +175,7 @@ const UserProfiles = () => {
 
                 {/* Active underline */}
                 <div
-                  className="absolute bottom-0 h-[2.5px] bg-purple500 transition-all duration-300 rounded-full"
+                  className="absolute bottom-0 h-[2.5px] bg-brand transition-all duration-300 rounded-full"
                   style={{
                     left: underlineLeft,
                     width: underlineWidth,

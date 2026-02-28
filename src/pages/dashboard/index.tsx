@@ -48,7 +48,7 @@ const Dashboard = () => {
   return (
     <div className="md:px-20 px-6 py-10 bg-neutral100">
       <div className="flex xl:flex-row flex-col gap-2 justify-between xl:items-center">
-        <h1 className="lg:text-[40px] text-[30px] font-clash font-semibold">
+        <h1 className="lg:text-[40px] text-[30px] font-clash text-brand font-semibold">
           Dashboard
         </h1>
 
