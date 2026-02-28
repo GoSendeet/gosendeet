@@ -106,7 +106,7 @@ export function PickupOptionModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent autoFocus={false} className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           Pickup Options
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -144,6 +144,7 @@ export function PickupOptionModal({
               <Button
                 variant={"secondary"}
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
+                className="bg-brand"
               >
                 {type === "edit" ? "Update" : "Add"}
               </Button>

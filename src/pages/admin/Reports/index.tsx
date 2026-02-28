@@ -108,7 +108,7 @@ const Reports = ({ setActiveTab }: any) => {
             className="p-4 bg-white border border-grey100 rounded-xl"
             key={index}
           >
-            <p className="text-grey500 text-sm font-medium">{tab.title}</p>
+            <p className=" text-sm text-brand font-medium">{tab.title}</p>
 
             <div className="flex justify-between items-center my-8">
               <p className="text-[20px] font-inter font-semibold">
@@ -128,7 +128,7 @@ const Reports = ({ setActiveTab }: any) => {
                   }, 500);
                 }}
               >
-                <MdArrowForwardIos color="#064E3B" size={20} />
+                <MdArrowForwardIos className="text-brand" size={20} />
               </p>
             </div>
             <hr />

@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { usePaginationSync } from "@/hooks/usePaginationSync";
 import { PaginationComponent } from "@/components/Pagination";
+import MobileCard from "@/components/MobileCard";
 
 const PackageType = () => {
   const [lastPage, setLastPage] = useState(1);
@@ -130,9 +131,61 @@ const PackageType = () => {
 
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
         <>
-          <div className="overflow-x-auto">
+          {/* mobile cards */}
+          <div className="lg:hidden flex flex-col gap-4 mb-8">
+            {data?.data?.content?.map((item: any, idx: number) => (
+              <MobileCard key={idx}>
+                <div className="flex justify-end mb-2">
+                  <FiEdit
+                    size={20}
+                    className="cursor-pointer text-brand mr-2"
+                    onClick={() => {
+                      setOpen(true);
+                      setType("edit");
+                      setInfo(item);
+                    }}
+                  />
+                  <BiSolidTrashAlt
+                    size={20}
+                    className="cursor-pointer text-[#F56630]"
+                    onClick={() => {
+                      setOpenDelete(true);
+                      setInfo(item);
+                    }}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <p className="font-medium text-brand">Name</p>
+                    <p className="truncate">{item.name}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Length</p>
+                    <p className="truncate">{item.length}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Width</p>
+                    <p className="truncate">{item.width}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Height</p>
+                    <p className="truncate">{item.height}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Max Weight</p>
+                    <p className="truncate">{item.maxWeight}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Code</p>
+                    <p className="truncate">{item.code}</p>
+                  </div>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
+          <div className="hidden lg:block overflow-x-auto">
             <div className="min-w-[1000px] w-full relative">
-              <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-sm font-inter font-semibold bg-purple300 w-full">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-sm font-inter font-semibold bg-brand-light w-full">
                 <span className="w-[15%]">Package type</span>
                 <span className="flex-1">Length</span>
                 <span className="flex-1">Width</span>
@@ -153,7 +206,7 @@ const PackageType = () => {
                       index === 0
                         ? "border-t-0"
                         : "border-t border-t-neutral300"
-                    } hover:bg-purple300`}
+                    } hover:bg-brand-light`}
                   >
                     <div className="w-[15%]">
                       <p>{item.name}</p>

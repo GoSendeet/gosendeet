@@ -117,7 +117,7 @@ export function UpdateProgressModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] font-semibold text-brand font-inter mb-2">
           Update Order Progress
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -131,7 +131,7 @@ export function UpdateProgressModal({
         >
           {/* Delivery Progress */}
           <div className="flex flex-col  w-full">
-            <label className="font-inter font-semibold">
+            <label className="font-inter text-brand font-semibold">
               Delivery Progress
             </label>
             <Controller
@@ -163,7 +163,7 @@ export function UpdateProgressModal({
 
           {/* Status */}
           <div className="flex flex-col  w-full">
-            <label className="font-inter font-semibold">Status</label>
+            <label className="font-inter font-semibold text-brand">Status</label>
             <Controller
               name="status"
               control={control}
@@ -193,7 +193,7 @@ export function UpdateProgressModal({
 
           {/* Location */}
           <div className="flex flex-col  w-full">
-            <label className="font-inter font-semibold">Location</label>
+            <label className="font-inter text-brand font-semibold">Location</label>
             <input
               type="text"
               {...register("location")}
@@ -209,7 +209,7 @@ export function UpdateProgressModal({
 
           {/* Message */}
           <div className="flex flex-col  w-full">
-            <label className="font-inter font-semibold">
+            <label className="font-inter text-brand font-semibold">
               Additional Message
             </label>
             <input
@@ -236,7 +236,7 @@ export function UpdateProgressModal({
             <label>Send a notification email to your customer</label>
           </div>
 
-          <Button variant="secondary" className="w-fit" loading={pendingCreate}>
+          <Button variant="secondary" className="w-fit text-white bg-brand" loading={pendingCreate}>
             Update
           </Button>
         </form>

@@ -109,10 +109,10 @@ export function UpdateProfileModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] font-semibold font-inter mb-2 text-brand">
           Update Profile
         </DialogTitle>
-        <DialogDescription className="font-medium text-sm text-neutral600">
+        <DialogDescription className="font-medium text-brand text-sm ">
           Edit basic details about your profile
         </DialogDescription>
         <>
@@ -123,7 +123,7 @@ export function UpdateProfileModal({
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
+                  <label htmlFor="name" className="font-inter text-brand font-semibold">
                     Username
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -145,7 +145,7 @@ export function UpdateProfileModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="phone" className="font-inter font-semibold">
+                  <label htmlFor="phone" className="font-inter text-brand font-semibold">
                     Phone Number
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -166,7 +166,7 @@ export function UpdateProfileModal({
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="email" className="font-inter font-semibold">
+                  <label htmlFor="email" className="font-inter text-brand font-semibold">
                     Postal Code
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -189,7 +189,7 @@ export function UpdateProfileModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="address" className="font-inter font-semibold">
+                  <label htmlFor="address" className="font-inter text-brand font-semibold">
                     Address
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -209,7 +209,7 @@ export function UpdateProfileModal({
                 </div>
 
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="state" className="font-inter font-semibold">
+                  <label htmlFor="state" className="font-inter text-brand font-semibold">
                     State
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -231,7 +231,7 @@ export function UpdateProfileModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="country" className="font-inter font-semibold">
+                  <label htmlFor="country" className="font-inter text-brand font-semibold">
                     Country
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -262,7 +262,7 @@ export function UpdateProfileModal({
 
               <Button
                 variant={"secondary"}
-                className=" w-fit bg-brand text-white "
+                className=" w-full bg-brand text-white "
                 loading={pendingUpdate}
               >
                 Update

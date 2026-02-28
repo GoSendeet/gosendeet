@@ -103,7 +103,7 @@ export function ServiceLevelModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent autoFocus={false} className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] font-semibold text-brand font-inter mb-2">
           Service Level
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -141,6 +141,7 @@ export function ServiceLevelModal({
               <Button
                 variant={"secondary"}
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
+                className="text-white bg-brand"
               >
                 {type === "edit" ? "Update" : "Add"}
               </Button>

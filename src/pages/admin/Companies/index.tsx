@@ -28,6 +28,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import MobileCard from "@/components/MobileCard";
 
 const Companies = () => {
   const savedLabel = sessionStorage.getItem("savedLabel") || "All";
@@ -68,7 +69,7 @@ const Companies = () => {
     size,
     companyStatus,
     serviceLevelId,
-    debouncedSearchTerm
+    debouncedSearchTerm,
     // {
     //   enabled: currentPage === 1 || resetPageRef.current, // 👈 Force run query if resetting
     //   queryKey: [
@@ -129,7 +130,7 @@ const Companies = () => {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="font-inter font-semibold text-[20px] mb-2">Companies</h2>
+        <h2 className="font-inter font-semibold text-[20px] mb-2 text-brand">Companies</h2>
         <p className="text-sm text-neutral600">
           This contains all partnered companies
         </p>
@@ -274,9 +275,84 @@ const Companies = () => {
 
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
         <>
-          <div className="overflow-x-auto">
+          {/* Mobile card layout */}
+          <div className="xl:hidden">
+            {data?.data?.content?.map((item: any, index: number) => (
+              <MobileCard key={index}>
+                <div className="flex justify-end mb-2">
+                  <Popover
+                    onOpenChange={(open) => open && setCompanyInfo(item)}
+                  >
+                    <PopoverTrigger asChild>
+                      <button className="border p-1 rounded-md border-neutral200">
+                        <BsThreeDotsVertical
+                          size={20}
+                          className="p-1 cursor-pointer"
+                        />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit p-1">
+                      <Link
+                        to={`/admin-dashboard/company/${item.id}`}
+                        state={{ id: item.id }}
+                      >
+                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                          View full details
+                        </p>
+                      </Link>
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setCompanyInfo(item);
+                          setOpen(true);
+                        }}
+                      >
+                        Update info
+                      </p>
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setCompanyName(item.name);
+                          setCompanyId(item.id);
+                          setOpenStatus(true);
+                          setSingleCompanyStatus(item.status);
+                        }}
+                      >
+                        Update status
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Company Name
+                  </span>
+                  <span className="truncate ml-2 text-sm">{item.name}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">Email</span>
+                  <span className="truncate ml-2 text-sm">{item.email}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Contact
+                  </span>
+                  <span className="truncate ml-2 text-sm">{item.phone}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">Status</span>
+                  <span className="capitalize ml-2 text-sm">{item.status}</span>
+                </div>
+               
+              </MobileCard>
+            ))}
+          </div>
+
+          
+          {/* Table layout for desktop */}
+          <div className="hidden xl:block overflow-x-auto">
             <div className="min-w-[1200px] w-full relative">
-              <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
                 <span className="w-[1%] mr-4">
                   <input type="checkbox" name="" id="" className="mt-[2px]" />
                 </span>
@@ -284,12 +360,8 @@ const Companies = () => {
                 <span className="flex-1">Email</span>
                 <span className="flex-1">Contact</span>
                 <span className="flex-1">Status</span>
-                {/* <span className="flex-1">Services</span>
-            <span className="flex-1">Pickup</span>
-            <span className="flex-1">Delivery</span> */}
                 <span className="w-[2%]"></span>
               </div>
-
               {data?.data?.content?.map((item: any, index: number) => {
                 return (
                   <div
@@ -298,7 +370,7 @@ const Companies = () => {
                       index === 0
                         ? "border-b-0"
                         : "border-b border-b-neutral300"
-                    } hover:bg-purple300`}
+                    } hover:bg-brand-light`}
                   >
                     <span className="w-[1%] mr-4">
                       <input type="checkbox" name="" id="" className="mt-1" />
@@ -315,7 +387,6 @@ const Companies = () => {
                     <div className="flex-1">
                       <p className="capitalize">{item.status}</p>
                     </div>
-
                     <Popover
                       open={activeModalId === index}
                       onOpenChange={(open) =>
@@ -338,12 +409,12 @@ const Companies = () => {
                           to={`/admin-dashboard/company/${item.id}`}
                           state={{ id: item.id }}
                         >
-                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
                             View full details
                           </p>
                         </Link>
                         <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
+                          className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                           onClick={() => {
                             setCompanyInfo(item);
                             setOpen(true);
@@ -352,7 +423,7 @@ const Companies = () => {
                           Update info
                         </p>
                         <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
+                          className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                           onClick={() => {
                             setCompanyName(item.name);
                             setCompanyId(item.id);
@@ -369,11 +440,11 @@ const Companies = () => {
               })}
             </div>
           </div>
-          <PaginationComponent
-            lastPage={data?.data?.page?.totalPages}
-            currentPage={currentPage}
-            handlePageChange={updatePage}
-          />
+           <PaginationComponent
+              lastPage={data?.data?.page?.totalPages}
+              currentPage={currentPage}
+              handlePageChange={updatePage}
+            />
         </>
       )}
 

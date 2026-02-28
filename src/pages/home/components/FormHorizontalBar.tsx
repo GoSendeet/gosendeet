@@ -375,7 +375,7 @@ const FormHorizontalBar = ({
     // Dashboard uses a tighter, card-like container with subtle border
     isDashboard
       ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
-      : "w-full mx-auto max-w-[354px] lg:max-w-[1024px] pt-[12.82px] px-[12.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
+      : "w-full mx-auto max-w-[354px] lg:max-w-[1024px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
     !isDashboard && variant === "bold" && "bg-white border",
     !isDashboard &&
       variant === "minimal" &&

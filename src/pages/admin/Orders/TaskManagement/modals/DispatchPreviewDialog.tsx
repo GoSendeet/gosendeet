@@ -64,7 +64,7 @@ const DispatchPreviewDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
-          <DialogTitle>Review & Dispatch</DialogTitle>
+          <DialogTitle className="text-brand">Review & Dispatch</DialogTitle>
           <DialogDescription>
             {dispatchSummary
               ? "Dispatch completed successfully. Copy links below to share with partners."
@@ -90,15 +90,15 @@ const DispatchPreviewDialog = ({
             <div className="border-2 border-neutral-300 rounded-xl p-5 bg-white shadow-sm space-y-0 divide-y divide-neutral-200">
               {/* Order Number - With Color */}
               <div className="flex items-center justify-between py-3 first:pt-0">
-                <span className="text-sm font-semibold text-neutral-700">Order Number</span>
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-sm font-semibold text-brand">Order Number</span>
+                <span className="text-sm font-bold text-gray800 tracking-wide">
                   {preview.orderNumber || "—"}
                 </span>
               </div>
 
               {/* Companies Affected */}
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm font-medium text-neutral-600">Companies affected</span>
+                <span className="text-sm font-medium text-brand">Companies affected</span>
                 <span className="text-lg font-semibold text-neutral-900">
                   {preview.companiesAffected}
                 </span>
@@ -106,7 +106,7 @@ const DispatchPreviewDialog = ({
 
               {/* Draft Tasks Ready */}
               <div className="flex items-center justify-between py-3">
-                <span className="text-sm font-medium text-neutral-600">Draft tasks ready</span>
+                <span className="text-sm font-medium text-brand">Draft tasks ready</span>
                 <span className="text-lg font-semibold text-neutral-900">
                   {preview.draftTasksReady}
                 </span>
@@ -114,7 +114,7 @@ const DispatchPreviewDialog = ({
 
               {/* Warnings */}
               <div className="flex items-center justify-between py-3 last:pb-0">
-                <span className="text-sm font-medium text-neutral-600">Warnings</span>
+                <span className="text-sm font-medium text-brand">Warnings</span>
                 <span className="text-lg font-semibold text-neutral-900">
                   {preview.warnings?.length ?? 0}
                 </span>
@@ -249,7 +249,7 @@ const DispatchPreviewDialog = ({
             <>
               <Button
                 variant="outline"
-                className="border-neutral300 text-neutral800"
+                className="border-neutral300 text-brand"
                 onClick={() => refetch()}
                 disabled={isLoadingPreview || isDispatching}
               >
@@ -261,7 +261,7 @@ const DispatchPreviewDialog = ({
                 disabled={hasBlockingErrors || isLoadingPreview || isDispatching || !preview}
                 loading={isDispatching}
                 size="lg"
-                className="md:min-w-[160px]"
+                className="md:min-w-[160px] bg-brand text-white"
               >
                 {hasBlockingErrors
                   ? "Cannot Dispatch"

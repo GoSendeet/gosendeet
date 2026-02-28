@@ -64,6 +64,17 @@ export function DateRangePicker({
               fontSize: "0.75rem", // smaller text
             },
           }}
+          classNames={{
+            // remove default blue; apply brand palette
+            selected: "bg-brand text-brand",
+            range_start: "bg-brand text-white rounded-full",
+            range_end: "bg-brand text-white rounded-full",
+            range_middle: "bg-brand-light text-brand",
+            today: "text-brand",
+            caption: "text-brand font-semibold",
+            caption_label: "text-brand",
+            // add more overrides here
+          }}
         />
       </PopoverContent>
     </Popover>
