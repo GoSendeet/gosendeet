@@ -20,7 +20,7 @@ const PaginationComponent = ({
 }) => {
   return (
     <section className=" py-3">
-      <div className=" md:hidden flex justify-center text-sm">
+      <div className=" md:hidden flex justify-center text-sm text-brand">
         <p>
           Showing page {currentPage} of {lastPage}
         </p>
@@ -34,7 +34,7 @@ const PaginationComponent = ({
               aria-disabled={currentPage <= 1}
               tabIndex={currentPage <= 1 ? -1 : 0}
               className={cn(
-                "cursor-pointer",
+                "cursor-pointer border border-brand md:border-transparent md:mt-0 text-brand mt-2",
                 currentPage <= 1 && "pointer-events-none opacity-50"
               )}
             />
@@ -45,7 +45,7 @@ const PaginationComponent = ({
             <PaginationLink
               isActive={currentPage === 1}
               onClick={() => handlePageChange(1)}
-              className=" hidden md:flex cursor-pointer"
+              className=" hidden md:flex cursor-pointer  text-brand"
             >
               1
             </PaginationLink>
@@ -75,7 +75,7 @@ const PaginationComponent = ({
                   onClick={() => handlePageChange(page)}
                   className={cn(
                     "hidden md:flex cursor-pointer",
-                    page >= 1000 && "px-[30px] mx-[1px]"
+                    page >= 1000 && "px-[30px] mx-[1px] "
                   )}
                 >
                   {page}
@@ -96,7 +96,7 @@ const PaginationComponent = ({
               <PaginationLink
                 isActive={currentPage === lastPage}
                 onClick={() => handlePageChange(lastPage)}
-                className=" hidden md:flex cursor-pointer"
+                className=" hidden md:flex cursor-pointer text-brand"
               >
                 {lastPage}
               </PaginationLink>
@@ -109,7 +109,7 @@ const PaginationComponent = ({
               aria-disabled={lastPage === currentPage}
               tabIndex={currentPage === lastPage ? -1 : 0}
               className={cn(
-                "cursor-pointer",
+                "cursor-pointer border border-brand md:border-transparent md:mt-0 text-brand mt-2",
                 currentPage === lastPage && "pointer-events-none opacity-50"
               )}
             />

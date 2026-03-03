@@ -263,7 +263,7 @@ export function AddServiceModal({
   return (
     <Dialog open={openService} onOpenChange={setOpenService}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           {type === "create" ? "Add a new service" : "Edit a company service"}
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -280,7 +280,7 @@ export function AddServiceModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="serviceLevel"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Select service level
                   </label>
@@ -296,7 +296,7 @@ export function AddServiceModal({
                       <SelectContent>
                         {service_level?.data?.map(
                           (item: any, index: number) => (
-                            <SelectItem value={item.id} key={index}>
+                            <SelectItem className="focus:bg-brand-light" value={item.id} key={index}>
                               {item.name}
                             </SelectItem>
                           )
@@ -313,7 +313,7 @@ export function AddServiceModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="pickupOption"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Select pickup option
                   </label>
@@ -344,7 +344,7 @@ export function AddServiceModal({
                 <div className="flex flex-col w-full">
                   <label
                     htmlFor="packageType"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Select package type
                   </label>
@@ -430,7 +430,7 @@ export function AddServiceModal({
                 </div> */}
 
                 <div className="flex flex-col lg:w-1/2 w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
+                  <label htmlFor="name" className="font-inter text-brand font-semibold">
                     Select cross area route
                   </label>
                   <div className="border-b mb-2">
@@ -455,7 +455,7 @@ export function AddServiceModal({
                   )}
                 </div>
                 <div className="flex flex-col lg:w-1/2 w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
+                  <label htmlFor="name" className="font-inter text-brand font-semibold">
                     Weight limit (kg)
                   </label>
                   <div className="border-b mb-2">
@@ -480,7 +480,7 @@ export function AddServiceModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="numberOfDaysForPickup"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Number of days for pickup
                   </label>
@@ -504,7 +504,7 @@ export function AddServiceModal({
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="numberOfDaysForDelivery"
-                    className="font-inter font-semibold"
+                    className="font-inter text-brand font-semibold"
                   >
                     Number of days for delivery
                   </label>
@@ -531,14 +531,14 @@ export function AddServiceModal({
                   defaultChecked={info?.isNextDayDelivery}
                   onCheckedChange={(val) => setValue("isNextDayDelivery", val)}
                 />
-                <label htmlFor="name" className="font-inter font-semibold">
+                <label htmlFor="name" className="font-inter text-brand font-semibold">
                   Allow next day delivery
                 </label>
               </div>
 
               <Button
                 variant={"secondary"}
-                className=" w-fit"
+                className=" w-fit bg-brand"
                 loading={type === "create" ? pendingCreate : pendingUpdate}
               >
                 {type === "create" ? "Add service" : "Edit service"}

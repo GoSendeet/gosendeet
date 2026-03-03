@@ -68,7 +68,7 @@ const Header = () => {
             onModeChange={setFormMode}
             variant="pill"
           />
-          <div className="w-96.75 lg:w-5xl px-2 py-8 mb-8">
+          <div className="w-96.75 lg:w-5xl px-2 py-4 mb-8">
             <FormHorizontalBar variant="minimal" activeMode={formMode} />
           </div>
         </div>

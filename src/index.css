@@ -1,3 +1,14 @@
+/* Custom horizontal scrollbar for PackageTypeModal */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-brand, #064E3B);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -294,7 +305,10 @@
   --color-green2000: #00d492;
   --color-green3000: #15803d;
   --color-green4000: #E8EFEC;
+  --color-brand: #064E3B;
+  --color-brand-light: #F0FDF480;
   --color-grey100: #f0f2f5;
+  --color-gray150: #64748B;
   --color-grey200: #6b7280;
   --color-grey300: #45556c;
   --color-grey400: #f8fafc;
@@ -618,11 +632,11 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
   }
 
   .compare-pickup-from {
-    width: 300px;
+    width: 280px;
   }
 
   .compare-pickup-destination {
-    width: 300px;
+    width: 280px;
   }
 
   .gosend-custom-button {

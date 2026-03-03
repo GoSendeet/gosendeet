@@ -28,6 +28,7 @@ import {
 import { DateRangePicker } from "@/components/DateRangePicker.tsx";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import MobileCard from "@/components/MobileCard";
 
 const Orders = ({ userId }: { userId: any }) => {
   const [lastPage, setLastPage] = useState(1);
@@ -102,7 +103,7 @@ const Orders = ({ userId }: { userId: any }) => {
     },
   ];
 
-  const [activeModalId, setActiveModalId] = useState<number | null>(null);
+  // Popover is now uncontrolled; no need for activeModalId
 
   return (
     <div>
@@ -178,8 +179,117 @@ const Orders = ({ userId }: { userId: any }) => {
 
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
         <div className="overflow-x-auto">
-          <div className="min-w-[1100px] w-full relative">
-            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+          {/* mobile card layout */}
+          <div className="md:hidden">
+            {data?.data?.content?.map((item: any, index: number) => (
+              <MobileCard key={index}>
+                <div className="flex justify-end mb-1">
+                  <Popover
+                    onOpenChange={(open) => open && setBookingData(item)}
+                  >
+                    <PopoverTrigger asChild>
+                      <button className="border p-1 rounded-md border-neutral200">
+                        <BsThreeDotsVertical
+                          size={20}
+                          className="p-1 cursor-pointer"
+                        />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit p-1">
+                      <Link
+                        to={`/admin-dashboard/order/${index}`}
+                        state={{ bookingData: bookingData }}
+                      >
+                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                          View full details
+                        </p>
+                      </Link>
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setOpen(true);
+                          setBookingId(item?.id);
+                          setOrderProgress(item?.currentProgress);
+                          setOrderStatus(item.status);
+                        }}
+                      >
+                        Update progress
+                      </p>
+                      <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                        Refund
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Tracking #
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.trackingNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Courier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.companyName}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Category
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.packageType}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Parcel Weight
+                  </span>
+                  <span className="truncate ml-2 text-sm">{`${item?.weight} ${item?.weightUnit} | ${item?.length}x${item?.width}x${item?.height} ${item?.dimensionsUnit}`}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Pickup Created
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {formatDateTime(item?.bookingDate)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    {" "}
+                    Status
+                  </span>
+                  <span
+                    className={cn(
+                      statusClasses[item?.status] ??
+                        "bg-gray-100 text-gray-800", // fallback if status not found
+                      "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
+                    )}
+                  >
+                    {formatStatus(item?.status)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-brand text-sm">
+                    {" "}
+                    Progress
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.currentProgress}
+                  </span>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
+
+          {/* Desktop view */}
+          <div className="hidden md:block min-w-[1100px] w-full relative">
+            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-brand-light w-full">
               <span className="w-[1%] mr-4">
                 <input type="checkbox" name="" id="" className="mt-[2px]" />
               </span>
@@ -198,7 +308,7 @@ const Orders = ({ userId }: { userId: any }) => {
                 <div
                   key={index}
                   className={`relative h-[60px] bg-white px-3 xl:px-4 text-sm flex items-center border-b border-b-neutral300 
-                    hover:bg-purple300`}
+                    hover:bg-brand-light`}
                 >
                   <span className="w-[1%] mr-4">
                     <input type="checkbox" name="" id="" className="mt-1" />
@@ -223,7 +333,7 @@ const Orders = ({ userId }: { userId: any }) => {
                       className={cn(
                         statusClasses[item?.status] ??
                           "bg-gray-100 text-gray-800", // fallback if status not found
-                        "px-2 py-1 w-fit font-medium rounded-2xl text-xs"
+                        "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
                       )}
                     >
                       {formatStatus(item?.status)}
@@ -232,34 +342,27 @@ const Orders = ({ userId }: { userId: any }) => {
                   <div className="w-[10%]">{item?.currentProgress}</div>
 
                   <Popover
-                    open={activeModalId === index}
-                    onOpenChange={(open) =>
-                      setActiveModalId(open ? index : null)
-                    }
+                    onOpenChange={(open) => open && setBookingData(item)}
                   >
                     <PopoverTrigger asChild>
                       <button className="border p-1 rounded-md border-neutral200">
                         <BsThreeDotsVertical
                           size={20}
                           className="p-1 cursor-pointer"
-                          onClick={() => {
-                            setActiveModalId(index);
-                            setBookingData(item);
-                          }}
                         />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-fit p-1">
                       <Link
-                        to={`/admin-dashboard/order/${index}`}
+                        to={`/admin-dashboard/order/${item?.id}`}
                         state={{ bookingData: bookingData }}
                       >
-                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
                           View full details
                         </p>
                       </Link>
                       <p
-                        className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                         onClick={() => {
                           setOpen(true);
                           setBookingId(item?.id);
@@ -269,7 +372,7 @@ const Orders = ({ userId }: { userId: any }) => {
                       >
                         Update progress
                       </p>
-                      <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+                      <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
                         Refund
                       </p>
                     </PopoverContent>

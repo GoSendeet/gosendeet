@@ -28,6 +28,7 @@ import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { DateRangePicker } from "@/components/DateRangePicker.tsx";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import MobileCard from "@/components/MobileCard";
 
 const Orders = ({ companyId }: { companyId: string }) => {
   const [lastPage, setLastPage] = useState(1);
@@ -175,102 +176,194 @@ const Orders = ({ companyId }: { companyId: string }) => {
       )}
 
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
-        <div className="overflow-x-auto">
-          <div className="min-w-[1100px] w-full relative">
-            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
-              <span className="w-[1%] mr-4">
-                <input type="checkbox" name="" id="" className="mt-[2px]" />
-              </span>
-              <span className="flex-1">Customer</span>
-              <span className="flex-1">Package Type</span>
-              <span className="flex-1">Parcel Weight</span>
-              <span className="flex-1">Pickup Created</span>
-              <span className="flex-1">Status</span>
-              <span className="flex-1">Progress</span>
-              <span className="w-[2%]"></span>
-            </div>
-
-            {data?.data?.content?.map((item: any, index: number) => {
-              return (
-                <div
-                  key={index}
-                  className={`relative min-h-[60px] bg-white px-3 xl:px-4 border-b border-b-neutral300 text-sm flex items-center hover:bg-purple300`}
-                >
-                  <span className="w-[1%] mr-4">
-                    <input type="checkbox" name="" id="" className="mt-1" />
-                  </span>
-                  <div className="flex-1">
-                    <p className="font-medium">{item?.senderName}</p>
-                    <p>{item?.trackingNumber}</p>
+        <div>
+          {/* Mobile card layout */}
+          <div className="lg:hidden">
+            {data?.data?.content?.map((item: any, index: number) => (
+              <MobileCard key={index}>
+                <div className="flex justify-end mb-2">
+                  <Popover
+                    onOpenChange={(open) => open && setBookingData(item)}
+                  >
+                    <PopoverTrigger asChild>
+                      <button className="border p-1 rounded-md border-neutral200">
+                        <BsThreeDotsVertical
+                          size={20}
+                          className="p-1 cursor-pointer"
+                        />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit p-1">
+                      <Link
+                        to={`/admin-dashboard/order/${index}`}
+                        state={{ bookingData: bookingData }}
+                      >
+                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                          View full details
+                        </p>
+                      </Link>
+                      <p
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                        onClick={() => {
+                          setOpen(true);
+                          setBookingId(item?.id);
+                          setOrderProgress(item?.currentProgress);
+                          setOrderStatus(item.status);
+                        }}
+                      >
+                        Update progress
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <p className="font-medium text-brand">Customer</p>
+                    <p className="truncate text-xs md:text-sm">
+                      {item?.senderName}
+                    </p>
                   </div>
-
-                  <div className="flex-1">
-                    <p>{item?.packageType}</p>
+                  <div>
+                    <p className="font-medium text-brand">Tracking #</p>
+                    <p className="truncate text-xs md:text-sm">
+                      {item?.trackingNumber}
+                    </p>
                   </div>
-                  <div className="flex-1">
-                    <p>{`${item?.weight} ${item?.weightUnit} | ${item?.length}x${item?.width}x${item?.height} ${item?.dimensionsUnit}`}</p>
+                  <div>
+                    <p className="font-medium text-brand">Package</p>
+                    <p className="truncate text-xs md:text-sm">
+                      {item?.packageType}
+                    </p>
                   </div>
-                  <div className="flex-1">
-                    <p> {formatDateTime(item?.bookingDate)}</p>
+                  <div>
+                    <p className="font-medium text-brand">Weight</p>
+                    <p className="truncate text-xs md:text-sm">{`${item?.weight} ${item?.weightUnit}`}</p>
                   </div>
-
-                  <div className="flex-1">
-                    <p
-                      className={cn(
-                        statusClasses[item?.status] ??
-                          "bg-gray-100 text-gray-800", // fallback if status not found
-                        "px-2 py-1 w-fit font-medium rounded-2xl text-xs"
-                      )}
-                    >
+                  <div>
+                    <p className="font-medium text-brand">Dimensions</p>
+                    <p className="truncate text-xs md:text-sm">{`${item?.length}x${item?.width}x${item?.height}`}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Pickup</p>
+                    <p className="truncate text-xs md:text-sm">
+                      {formatDateTime(item?.bookingDate)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-brand">Status</p>
+                    <p className="truncate text-xs md:text-sm">
                       {formatStatus(item?.status)}
                     </p>
                   </div>
-                  <div className="flex-1">{item?.currentProgress}</div>
-                  <div className="w-[2%]">
-                    <Popover
-                      open={activeModalId === index}
-                      onOpenChange={(open) =>
-                        setActiveModalId(open ? index : null)
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <button className="border p-1 rounded-md border-neutral200">
-                          <BsThreeDotsVertical
-                            size={20}
-                            className="p-1 cursor-pointer"
-                            onClick={() => {
-                              setActiveModalId(index);
-                              setBookingData(item);
-                            }}
-                          />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-fit p-1">
-                        <Link
-                          to={`/admin-dashboard/order/${index}`}
-                          state={{ bookingData: bookingData }}
-                        >
-                          <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
-                            View full details
-                          </p>
-                        </Link>
-                        <p
-                          className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer"
-                          onClick={() => {
-                            setOpen(true);
-                            setBookingId(item?.id);
-                            setOrderProgress(item?.currentProgress);
-                            setOrderStatus(item.status);
-                          }}
-                        >
-                          Update progress
-                        </p>
-                      </PopoverContent>
-                    </Popover>
+                  <div>
+                    <p className="font-medium text-brand">Progress</p>
+                    <p className="truncate text-xs md:text-sm">
+                      {item?.currentProgress}
+                    </p>
                   </div>
                 </div>
-              );
-            })}
+              </MobileCard>
+            ))}
+          </div>
+
+          {/* Table view large screen */}
+          <div className="hidden lg:block overflow-x-auto">
+            <div className="min-w-[1100px] w-full relative">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+                <span className="w-[1%] mr-4">
+                  <input type="checkbox" name="" id="" className="mt-[2px]" />
+                </span>
+                <span className="flex-1">Customer</span>
+                <span className="flex-1">Package Type</span>
+                <span className="flex-1">Parcel Weight</span>
+                <span className="flex-1">Pickup Created</span>
+                <span className="flex-1">Status</span>
+                <span className="flex-1">Progress</span>
+                <span className="w-[2%]"></span>
+              </div>
+
+              {data?.data?.content?.map((item: any, index: number) => {
+                return (
+                  <div
+                    key={index}
+                    className={`relative min-h-[60px] bg-white px-3 xl:px-4 border-b border-b-neutral300 text-sm flex items-center hover:bg-brand-light`}
+                  >
+                    <span className="w-[1%] mr-4">
+                      <input type="checkbox" name="" id="" className="mt-1" />
+                    </span>
+                    <div className="flex-1">
+                      <p className="font-medium">{item?.senderName}</p>
+                      <p>{item?.trackingNumber}</p>
+                    </div>
+
+                    <div className="flex-1">
+                      <p>{item?.packageType}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{`${item?.weight} ${item?.weightUnit} | ${item?.length}x${item?.width}x${item?.height} ${item?.dimensionsUnit}`}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p> {formatDateTime(item?.bookingDate)}</p>
+                    </div>
+
+                    <div className="flex-1">
+                      <p
+                        className={cn(
+                          statusClasses[item?.status] ??
+                            "bg-gray-100 text-gray-800", // fallback if status not found
+                          "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
+                        )}
+                      >
+                        {formatStatus(item?.status)}
+                      </p>
+                    </div>
+                    <div className="flex-1">{item?.currentProgress}</div>
+                    <div className="w-[2%]">
+                      <Popover
+                        open={activeModalId === index}
+                        onOpenChange={(open) =>
+                          setActiveModalId(open ? index : null)
+                        }
+                      >
+                        <PopoverTrigger asChild>
+                          <button className="border p-1 rounded-md border-neutral200">
+                            <BsThreeDotsVertical
+                              size={20}
+                              className="p-1 cursor-pointer"
+                              onClick={() => {
+                                setActiveModalId(index);
+                                setBookingData(item);
+                              }}
+                            />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-fit p-1">
+                          <Link
+                            to={`/admin-dashboard/order/${index}`}
+                            state={{ bookingData: bookingData }}
+                          >
+                            <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                              View full details
+                            </p>
+                          </Link>
+                          <p
+                            className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
+                            onClick={() => {
+                              setOpen(true);
+                              setBookingId(item?.id);
+                              setOrderProgress(item?.currentProgress);
+                              setOrderStatus(item.status);
+                            }}
+                          >
+                            Update progress
+                          </p>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <PaginationComponent

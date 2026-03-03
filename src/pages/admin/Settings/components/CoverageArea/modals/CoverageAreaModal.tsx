@@ -112,7 +112,7 @@ export function CoverageAreaModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent autoFocus={false} className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] font-semibold text-brand font-inter mb-2">
           Coverage Area
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
@@ -125,7 +125,7 @@ export function CoverageAreaModal({
               className="flex flex-col gap-8"
             >
               <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="name" className="font-inter font-semibold">
+                <label htmlFor="name" className="font-inter text-brand font-semibold">
                     Name
                   </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -145,7 +145,7 @@ export function CoverageAreaModal({
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="code" className="font-inter font-semibold">
+                <label htmlFor="code" className="font-inter text-brand font-semibold">
                     Code
                   </label>
                 <div className="flex justify-between items-center gap-2 border-b">
@@ -167,6 +167,7 @@ export function CoverageAreaModal({
               <Button
                 variant={"secondary"}
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
+                className="text-white bg-brand"
               >
                 {type === "edit" ? "Update" : "Add"}
               </Button>

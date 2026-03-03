@@ -1,10 +1,5 @@
 import { useCallback, useEffect } from "react";
-import {
-  Controller,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from "react-hook-form";
+import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -28,7 +23,11 @@ import { MultiSelect } from "@/components/ui/multi";
 import { createTasks, TaskType } from "@/services/tasks";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage, toISOFromLocalInput, formatToDatetimeLocal } from "@/lib/utils";
+import {
+  getErrorMessage,
+  toISOFromLocalInput,
+  formatToDatetimeLocal,
+} from "@/lib/utils";
 import { ArrowUp, ArrowDown, Plus, Trash2 } from "lucide-react";
 
 const completionRequirementSchema = z
@@ -74,7 +73,9 @@ const CreateTasksModal = ({
   dropoffAddress,
 }: CreateTasksModalProps) => {
   const buildDefaultTask = useCallback(
-    (type: TaskType = "PICKUP"): {
+    (
+      type: TaskType = "PICKUP",
+    ): {
       taskType: TaskType;
       destinationAddress: string;
       completionRequirement: "PHOTO" | "NONE";
@@ -107,14 +108,21 @@ const CreateTasksModal = ({
         taskType: type,
         destinationAddress: "", // Empty - let useEffect handle address filling
         // Smart default: PHOTO proof for dropoffs, NONE for others
-        completionRequirement: (type === "DROPOFF" ? "PHOTO" : "NONE") as "PHOTO" | "NONE",
+        completionRequirement: (type === "DROPOFF" ? "PHOTO" : "NONE") as
+          | "PHOTO"
+          | "NONE",
         completeAfter,
         completeBefore,
-        notes: type === "PICKUP" ? "Collect package from sender" : type === "DROPOFF" ? "Deliver to recipient and collect signature/photo" : "",
+        notes:
+          type === "PICKUP"
+            ? "Collect package from sender"
+            : type === "DROPOFF"
+              ? "Deliver to recipient and collect signature/photo"
+              : "",
         dependsOn: [] as string[],
       };
     },
-    [] // No dependencies - useEffect handles address
+    [], // No dependencies - useEffect handles address
   );
 
   const {
@@ -163,10 +171,10 @@ const CreateTasksModal = ({
       if (!task) return;
       const desired =
         task.taskType === "PICKUP"
-          ? pickupAddress ?? ""
+          ? (pickupAddress ?? "")
           : task.taskType === "DROPOFF"
-          ? dropoffAddress ?? ""
-          : "";
+            ? (dropoffAddress ?? "")
+            : "";
 
       // ALWAYS update if desired address differs from current
       if (task.destinationAddress !== desired && desired) {
@@ -198,7 +206,9 @@ const CreateTasksModal = ({
     createTaskMutation(payload);
   };
 
-  const applyTemplate = (templateType: "pickup-dropoff" | "pickup" | "dropoff") => {
+  const applyTemplate = (
+    templateType: "pickup-dropoff" | "pickup" | "dropoff",
+  ) => {
     if (templateType === "pickup-dropoff") {
       const pickup = buildDefaultTask("PICKUP");
       const dropoff = buildDefaultTask("DROPOFF");
@@ -219,7 +229,7 @@ const CreateTasksModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Tasks</DialogTitle>
+          <DialogTitle className="text-brand">Create Tasks</DialogTitle>
           <DialogDescription>
             Create one or multiple tasks in the order you want them executed.
             Use dependencies to control sequencing.
@@ -227,23 +237,25 @@ const CreateTasksModal = ({
         </DialogHeader>
 
         <div className="space-y-2 pb-4 border-b border-neutral-200">
-          <p className="text-xs font-medium text-neutral-600">Quick Templates</p>
+          <p className="text-xs font-medium text-brand">Quick Templates</p>
 
           <div className="grid grid-cols-3 gap-2">
             {/* Pickup + Dropoff */}
             <button
               type="button"
               onClick={() => applyTemplate("pickup-dropoff")}
-              className="group bg-white border-2 border-neutral-300 hover:border-neutral-900 rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
+              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
             >
               <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-neutral-900 flex items-center justify-center transition-colors">
+                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
                   <div className="flex gap-0.5">
                     <ArrowUp className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
                     <ArrowDown className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
                   </div>
                 </div>
-                <p className="font-medium text-xs group-hover:font-semibold">Pickup + Dropoff</p>
+                <p className="font-medium text-xs text-brand group-hover:font-semibold">
+                  Pickup + Dropoff
+                </p>
               </div>
             </button>
 
@@ -251,13 +263,15 @@ const CreateTasksModal = ({
             <button
               type="button"
               onClick={() => applyTemplate("pickup")}
-              className="group bg-white border-2 border-neutral-300 hover:border-neutral-900 rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
+              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
             >
               <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-neutral-900 flex items-center justify-center transition-colors">
+                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
                   <ArrowUp className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
                 </div>
-                <p className="font-medium text-xs group-hover:font-semibold">Pickup Only</p>
+                <p className="font-medium text-xs text-brand group-hover:font-semibold">
+                  Pickup Only
+                </p>
               </div>
             </button>
 
@@ -265,13 +279,15 @@ const CreateTasksModal = ({
             <button
               type="button"
               onClick={() => applyTemplate("dropoff")}
-              className="group bg-white border-2 border-neutral-300 hover:border-neutral-900 rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
+              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
             >
               <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-neutral-900 flex items-center justify-center transition-colors">
+                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
                   <ArrowDown className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
                 </div>
-                <p className="font-medium text-xs group-hover:font-semibold">Dropoff Only</p>
+                <p className="font-medium text-xs text-brand group-hover:font-semibold">
+                  Dropoff Only
+                </p>
               </div>
             </button>
           </div>
@@ -294,10 +310,12 @@ const CreateTasksModal = ({
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-full bg-neutral-900 text-white flex items-center justify-center font-bold text-sm">
+                      <div className="size-8 rounded-full bg-brand text-white flex items-center justify-center font-bold text-sm">
                         {index + 1}
                       </div>
-                      <p className="font-semibold text-base">Task {index + 1}</p>
+                      <p className="font-semibold text-base text-brand">
+                        Task {index + 1}
+                      </p>
                     </div>
                     {fields.length > 1 && (
                       <Button
@@ -314,7 +332,9 @@ const CreateTasksModal = ({
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1">
-                      <label className="text-sm font-medium">Task Type</label>
+                      <label className="text-sm font-medium text-brand">
+                        Task Type
+                      </label>
                       <Controller
                         control={control}
                         name={`tasks.${index}.taskType`}
@@ -326,10 +346,25 @@ const CreateTasksModal = ({
                             <SelectTrigger>
                               <SelectValue placeholder="Select task type" />
                             </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="PICKUP">Pickup</SelectItem>
-                              <SelectItem value="DROPOFF">Drop-off</SelectItem>
-                              <SelectItem value="IN_HUB">In hub</SelectItem>
+                            <SelectContent >
+                              <SelectItem
+                                value="PICKUP"
+                                className="focus:bg-brand-light"
+                              >
+                                Pickup
+                              </SelectItem>
+                              <SelectItem
+                                value="DROPOFF"
+                                className="focus:bg-brand-light"
+                              >
+                                Drop-off
+                              </SelectItem>
+                              <SelectItem
+                                value="IN_HUB"
+                                className="focus:bg-brand-light"
+                              >
+                                In hub
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -342,7 +377,7 @@ const CreateTasksModal = ({
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-brand">
                         Completion Requirement
                       </label>
                       <Controller
@@ -352,7 +387,7 @@ const CreateTasksModal = ({
                           <Select
                             onValueChange={(value) =>
                               field.onChange(
-                                value === "NONE" ? undefined : value
+                                value === "NONE" ? undefined : value,
                               )
                             }
                             value={field.value ?? "NONE"}
@@ -361,30 +396,39 @@ const CreateTasksModal = ({
                               <SelectValue placeholder="Select requirement" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="NONE">None</SelectItem>
-                              <SelectItem value="PHOTO">Photo Proof</SelectItem>
+                              <SelectItem
+                                value="NONE"
+                                className="focus:bg-brand-light"
+                              >
+                                None
+                              </SelectItem>
+                              <SelectItem
+                                value="PHOTO"
+                                className="focus:bg-brand-light"
+                              >
+                                Photo Proof
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         )}
                       />
                       {errors.tasks?.[index]?.completionRequirement && (
                         <p className="text-xs text-red-500">
-                          {
-                            errors.tasks[index]?.completionRequirement
-                              ?.message
-                          }
+                          {errors.tasks[index]?.completionRequirement?.message}
                         </p>
                       )}
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-sm font-medium">
+                    <label className="text-sm font-medium text-brand">
                       Destination Address
                     </label>
                     <Input
                       placeholder="Enter address"
-                      {...register(`tasks.${index}.destinationAddress` as const)}
+                      {...register(
+                        `tasks.${index}.destinationAddress` as const,
+                      )}
                       aria-invalid={!!errors.tasks?.[index]?.destinationAddress}
                     />
                     {errors.tasks?.[index]?.destinationAddress && (
@@ -396,7 +440,9 @@ const CreateTasksModal = ({
 
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm font-semibold text-neutral-700">Dispatch Window</p>
+                      <p className="text-sm font-semibold text-brand">
+                        Dispatch Window
+                      </p>
                       <p className="text-xs text-neutral-500 mt-1">
                         Set the time range when this task must be completed
                       </p>
@@ -404,30 +450,36 @@ const CreateTasksModal = ({
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-1">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-brand">
                           Earliest Start
                         </label>
                         <Input
                           type="datetime-local"
                           {...register(`tasks.${index}.completeAfter` as const)}
                         />
-                        <p className="text-xs text-neutral-500">Task can start after this time</p>
+                        <p className="text-xs text-neutral-500">
+                          Task can start after this time
+                        </p>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-brand">
                           Must Complete By
                         </label>
                         <Input
                           type="datetime-local"
-                          {...register(`tasks.${index}.completeBefore` as const)}
+                          {...register(
+                            `tasks.${index}.completeBefore` as const,
+                          )}
                         />
-                        <p className="text-xs text-neutral-500">Task must be done before this time</p>
+                        <p className="text-xs text-neutral-500">
+                          Task must be done before this time
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-sm font-medium">Notes</label>
+                    <label className="text-sm font-medium text-brand">Notes</label>
                     <Textarea
                       rows={3}
                       placeholder="Optional instructions"
@@ -436,7 +488,7 @@ const CreateTasksModal = ({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-sm font-medium">Depends On</label>
+                    <label className="text-sm font-medium text-brand">Depends On</label>
                     <Controller
                       control={control}
                       name={`tasks.${index}.dependsOn`}
@@ -446,7 +498,11 @@ const CreateTasksModal = ({
                             options={dependencyOptions}
                             value={field.value ?? []}
                             onChange={field.onChange}
-                            placeholder={dependencyOptions.length === 0 ? "No tasks available yet" : "Select prerequisite tasks"}
+                            placeholder={
+                              dependencyOptions.length === 0
+                                ? "No tasks available yet"
+                                : "Select prerequisite tasks"
+                            }
                           />
                         </div>
                       )}
@@ -469,7 +525,7 @@ const CreateTasksModal = ({
           <Button
             type="button"
             variant="outline"
-            className="w-full border-2 border-dashed border-neutral-400 hover:border-neutral-900 hover:bg-neutral-50 transition-all"
+            className="w-full border-2 border-dashed text-brand border-brand hover:border-neutral-900 hover:bg-neutral-50 transition-all"
             onClick={() => append(buildDefaultTask())}
           >
             <Plus className="size-4 mr-2" />
@@ -479,12 +535,13 @@ const CreateTasksModal = ({
           <div className="flex justify-end gap-3">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => onOpenChange(false)}
+              className="border border-gray800"
             >
               Cancel
             </Button>
-            <Button type="submit" loading={isPending}>
+            <Button className="bg-brand text-white" type="submit" loading={isPending}>
               Save Tasks
             </Button>
           </div>

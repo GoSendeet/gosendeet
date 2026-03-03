@@ -88,12 +88,12 @@ const UpdateCompanyStatusModal = ({
   return (
     <Dialog open={openStatus} onOpenChange={setOpenStatus}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-4">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-4">
           Update company status
         </DialogTitle>
         <DialogDescription className="font-medium text-base text-neutral600 mb-4">
           Are you sure you want to update the live status of{" "}
-          <b>{companyName}</b> ?
+          <b className="text-brand">{companyName}</b> ?
         </DialogDescription>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -107,9 +107,19 @@ const UpdateCompanyStatusModal = ({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  {/* on hover change the bg in the select */}
+                  <SelectItem
+                    value="published"
+                    className="focus:bg-brand-light"
+                  >
+                    Published
+                  </SelectItem>
+                  <SelectItem value="draft" className="focus:bg-brand-light">
+                    Draft
+                  </SelectItem>
+                  <SelectItem value="archived" className="focus:bg-brand-light">
+                    Archived
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -120,6 +130,7 @@ const UpdateCompanyStatusModal = ({
               variant={"secondary"}
               // onClick={onSubmit}
               loading={pendingUpdate}
+              className="bg-brand text-white"
             >
               Yes, Update
             </Button>
@@ -127,6 +138,7 @@ const UpdateCompanyStatusModal = ({
               variant={"outline"}
               type="button"
               onClick={() => setOpenStatus(false)}
+              className="border-brand text-brand"
             >
               No, Cancel
             </Button>

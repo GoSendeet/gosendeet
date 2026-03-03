@@ -3,6 +3,12 @@
  * Centralized validation functions for forms and modals
  */
 
+// Character limits for address fields
+export const ADDRESS_LIMITS = {
+  STREET_MAX_LENGTH: 200,
+  APARTMENT_MAX_LENGTH: 100,
+} as const;
+
 /**
  * Validates that a string contains only numbers and optional decimal point
  */
@@ -106,16 +112,30 @@ export const formatDimensions = (
 
 /**
  * Validates manual address input
- * Note: apartment is optional and not validated
+ * Note: apartment is optional and not validated for presence
  */
 export const validateManualAddress = (
   street: string,
-  _apartment?: string,
+  apartment?: string,
   city?: string,
   state?: string
 ): { valid: boolean; message?: string } => {
   if (!street.trim()) {
     return { valid: false, message: "Street address is required" };
+  }
+
+  if (street.length > ADDRESS_LIMITS.STREET_MAX_LENGTH) {
+    return {
+      valid: false,
+      message: `Street address cannot exceed ${ADDRESS_LIMITS.STREET_MAX_LENGTH} characters`,
+    };
+  }
+
+  if (apartment && apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH) {
+    return {
+      valid: false,
+      message: `Apartment/House number cannot exceed ${ADDRESS_LIMITS.APARTMENT_MAX_LENGTH} characters`,
+    };
   }
 
   if (!city || !city.trim()) {

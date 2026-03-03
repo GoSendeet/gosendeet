@@ -21,6 +21,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import MobileCard from "@/components/MobileCard";
 import { statusClasses, statusOptions } from "@/constants";
 import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { DateRangePicker } from "@/components/DateRangePicker.tsx";
@@ -36,17 +37,16 @@ const Bookings = () => {
   const { data: packageTypes } = useGetPackageType({ minimize: true });
   const packages = packageTypes?.data;
   const userId = sessionStorage.getItem("userId") || "";
- const [range, setRange] = useState<DateRange | undefined>();
-    const startStr = range?.from ? format(range.from, "yyyy-MM-dd") : "";
-    const endStr = range?.to ? format(range.to, "yyyy-MM-dd") : "";
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
+  const [range, setRange] = useState<DateRange | undefined>();
+  const startStr = range?.from ? format(range.from, "yyyy-MM-dd") : "";
+  const endStr = range?.to ? format(range.to, "yyyy-MM-dd") : "";
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   // Reset pagination when status changes
   useEffect(() => {
     updatePage(1); // Reset to page 1
   }, [bookingStatus, packageTypeId, debouncedSearchTerm, startStr, endStr]); // Reset when filters change
-  
+
   const { data, isLoading, isSuccess, isError } = useGetAllBookings({
     page: currentPage,
     bookingStatus,
@@ -64,7 +64,7 @@ const Bookings = () => {
     }
   }, [data?.data?.page?.totalPages]);
   const [bookingData, setBookingData] = useState({});
-  const [activeModalId, setActiveModalId] = useState<number | null>(null);
+  // removed activeModalId state; popover is now uncontrolled
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
@@ -77,7 +77,9 @@ const Bookings = () => {
 
   return (
     <div className="md:px-4">
-      <h2 className="font-clash font-semibold text-[20px] mb-4">Bookings</h2>
+      <h2 className="font-clash font-semibold text-[20px] text-brand mb-4">
+        Bookings
+      </h2>
       <div className="flex lg:flex-row flex-col justify-between lg:items-center gap-4 mb-6">
         <p className="text-sm text-neutral600">
           This contains all your shipment orders
@@ -111,7 +113,7 @@ const Bookings = () => {
                   <SelectItem
                     value={item.value}
                     key={index}
-                    className="focus:bg-purple200"
+                    className="focus:bg-brand-light"
                   >
                     {item.title}
                   </SelectItem>
@@ -132,7 +134,11 @@ const Bookings = () => {
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 {packages?.map((item: any) => (
-                  <SelectItem value={item.id} key={item.id}>
+                  <SelectItem
+                    value={item.id}
+                    key={item.id}
+                    className="focus:bg-brand-light"
+                  >
                     {item?.name} ({item?.maxWeight} {item?.weightUnit})
                   </SelectItem>
                 ))}
@@ -156,28 +162,112 @@ const Bookings = () => {
           </p>
         </div>
       )}
-
+      {/* The table section */}
       {!isLoading && isSuccess && data && data?.data?.content?.length > 0 && (
         <div className="overflow-x-auto">
-          <div className="min-w-[1200px] w-full">
-            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-clash font-semibold bg-purple300 w-full">
-              <span className="w-[1%] mr-4">
-                <input type="checkbox" name="" id="" className="mt-[2px]" />
-              </span>
-              <span className="flex-1">Tracking Number</span>
-              <span className="flex-1">Courier</span>
-              <span className="flex-1">Category</span>
-              <span className="flex-1">Parcel Weight</span>
-              <span className="flex-1">Pickup Created</span>
-              <span className="w-[9%]">Status</span>
-              <span className="w-[2%]"></span>
-            </div>
+          {/* Mobile card layout */}
+          <div className="md:hidden">
+            {data?.data?.content?.map((item: any, index: number) => (
+              <MobileCard key={index}>
+                <div className="flex justify-between items-center mb-2">
+                  <p
+                    className={cn(
+                      statusClasses[item.status] ?? "bg-gray-100 text-gray-800",
+                      "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
+                    )}
+                  >
+                    {formatStatus(item?.status)}
+                  </p>
+                  <Popover
+                    onOpenChange={(open) => {
+                      if (open) setBookingData(item);
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <button className="border p-1 rounded-md border-neutral200">
+                        <BsThreeDotsVertical
+                          size={20}
+                          className="p-1 cursor-pointer"
+                        />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-fit p-1">
+                      <BookingDetails
+                        // setActiveModalId={setActiveModalId}
+                        // setIsDialogOpen={setIsDialogOpen}
+                        bookingData={bookingData}
+                      />
+                      <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
+                        <LuDownload size={18} /> Download{" "}
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Tracking #
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.trackingNumber}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-medium text-brand text-sm">
+                    Courier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.companyName}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-medium text-brand text-sm">
+                    Category
+                  </span>
+                  <span className="ml-2 text-neutral600 text-sm">
+                    {item?.packageType}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-medium text-brand text-sm">Weight</span>
+                  <span className="ml-2 text-sm">{`${item.weight} ${item.weightUnit}`}</span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-medium text-brand text-sm">
+                    Dimensions
+                  </span>
+                  <span className="ml-2 text-sm">{`${item.length}x${item.width}x${item.height} ${item.dimensionsUnit}`}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Created
+                  </span>
+                  <span className="ml-2 text-sm">
+                    {formatDateTime(item?.bookingDate)}
+                  </span>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
 
-            {data?.data?.content?.map((item: any, index: number) => {
-              return (
+          {/* Desktop table layout */}
+          <div className="hidden md:block">
+            <div className="min-w-[1200px] w-full">
+              <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-md font-clash font-semibold bg-brand-light w-full">
+                <span className="w-[1%] mr-4">
+                  <input type="checkbox" name="" id="" className="mt-[2px]" />
+                </span>
+                <span className="flex-1 text-brand">Tracking Number</span>
+                <span className="flex-1 text-brand">Courier</span>
+                <span className="flex-1 text-brand">Category</span>
+                <span className="flex-1 text-brand">Parcel Weight</span>
+                <span className="flex-1 text-brand">Pickup Created</span>
+                <span className="w-[9%] text-brand">Status</span>
+                <span className="w-[2%] text-brand"></span>
+              </div>
+              {data?.data?.content?.map((item: any, index: number) => (
                 <div
                   key={index}
-                  className={`relative h-[60px] bg-white px-3 xl:px-4 text-sm flex items-center border-b border-b-neutral300 hover:bg-purple300`}
+                  className={`relative h-[60px] bg-white px-3 xl:px-4 text-sm flex items-center border-b border-b-neutral300 hover:bg-brand-light`}
                 >
                   <span className="w-[1%] mr-4">
                     <input type="checkbox" name="" id="" className="mt-1" />
@@ -200,30 +290,23 @@ const Bookings = () => {
                       className={cn(
                         statusClasses[item.status] ??
                           "bg-gray-100 text-gray-800", // fallback if status not found
-                        "px-2 py-1 w-fit font-medium rounded-2xl text-xs"
+                        "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
                       )}
                     >
                       {formatStatus(item?.status)}
                     </p>
-                    {/* <p className="px-4 py-1 w-fit font-medium rounded-2xl bg-neutral200 text-neutral600">Refunded</p> */}
-                    {/* <p className="px-4 py-1 w-fit font-medium rounded-2xl bg-green100 text-green500">Paid</p> */}
                   </div>
                   <div className="w-[2%]">
                     <Popover
-                      open={activeModalId === index}
-                      onOpenChange={(open) =>
-                        setActiveModalId(open ? index : null)
-                      }
+                      onOpenChange={(open) => {
+                        if (open) setBookingData(item);
+                      }}
                     >
                       <PopoverTrigger asChild>
                         <button className="border p-1 rounded-md border-neutral200">
                           <BsThreeDotsVertical
                             size={20}
                             className="p-1 cursor-pointer"
-                            onClick={() => {
-                              setActiveModalId(index);
-                              setBookingData(item);
-                            }}
                           />
                         </button>
                       </PopoverTrigger>
@@ -233,15 +316,15 @@ const Bookings = () => {
                           // setIsDialogOpen={setIsDialogOpen}
                           bookingData={bookingData}
                         />
-                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-purple200 rounded-md cursor-pointer">
+                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
                           <LuDownload size={18} /> Download
                         </p>
                       </PopoverContent>
                     </Popover>
                   </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
           <PaginationComponent

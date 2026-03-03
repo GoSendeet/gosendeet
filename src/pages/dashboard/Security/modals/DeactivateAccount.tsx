@@ -33,7 +33,7 @@ export function DeactivateAccount() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"secondary"}>Deactivate my account</Button>
+        <Button variant={"secondary"} className="w-fit bg-brand">Deactivate my account</Button>
       </DialogTrigger>
       <DialogContent className="gap-0">
         <DialogTitle className="text-[20px] font-semibold font-clash mb-2">

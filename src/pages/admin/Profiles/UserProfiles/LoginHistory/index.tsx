@@ -6,6 +6,8 @@ import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { usePaginationSync } from "@/hooks/usePaginationSync";
 import { PaginationComponent } from "@/components/Pagination";
+import MobileCard from "@/components/MobileCard";
+
 const LoginHistory = ({ userId }: { userId: string }) => {
   const [lastPage, setLastPage] = useState(1);
   const { currentPage, updatePage } = usePaginationSync(lastPage);
@@ -36,8 +38,36 @@ const LoginHistory = ({ userId }: { userId: string }) => {
       </div>
       {login && login?.length > 0 && (
         <div className="overflow-x-auto">
-          <div className="min-w-[500px] w-full relative">
-            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-purple300 w-full">
+          {/* mobile cards view */}
+          <div className="md:hidden">
+            {login?.map((item: any, index: number) => (
+              <MobileCard key={index}>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Device #
+                  </span>
+                  <span className="truncate ml-2 text-sm">{item?.device}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Browser
+                  </span>
+                  <span className="truncate ml-2 text-sm">{item?.browser}</span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Date & Time
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {formatTimestampToReadable(item.createdAt)}
+                  </span>
+                </div>
+              </MobileCard>
+            ))}
+          </div>
+            {/* desktop table view */}
+          <div className="hidden md:block min-w-[500px] w-full relative">
+            <div className="flex justify-between text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-brand-light w-full">
               <span className="md:w-[50%] w-[40%]">Device</span>
               <span className="flex-1">Browser</span>
               <span className="flex-1">Date &Time</span>
@@ -49,7 +79,7 @@ const LoginHistory = ({ userId }: { userId: string }) => {
                   key={index}
                   className={`relative h-[60px] bg-white px-3 xl:px-4 text-sm flex items-center ${
                     index === 0 ? "border-b-0" : "border-b border-b-neutral300"
-                  } hover:bg-purple300`}
+                  } hover:bg-brand-light`}
                 >
                   <div className="md:w-[50%] w-[40%]">
                     <p>{item.device}</p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "../../constants";
-import logo from "@/assets/images/sendeet-logo.png";
+import logo from "@/assets/images/sendeet-black-logo.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
@@ -57,7 +57,7 @@ const DashboardNavbar = () => {
         {/* Hamburger Icon (mobile view) */}
         <div className="lg:hidden flex items-center gap-4">
           <div className="flex flex-row gap-4 items-center">
-            <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-orange500">
+            <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
               {letter}
             </div>
           </div>
@@ -89,7 +89,7 @@ const DashboardNavbar = () => {
         </ul>
 
         <div className="hidden lg:flex lg:flex-row items-center flex-col">
-          <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-orange500">
+          <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
             {letter}
           </div>
           <Button

@@ -48,7 +48,7 @@ const Dashboard = () => {
   return (
     <div className="md:px-20 px-6 py-10 bg-neutral100">
       <div className="flex xl:flex-row flex-col gap-2 justify-between xl:items-center">
-        <h1 className="lg:text-[40px] text-[30px] font-clash font-semibold">
+        <h1 className="lg:text-[40px] text-[30px] font-clash text-brand font-semibold">
           Dashboard
         </h1>
 
@@ -63,7 +63,7 @@ const Dashboard = () => {
                     tabRefs.current[index] = el;
                   }}
                   className={`relative px-4 font-medium md:text-base text-sm outline-white transition-colors duration-300 cursor-pointer ${
-                    activeTab === tab.key ? "text-orange500" : "text-neutral500"
+                    activeTab === tab.key ? "text-[#064E3B]" : "text-neutral500"
                   }`}
                   // onMouseEnter={() => {
                   //   updateUnderline(index);
@@ -83,7 +83,7 @@ const Dashboard = () => {
 
               {/* Active underline */}
               <div
-                className="absolute bottom-0 h-[2.5px] bg-orange500 transition-all duration-300 rounded-full"
+                className="absolute bottom-0 h-[2.5px] bg-[#064E3B] transition-all duration-300 rounded-full"
                 style={{
                   left: underlineLeft,
                   width: underlineWidth,

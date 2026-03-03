@@ -131,10 +131,10 @@ export function UpdateCompanyModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-inter mb-2">
+        <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
           Update Company Info
         </DialogTitle>
-        <DialogDescription className="font-medium text-sm text-neutral600">
+        <DialogDescription className="font-medium text-sm text-brand">
           Edit basic details about the company
         </DialogDescription>
         <>
@@ -145,7 +145,7 @@ export function UpdateCompanyModal({
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
+                  <label htmlFor="name" className="font-inter text-brand font-semibold">
                     Company Name
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -164,7 +164,7 @@ export function UpdateCompanyModal({
                   )}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="website" className="font-inter font-semibold">
+                  <label htmlFor="website" className="font-inter text-brand font-semibold">
                     Company Website
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -186,7 +186,7 @@ export function UpdateCompanyModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="email" className="font-inter font-semibold">
+                  <label htmlFor="email" className="font-inter text-brand font-semibold">
                     Company Email
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -228,7 +228,7 @@ export function UpdateCompanyModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="address" className="font-inter font-semibold">
+                  <label htmlFor="address" className="font-inter text-brand font-semibold">
                     Company Address
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -247,7 +247,7 @@ export function UpdateCompanyModal({
                   )}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="city" className="font-inter font-semibold">
+                  <label htmlFor="city" className="font-inter text-brand font-semibold">
                     City
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -269,7 +269,7 @@ export function UpdateCompanyModal({
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="state" className="font-inter font-semibold">
+                  <label htmlFor="state" className="font-inter text-brand font-semibold">
                     State
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -288,7 +288,7 @@ export function UpdateCompanyModal({
                   )}
                 </div>
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="country" className="font-inter font-semibold">
+                  <label htmlFor="country" className="font-inter text-brand font-semibold">
                     Country
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
@@ -319,7 +319,7 @@ export function UpdateCompanyModal({
 
               <Button
                 variant={"secondary"}
-                className=" w-fit"
+                className="w-fit bg-brand text-white"
                 loading={pendingUpdate}
               >
                 Update

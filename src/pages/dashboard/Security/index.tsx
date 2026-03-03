@@ -8,12 +8,12 @@ const Security = ({ data }: { data: any }) => {
   return (
     <div className="md:px-4">
       <div className="mb-8">
-        <h2 className="font-clash font-semibold text-[20px] mb-2">Security</h2>
+        <h2 className="font-clash font-semibold text-[20px] mb-2 text-brand">Security</h2>
         <p className="text-sm text-neutral600">Protect your account here </p>
       </div>
       <div className="flex lg:flex-row flex-col lg:items-center mb-8 gap-4">
         <div className="xl:w-[40%] lg:w-[50%]">
-          <h2 className="font-clash font-semibold text-[20px] mb-2">
+          <h2 className="font-clash font-semibold text-[20px] mb-2 text-brand">
             Password
           </h2>
           <p className="text-sm text-neutral600">
@@ -28,7 +28,7 @@ const Security = ({ data }: { data: any }) => {
       {userStatus === "active" && (
         <div className="flex lg:flex-row flex-col lg:items-center mb-8 gap-4">
           <div className="xl:w-[40%] lg:w-[50%]">
-            <h2 className="font-clash font-semibold text-[20px] mb-2">
+            <h2 className="font-clash font-semibold text-[20px] mb-2 text-brand">
               Deactivate Account
             </h2>
             <p className="text-sm text-neutral600">
@@ -44,7 +44,7 @@ const Security = ({ data }: { data: any }) => {
       {userStatus === "inactive" && (
         <div className="flex lg:flex-row flex-col lg:items-center mb-8 gap-4">
           <div className="xl:w-[40%] lg:w-[50%]">
-            <h2 className="font-clash font-semibold text-[20px] mb-2">
+            <h2 className="font-clash font-semibold text-[20px] mb-2 text-brand">
               Reactivate Account
             </h2>
             <p className="text-sm text-neutral600">
@@ -58,7 +58,7 @@ const Security = ({ data }: { data: any }) => {
       )}
       <div className="flex lg:flex-row flex-col lg:items-center mb-8 gap-4">
         <div className="xl:w-[40%] lg:w-[50%]">
-          <h2 className="font-clash font-semibold text-[20px] mb-2">
+          <h2 className="font-clash font-semibold text-[20px] mb-2 text-brand">
             Delete Account
           </h2>
           <p className="text-sm text-neutral600">
