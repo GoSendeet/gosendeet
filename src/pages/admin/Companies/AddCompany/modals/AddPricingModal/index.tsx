@@ -15,7 +15,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useGetServiceLevel } from "@/queries/admin/useGetAdminSettings";
+// import { useGetServiceLevel } from "@/queries/admin/useGetAdminSettings";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -41,11 +41,11 @@ export function AddPricingModal({
   type: string;
   setPricingInfo: any;
 }) {
-  const { data: service_level } = useGetServiceLevel();
+  // const { data: service_level } = useGetServiceLevel();
   const { data: company_services } = useGetCompanyServices(companyId);
 
   const schema = z.object({
-    serviceLevelId: z
+    crossAreaRouteId: z
       .string({ required_error: "Service level is required" })
       .min(1, { message: "Please select an option" }),
     basePrice: z
@@ -72,7 +72,7 @@ export function AddPricingModal({
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      serviceLevelId: "",
+      crossAreaRouteId: "",
     },
   });
 
@@ -80,7 +80,7 @@ export function AddPricingModal({
   useEffect(() => {
     if (openPricing && type === "edit" && info) {
       reset({
-        serviceLevelId: info?.serviceLevel?.id,
+        crossAreaRouteId: info?.crossAreaRoute?.id,
         basePrice: info.basePrice?.toString() ?? "",
         weightMultiplier: info.weightMultiplier?.toString() ?? "",
         zoneMultiplier: info.zoneMultiplier?.toString() ?? "",
@@ -90,7 +90,7 @@ export function AddPricingModal({
     } else if (openPricing && type === "create") {
       setPricingInfo(null);
       reset({
-        serviceLevelId: "",
+        crossAreaRouteId: "",
         basePrice: "",
         weightMultiplier: "",
         zoneMultiplier: "",
@@ -106,7 +106,7 @@ export function AddPricingModal({
     onSuccess: () => {
       toast.success("Successful");
       reset({
-        serviceLevelId: "",
+        crossAreaRouteId: "",
         basePrice: "",
         weightMultiplier: "",
         zoneMultiplier: "",
@@ -165,7 +165,7 @@ export function AddPricingModal({
           Set Up Delivery Pricing
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
-          Start by picking a package type, then enter the cost details per kg/km
+          Start by picking a company route, then enter the cost details per km
           to tailor your delivery pricing.
         </DialogDescription>
         <>
@@ -177,15 +177,15 @@ export function AddPricingModal({
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col w-full">
                   <label
-                    htmlFor="serviceLevel"
+                    htmlFor="crossAreaRouteId"
                     className="font-inter text-brand font-semibold"
                   >
-                    Select service level
+                    Select Company Route
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b mb-2">
                     <Select
-                      onValueChange={(val) => setValue("serviceLevelId", val)}
-                      defaultValue={info?.serviceLevel?.id}
+                      onValueChange={(val) => setValue("crossAreaRouteId", val)}
+                      defaultValue={info?.crossAreaRoute?.id}
                       disabled={type === "edit"}
                     >
                       <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
@@ -197,14 +197,16 @@ export function AddPricingModal({
                           company_services?.data?.content?.map(
                             (item: any, index: number) => (
                               <SelectItem
-                                value={item.companyServiceLevel.id}
+                                value={item?.crossAreaRoute?.id}
                                 key={index}
                               >
-                                {item.companyServiceLevel.name}
+                                {item?.crossAreaRoute
+                                  ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+                                  : "-"}
                               </SelectItem>
                             )
                           )}
-                        {type === "edit" &&
+                        {/* {type === "edit" &&
                           service_level &&
                           service_level?.data?.content?.map(
                             (item: any, index: number) => (
@@ -212,13 +214,13 @@ export function AddPricingModal({
                                 {item.name}
                               </SelectItem>
                             )
-                          )}
+                          )} */}
                       </SelectContent>
                     </Select>
                   </div>
-                  {errors.serviceLevelId && (
+                  {errors.crossAreaRouteId && (
                     <p className="error text-xs text-[#FF0000]">
-                      {errors.serviceLevelId.message}
+                      {errors.crossAreaRouteId.message}
                     </p>
                   )}
                 </div>

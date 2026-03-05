@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteCompanyServices } from "@/services/companies";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { AddServiceModal } from "../../../AddCompany/modals/AddServiceModal";
+import { AddRoutesModal } from "../../../AddCompany/modals/AddRoutesModal";
 import {
   Popover,
   PopoverContent,
@@ -14,14 +14,14 @@ import {
 } from "@/components/ui/popover";
 import MobileCard from "@/components/MobileCard";
 
-const Services = ({
+const Routes = ({
   companyId,
   companyServices,
 }: {
   companyId: string;
   companyServices: any;
 }) => {
-  const [openService, setOpenService] = useState(false);
+  const [openRoutesModal, setOpenRoutesModal] = useState(false);
   const [serviceInfo, setServiceInfo] = useState({});
   const [type, setType] = useState("");
 
@@ -72,18 +72,18 @@ const Services = ({
     <div className="py-4">
       <div className="flex justify-between items-center gap-4 mb-6">
         <p className="text-brand md:text-[20px] font-inter font-semibold">
-          Company Services
+          Company Routes
         </p>
 
         <Button
           variant={"secondary"}
           onClick={() => {
             setType("create");
-            setOpenService(true);
+            setOpenRoutesModal(true);
           }}
           className="lg:text-base text-sm bg-brand"
         >
-          <FiEdit /> Add <span className="md:block hidden">New</span> Service
+          <FiEdit /> Add <span className="md:block hidden">New</span> Route
         </Button>
       </div>
       {companyServices && companyServices?.content?.length > 0 && (
@@ -108,7 +108,7 @@ const Services = ({
                         className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                         onClick={() => {
                           setServiceInfo(item);
-                          setOpenService(true);
+                          setOpenRoutesModal(true);
                           setType("edit");
                         }}
                       >
@@ -127,10 +127,12 @@ const Services = ({
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-brand text-sm">
-                    Service Level
+                    Cross Area Route
                   </span>
                   <span className="truncate ml-2 text-sm">
-                    {item?.companyServiceLevel?.name}
+                    {item?.crossAreaRoute
+                      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+                      : "-"}
                   </span>
                 </div>
 
@@ -166,10 +168,10 @@ const Services = ({
           <div className="hidden lg:block overflow-auto mb-8">
             <div className="min-w-[1000px] w-full">
               <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 lg:text-md font-inter font-semibold bg-brand-light w-full">
-                <span className="w-[1%] mr-4">
+                {/* <span className="w-[1%] mr-4">
                   <input type="checkbox" name="" id="" className="mt-[2px]" />
-                </span>
-                <span className="flex-1">Service level</span>
+                </span> */}
+                <span className="flex-1">Cross Area Route</span>
                 {/* <span className="flex-1">Coverage Area</span> */}
                 <span className="flex-1">Weight Limit</span>
                 <span className="flex-1">Pickup</span>
@@ -187,16 +189,20 @@ const Services = ({
                         : "border-t border-t-neutral300"
                     } hover:bg-brand-light`}
                   >
-                    <span className="w-[1%] mr-4">
+                    {/* <span className="w-[1%] mr-4">
                       <input
                         type="checkbox"
                         name=""
                         id=""
                         className="mt-[2px]"
                       />
-                    </span>
+                    </span> */}
                     <div className="flex-1">
-                      <p>{item?.companyServiceLevel?.name}</p>
+                      <p>
+                        {item?.crossAreaRoute
+                          ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+                          : "-"}
+                      </p>
                     </div>
 
                     <div className="flex-1">
@@ -232,7 +238,7 @@ const Services = ({
                             className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
                             onClick={() => {
                               setServiceInfo(item);
-                              setOpenService(true);
+                              setOpenRoutesModal(true);
                               setType("edit");
                             }}
                           >
@@ -288,10 +294,10 @@ const Services = ({
         </div>
       )}
 
-      <AddServiceModal
+      <AddRoutesModal
         companyId={companyId}
-        openService={openService}
-        setOpenService={setOpenService}
+        openRoutesModal={openRoutesModal}
+        setOpenRoutesModal={setOpenRoutesModal}
         info={serviceInfo}
         setInfo={setServiceInfo}
         type={type}
@@ -300,4 +306,4 @@ const Services = ({
   );
 };
 
-export default Services;
+export default Routes;

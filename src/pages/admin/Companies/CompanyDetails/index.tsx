@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
-import { Check } from "lucide-react";
+// import { Check } from "lucide-react";
 // import blue from "@/assets/icons/blue-checkmark.png";
 // import orange from "@/assets/icons/orange-checkmark.png";
 import CoverSheet from "./components/CoverSheet";
@@ -13,7 +13,7 @@ import {
   useGetCompanyServices,
   useGetSingleCompany,
 } from "@/queries/admin/useGetAdminCompanies";
-import Services from "./components/Services";
+import Routes from "./components/Routes";
 import Pricing from "./components/Pricing";
 import { Spinner } from "@/components/Spinner";
 import { BiEditAlt } from "react-icons/bi";
@@ -32,7 +32,7 @@ const CompanyDetails = () => {
   const companyId: string = useParams().id || "";
   const { data, isLoading, isSuccess, isError } =
     useGetSingleCompany(companyId);
-
+  console.log(data?.data)
   const { data: company_services } = useGetCompanyServices(companyId);
   const companyServices = company_services?.data || [];
 
@@ -43,7 +43,7 @@ const CompanyDetails = () => {
     { key: "cover", label: "Cover Sheet" },
     { key: "orders", label: "Orders" },
     { key: "rating", label: "Ratings" },
-    { key: "services", label: "Services" },
+    { key: "routes", label: "Routes" },
     { key: "pricing", label: "Pricing" },
   ];
 
@@ -59,6 +59,7 @@ const CompanyDetails = () => {
     const currentIndex = tabs.findIndex((tab) => tab.key === activeTab);
     updateUnderline(currentIndex);
   }, [activeTab]);
+
 
   return (
     <>
@@ -121,47 +122,6 @@ const CompanyDetails = () => {
               </p>
             </div>
             <div>
-              <p className="text-neutral600 text-sm mb-2">SERVICES</p>
-
-              <div className="flex-1 flex flex-col gap-2">
-                {companyServices &&
-                  companyServices?.content?.length > 0 &&
-                  companyServices?.content?.map((item: any, index: number) => (
-                    <div
-                      key={index}
-                      className="flex gap-2 items-center bg-brand-light w-fit py-[6px] px-[8px] rounded-full md:justify-self-end"
-                    >
-                      <div className="bg-brand p-1 rounded-full">
-                        <Check className="w-[20px] h-[20px] text-brand-light" />
-
-                      </div>
-                      <p className="text-xs mr-1 text-brand">
-                        {item.companyServiceLevel.name}
-                      </p>
-                    </div>
-                  ))}
-
-                {companyServices && companyServices?.content?.length === 0 && (
-                  <p className="">No services added</p>
-                )}
-
-                {/* <div className="flex gap-2 items-center bg-[#F1F8FF] w-fit py-[6px] px-[8px] rounded-full md:justify-self-end">
-              <img
-                src={blue}
-                alt="check"
-                className="w-[20px] h-[20px] rounded-full"
-              />
-              <p className="text-xs mr-1 text-[#0BA5EC]">Home/Work Delivery</p>
-            </div>
-            <div className="flex gap-2 items-center bg-[#FFF3E8] w-fit py-[6px] px-[8px] rounded-full md:justify-self-end">
-              <img
-                src={orange}
-                alt="check"
-                className="w-[20px] h-[20px] rounded-full"
-              />
-              <p className="text-xs mr-1 text-[#FF8C1A]">Branch Drop off</p>
-            </div> */}
-              </div>
             </div>
           </div>
 
@@ -207,8 +167,8 @@ const CompanyDetails = () => {
               {activeTab === "cover" && <CoverSheet data={data?.data} />}
               {activeTab === "orders" && <Orders companyId={companyId} />}
               {activeTab === "rating" && <Ratings companyId={companyId}/>}
-              {activeTab === "services" && (
-                <Services
+              {activeTab === "routes" && (
+                <Routes
                   companyId={companyId}
                   companyServices={companyServices}
                 />

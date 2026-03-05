@@ -33,15 +33,10 @@ const parsePrice = (price: string | number | undefined | null): number => {
 const Calculator = () => {
   const navigate = useNavigate();
   const userId = sessionStorage.getItem("userId") || "";
-
   const location = useLocation();
-
   const [searchParams] = useSearchParams();
-
   const shareId = searchParams.get("shareId") || "";
-
   const { data: sharedQuote } = useGetSharedQuotes(shareId);
-
   const { results, inputData: stateInputData } = location.state || {};
   const [mode, setMode] = useState<FormMode>(
     location?.state?.mode ?? "gosendeet",
