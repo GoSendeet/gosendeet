@@ -652,10 +652,7 @@ const FormHorizontalBar = ({
                   </p>
 
                   <FiPackage size={18} className="text-[#CAD5E2]" />
-
-                  
                 </label>
-
                 <div className="w-full flex items-center justify-between -mt-1">
                   {packageName ? (
                     <span className="text-base truncate text-[#1a1a1a]">
@@ -898,10 +895,10 @@ const FormHorizontalBar = ({
 
                   <FiPackage size={18} className="text-[#CAD5E2]" />
                 </label>
-                <div className="w-full flex items-center justify-between">
+                <div className="w-full flex flex-col items-start justify-between">
                   {packageName && weight && dimensions ? (
-                    <div className="space-y-0.5">
-                      <span className="text-base truncate text-[#1a1a1a] font-semibold">
+                    <div className="flex flex-col items-start space-y-0.5">
+                      <span className="text-xs truncate text-[#1a1a1a] font-semibold">
                         {packageName}
                       </span>
                       <span className="text-xs text-gray-600 truncate">
