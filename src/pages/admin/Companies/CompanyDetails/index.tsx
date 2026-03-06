@@ -32,7 +32,6 @@ const CompanyDetails = () => {
   const companyId: string = useParams().id || "";
   const { data, isLoading, isSuccess, isError } =
     useGetSingleCompany(companyId);
-  console.log(data?.data)
   const { data: company_services } = useGetCompanyServices(companyId);
   const companyServices = company_services?.data || [];
 

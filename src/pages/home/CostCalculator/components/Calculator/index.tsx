@@ -75,9 +75,9 @@ const Calculator = () => {
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    if (!data?.data || data?.data?.length === 0) return [];
+    if (!data?.data?.content || data?.data?.content?.length === 0) return [];
 
-    let filtered = [...data.data];
+    let filtered = [...data.data?.content];
 
     // Filter by pickup date
     if (filterPickupDate) {
@@ -256,7 +256,7 @@ const Calculator = () => {
         />
       </div>
 
-      {(!data?.data || data?.data?.length === 0) && (
+      {(!data?.data?.content || data?.data?.content?.length === 0) && (
         <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
           <img src={empty} alt="empty quotes" className="h-[200px]" />
 
@@ -274,7 +274,7 @@ const Calculator = () => {
 
       {mode === "compare" && (
         <>
-          {data?.data && data?.data?.length > 0 && (
+          {data?.data?.content && data?.data?.content?.length > 0 && (
             <div className="flex xl:flex-row md:flex-col gap-6 mb-6">
               {/* Left Sidebar - Filters */}
               <div className="hidden md:block xl:w-64 w-full flex-shrink-0">
@@ -414,8 +414,8 @@ const Calculator = () => {
                 {/* Results Cards */}
                 <div className="flex flex-col gap-4">
                   {filteredAndSortedData.length === 0 &&
-                    data?.data &&
-                    data?.data?.length > 0 && (
+                    data?.data?.content &&
+                    data?.data?.content?.length > 0 && (
                       <div className="flex flex-col items-center justify-center py-12">
                         <p className="text-center font-bold text-gray-600 text-lg mb-2">
                           No results match your filters
@@ -577,7 +577,7 @@ const Calculator = () => {
         </>
       )}
 
-      {mode === "gosendeet" && data?.data && data?.data?.length > 0 && (
+      {mode === "gosendeet" && data?.data?.content && data?.data?.content?.length > 0 && (
         <div className="max-w-3xl mx-auto my-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 mb-8">
@@ -642,11 +642,11 @@ const Calculator = () => {
                     Estimated Delivery Date
                   </p>
                   <p className="text-lg font-bold text-[#1a1a1a]">
-                    {data?.data?.[0]?.estimatedDeliveryDate}
+                    {data?.data?.content?.[0]?.estimatedDeliveryDate}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                  {data?.data?.[0]?.pickupOptions[0]}
+                  {data?.data?.content?.[0]?.pickupOptions[0]}
                 </span>
               </div>
 
@@ -657,7 +657,7 @@ const Calculator = () => {
                     Delivery Fee
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{data?.data?.[0]?.deliveryFee || "0"}
+                    ₦{data?.data?.content?.[0]?.deliveryFee || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -665,14 +665,14 @@ const Calculator = () => {
                     Service Charge
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{data?.data?.[0]?.serviceCharge || "0"}
+                    ₦{data?.data?.content?.[0]?.serviceCharge || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
                   <span className="text-gray-700 font-medium">Total Cost</span>
                   <span className="text-blue-500 font-bold">
                     {/* removes NGN */}₦{" "}
-                    {parsePrice(data?.data?.[0]?.price).toFixed(2)}
+                    {parsePrice(data?.data?.content?.[0]?.price).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -680,7 +680,7 @@ const Calculator = () => {
               {/* Book Now Button */}
               <Button
                 onClick={() => {
-                  const quoteItem = data?.data?.[0];
+                  const quoteItem = data?.data?.content?.[0];
                   handleClick(quoteItem);
                 }}
                 className={cn(

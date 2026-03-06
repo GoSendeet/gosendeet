@@ -91,7 +91,6 @@ const Routes = ({
         {/* Card for mobiel screen sizes */}
           <div className="lg:hidden">
             {companyServices?.content?.map((item: any, index: number) => (
-              
               <MobileCard key={index}>
                 <div className="flex justify-end mb-2">
                   <Popover onOpenChange={(open) => open && setServiceInfo(item)}>
@@ -131,7 +130,7 @@ const Routes = ({
                   </span>
                   <span className="truncate ml-2 text-sm">
                     {item?.crossAreaRoute
-                      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+                      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB} (${item?.pickupOptions?.[0]?.name || '-'})`
                       : "-"}
                   </span>
                 </div>
@@ -183,6 +182,7 @@ const Routes = ({
                 return (
                   <div
                     key={index}
+                    onClick={() => handleDeleteService(item.id)}
                     className={`relative min-h-[60px] gap-2 bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${
                       index === 0
                         ? "border-t-0"
@@ -200,8 +200,8 @@ const Routes = ({
                     <div className="flex-1">
                       <p>
                         {item?.crossAreaRoute
-                          ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
-                          : "-"}
+                          ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB} (${item?.pickupOptions[0].name})`
+                          : "-"} 
                       </p>
                     </div>
 

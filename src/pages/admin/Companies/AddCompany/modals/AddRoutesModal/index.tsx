@@ -56,9 +56,6 @@ export function AddRoutesModal({
   const [selectedPackageTypes, setSelectedPackageTypes] = useState<string[]>(
     []
   );
-  // const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  // const [selectedRoutes, setSelectedRoutes] = useState<string[]>([]);
-
   const { data: pickup_options } = useGetPickupOptions({ minimize: true });
   const { data: package_types } = useGetPackageType({ minimize: true });
   // const { data: location_codes } = useGetLocationCode({ minimize: true });
@@ -73,17 +70,18 @@ export function AddRoutesModal({
   });
   const packageOptions = package_types?.data?.map((item: any) => {
     return {
-      label: item.name,
+      // label: `${item.name} (${item.maxWeight}kg)`,
+      label: (<div className="flex flex-col"> <span className="text-gray-900 font-semibold">{item.name}</span> <span className="font-light text-[0.6rem]"> Max weight: ({item.maxWeight} kg) </span></div>),
       value: item.id,
     };
   });
+  
   const routeOptions = cross_area_routes?.data?.map((item: any) => {
     return {
       label: item.areaA + " - " + item.areaB,
       value: item.id,
     };
   });
-
   const schema = z.object({
     crossAreaRouteId: z
       .string({ required_error: "Cross area route is required" })
@@ -142,7 +140,6 @@ export function AddRoutesModal({
       // crossAreaRouteIds: [],
     },
   });
-
   // Initialize once when `info` is available
   useEffect(() => {
     if (info?.pickupOptions) {
@@ -155,16 +152,6 @@ export function AddRoutesModal({
       setSelectedPackageTypes(defaultIds);
       setValue("packageTypeIds", defaultIds);
     }
-    // if (info?.locationCodes) {
-    //   const defaultIds = info.locationCodes.map((item: any) => item.id);
-    //   setSelectedLocations(defaultIds);
-    //   setValue("locationCodeIds", defaultIds);
-    // }
-    // if (info?.crossAreaRoutes) {
-    //   const defaultIds = info.crossAreaRoutes.map((item: any) => item.id);
-    //   setSelectedRoutes(defaultIds);
-    //   setValue("crossAreaRouteIds", defaultIds);
-    // }
   }, [info]);
 
   // ✅ Reset form with incoming info when modal opens
@@ -173,15 +160,10 @@ export function AddRoutesModal({
       reset({
         crossAreaRouteId:
           info?.crossAreaRoute?.id ??
-          info?.crossAreaRouteId ??
-          info?.crossAreaRoute ??
           "",
         // coverageAreaId: info?.coverageArea?.id,
         pickupOptionIds: info?.pickupOptions?.map((item: any) => item.id) || [],
         packageTypeIds: info?.packageTypes?.map((item: any) => item.id) || [],
-        // locationCodeIds: info?.locationCodes?.map((item: any) => item.id) || [],
-        // crossAreaRouteIds:
-        //   info?.crossAreaRoutes?.map((item: any) => item.id) || [],
         weightLimit: info.weightLimit?.toString() ?? "",
         isNextDayDelivery: info?.isNextDayDelivery ?? false,
         numberOfDaysForPickup: info.numberOfDaysForPickup?.toString() ?? "",
@@ -190,11 +172,9 @@ export function AddRoutesModal({
     } else if (openRoutesModal && type === "create") {
       setInfo(null);
       reset({
+        crossAreaRouteId: "",
         pickupOptionIds: [], // empty array for multi-select
         packageTypeIds: [],
-        // locationCodeIds: [],
-        // crossAreaRouteIds: [],
-        // coverageAreaId: "",
         weightLimit: "",
         isNextDayDelivery: false,
         numberOfDaysForPickup: "",
@@ -288,36 +268,18 @@ export function AddRoutesModal({
                   </label>
                   <div className="border-b mb-2">
                     <input type="hidden" {...register("crossAreaRouteId")} />
-                    {/* <MultiSelect
-                      options={routeOptions}
-                      value={selectedRoutes}
-                      placeholder="Select options"
-                      // value={selected || []}
-                      onChange={(val) => {
-                        setSelectedRoutes(val);
-                        setValue(
-                          "crossAreaRouteIds",
-                          val as [string, ...string[]]
-                        );
-                      }}
-                    /> */}
                     <Select
                       onValueChange={(val) =>
                         setValue("crossAreaRouteId", val, { shouldValidate: true })
                       }
-                      defaultValue={
-                        info?.crossAreaRoute?.id ??
-                        info?.crossAreaRouteId ??
-                        info?.crossAreaRoute
-                      }
+                      defaultValue={info?.crossAreaRoute?.id}
                       disabled={type === "edit"}
                     >
                       <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
                         <SelectValue placeholder="Select option"  />
                       </SelectTrigger>
                       <SelectContent >
-                        {type === "create" &&
-                          routeOptions?.map(
+                        {routeOptions?.map(
                             (item: any, index: number) => (
                               <SelectItem
                                 value={item.value}

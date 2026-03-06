@@ -104,8 +104,10 @@ const Pricing = ({
           )?.crossAreaRoute
         : undefined);
 
-    return route ? `${route.areaA} - ${route.areaB}` : "-";
+    return route ? `${route.areaA} - ${route.areaB} (${item?.pickupOptions?.[0]?.name || '-'})` : "-";
   };
+  
+  
 
   return (
     <div className="py-4">
@@ -127,7 +129,8 @@ const Pricing = ({
           Pricing
         </Button>
       </div>
-      {companyPricing && companyPricing?.content?.length > 0 && (
+      {companyPricing?.content && companyPricing?.content?.length > 0 && (
+        
         <>
           <div className="lg:hidden">
             {companyPricing?.content?.map((item: any, index: number) => (
@@ -192,10 +195,26 @@ const Pricing = ({
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-brand text-sm">
-                    Zone Multiplier
+                    Distance Multiplier
                   </span>
                   <span className="truncate ml-2 text-sm">
-                    {item?.zoneMultiplier}
+                    {item?.distanceMultiplier}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Bulk Multiplier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.bulkMultiplier}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Express Multiplier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.expressMultiplier}
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
@@ -219,7 +238,9 @@ const Pricing = ({
                 <span className="flex-1">Company Route</span>
                 <span className="flex-1">Base Price</span>
                 <span className="flex-1">Weight Multiplier</span>
-                <span className="flex-1">Zone Multiplier</span>
+                <span className="flex-1">Distance Multiplier</span>
+                <span className="flex-1">Bulk Multiplier</span>
+                <span className="flex-1">Express Multiplier</span>
                 <span className="flex-1">% Discount </span>
                 <span className="w-[2%]"></span>
               </div>
@@ -252,7 +273,13 @@ const Pricing = ({
                       <p>{item?.weightMultiplier}</p>
                     </div>
                     <div className="flex-1">
-                      <p>{item?.zoneMultiplier}</p>
+                      <p>{item?.distanceMultiplier}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.bulkMultiplier}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.expressMultiplier}</p>
                     </div>
                     <div className="flex-1">
                       <p>{item?.discountPercent}</p>

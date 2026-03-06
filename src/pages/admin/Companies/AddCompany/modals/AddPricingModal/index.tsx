@@ -15,7 +15,6 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { useGetServiceLevel } from "@/queries/admin/useGetAdminSettings";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -25,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { useGetCompanyServices } from "@/queries/admin/useGetAdminCompanies";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { constants } from "buffer";
 
 export function AddPricingModal({
   companyId,
@@ -41,11 +41,9 @@ export function AddPricingModal({
   type: string;
   setPricingInfo: any;
 }) {
-  // const { data: service_level } = useGetServiceLevel();
   const { data: company_services } = useGetCompanyServices(companyId);
-
   const schema = z.object({
-    crossAreaRouteId: z
+    companyServiceLineId: z
       .string({ required_error: "Service level is required" })
       .min(1, { message: "Please select an option" }),
     basePrice: z
@@ -54,9 +52,15 @@ export function AddPricingModal({
     weightMultiplier: z
       .string({ required_error: "Weight multiplier is required" })
       .min(1, { message: "Please enter a weight multiplier" }),
-    zoneMultiplier: z
-      .string({ required_error: "Zone multiplier is required" })
-      .min(1, { message: "Please enter a zone multiplier" }),
+    distanceMultiplier: z
+      .string({ required_error: "Distance multiplier is required" })
+      .min(1, { message: "Please enter a distance multiplier" }),
+    bulkMultiplier: z
+      .string({ required_error: "Bulk multiplier is required" })
+      .min(1, { message: "Please enter a bulk multiplier" }),
+    expressMultiplier: z
+      .string({ required_error: "Express multiplier is required" })
+      .min(1, { message: "Please enter an express multiplier" }),
     discountPercent: z
       .string({ required_error: "Discount percent is required" })
       .min(1, { message: "Please enter a discount percent" }),
@@ -68,32 +72,46 @@ export function AddPricingModal({
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      crossAreaRouteId: "",
+      companyServiceLineId: "",
     },
   });
+
+  const companyServiceLineId = watch("companyServiceLineId");
+  // const editRouteLabel = info?.companyService?.crossAreaRoute
+  //   ? `${info.companyService.crossAreaRoute.areaA} - ${info.companyService.crossAreaRoute.areaB}`
+  //   : info?.crossAreaRoute
+  //     ? `${info.crossAreaRoute.areaA} - ${info.crossAreaRoute.areaB}`
+  //     : "";
 
   // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
     if (openPricing && type === "edit" && info) {
       reset({
-        crossAreaRouteId: info?.crossAreaRoute?.id,
+        companyServiceLineId:
+          info?.companyServiceLine?.id ??
+          "",
         basePrice: info.basePrice?.toString() ?? "",
         weightMultiplier: info.weightMultiplier?.toString() ?? "",
-        zoneMultiplier: info.zoneMultiplier?.toString() ?? "",
+        distanceMultiplier: info.distanceMultiplier?.toString() ?? "",
+        bulkMultiplier: info.bulkMultiplier?.toString() ?? "",
+        expressMultiplier: info.expressMultiplier?.toString() ?? "",
         discountPercent: info.discountPercent?.toString() ?? "",
         notes: info?.notes,
       });
     } else if (openPricing && type === "create") {
       setPricingInfo(null);
       reset({
-        crossAreaRouteId: "",
+        companyServiceLineId: "",
         basePrice: "",
         weightMultiplier: "",
-        zoneMultiplier: "",
+        distanceMultiplier: "",
+        bulkMultiplier: "",
+        expressMultiplier: "",
         discountPercent: "",
         notes: "",
       });
@@ -106,10 +124,12 @@ export function AddPricingModal({
     onSuccess: () => {
       toast.success("Successful");
       reset({
-        crossAreaRouteId: "",
+        companyServiceLineId: "",
         basePrice: "",
         weightMultiplier: "",
-        zoneMultiplier: "",
+        distanceMultiplier: "",
+        bulkMultiplier: "",
+        expressMultiplier: "",
         discountPercent: "",
         notes: "",
       });
@@ -157,7 +177,6 @@ export function AddPricingModal({
         },
       });
   };
-
   return (
     <Dialog open={openPricing} onOpenChange={setOpenPricing}>
       <DialogContent className="gap-0">
@@ -177,35 +196,35 @@ export function AddPricingModal({
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col w-full">
                   <label
-                    htmlFor="crossAreaRouteId"
+                    htmlFor="companyServiceLineId"
                     className="font-inter text-brand font-semibold"
                   >
                     Select Company Route
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b mb-2">
                     <Select
-                      onValueChange={(val) => setValue("crossAreaRouteId", val)}
-                      defaultValue={info?.crossAreaRoute?.id}
+                      value={companyServiceLineId}
+                      onValueChange={(val) =>
+                        setValue("companyServiceLineId", val)
+                      }
+                      defaultValue={companyServiceLineId}
                       disabled={type === "edit"}
                     >
                       <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
                         <SelectValue placeholder="Select option"  />
                       </SelectTrigger>
                       <SelectContent >
-                        {type === "create" &&
-                          company_services &&
-                          company_services?.data?.content?.map(
-                            (item: any, index: number) => (
-                              <SelectItem
-                                value={item?.crossAreaRoute?.id}
-                                key={index}
-                              >
-                                {item?.crossAreaRoute
-                                  ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
-                                  : "-"}
-                              </SelectItem>
-                            )
-                          )}
+                        {
+                          company_services?.data?.content?.map((item: any) => (
+                            <SelectItem value={item.id} key={item.id}>
+                              {`${item.crossAreaRoute?.areaA} - ${item?.crossAreaRoute?.areaB} (${item?.pickupOptions?.[0]?.name || '-'})`}
+                            </SelectItem>
+                          ))}
+                        {/* {type === "edit" && companyServiceLineId && (
+                          <SelectItem value={companyServiceLineId}>
+                            {editRouteLabel || companyServiceLineId}
+                          </SelectItem>
+                        )} */}
                         {/* {type === "edit" &&
                           service_level &&
                           service_level?.data?.content?.map(
@@ -218,9 +237,9 @@ export function AddPricingModal({
                       </SelectContent>
                     </Select>
                   </div>
-                  {errors.crossAreaRouteId && (
+                  {errors.companyServiceLineId && (
                     <p className="error text-xs text-[#FF0000]">
-                      {errors.crossAreaRouteId.message}
+                      {errors.companyServiceLineId.message}
                     </p>
                   )}
                 </div>
@@ -303,24 +322,74 @@ export function AddPricingModal({
 
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
-                    htmlFor="zoneMultiplier"
+                    htmlFor="distanceMultiplier"
                     className="font-inter text-brand font-semibold"
                   >
-                    Zone Multiplier
+                    Distance Multiplier
                   </label>
                   <div className="border-b mb-2">
                     <input
                       type="text"
-                      {...register("zoneMultiplier")}
-                      defaultValue={info?.zoneMultiplier}
-                      placeholder="Enter zone multiplier"
+                      {...register("distanceMultiplier")}
+                      defaultValue={info?.distanceMultiplier}
+                      placeholder="Enter distance multiplier"
                       className="w-full outline-0 border-b-0 py-2"
                       onKeyDown={allowOnlyNumbers}
                     />
                   </div>
-                  {errors.zoneMultiplier && (
+                  {errors.distanceMultiplier && (
                     <p className="error text-xs text-[#FF0000]">
-                      {errors.zoneMultiplier.message}
+                      {errors.distanceMultiplier.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex md:flex-row flex-col gap-4 items-center">
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="bulkMultiplier"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Bulk Multiplier
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("bulkMultiplier")}
+                      defaultValue={info?.bulkMultiplier}
+                      placeholder="Enter bulk multiplier"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.bulkMultiplier && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.bulkMultiplier.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="expressMultiplier"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Express Multiplier
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("expressMultiplier")}
+                      defaultValue={info?.expressMultiplier}
+                      placeholder="Enter express multiplier"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.expressMultiplier && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.expressMultiplier.message}
                     </p>
                   )}
                 </div>
