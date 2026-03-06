@@ -468,9 +468,9 @@ export function AddressModal({
                     key={place_id}
                     type="button"
                     onClick={() => handleSelectLocation(place_id)}
-                    className="w-full px-3 py-2 flex items-start gap-2 hover:bg-amber-50 transition-colors text-left border-b border-gray-100 last:border-0"
+                    className="w-full px-3 py-2 flex items-start gap-2 hover:bg-brand-light transition-colors text-left border-b border-gray-100 last:border-0"
                   >
-                    <FiMapPin className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <FiMapPin className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
                     <span className="text-gray-900 text-xs">{description}</span>
                   </button>
                 ))}
@@ -478,9 +478,9 @@ export function AddressModal({
             )}
           </div>
 
-          <div className="flex items-start gap-2 text-xs text-gray-500 bg-blue-50 p-2.5 rounded-lg border border-blue-100">
-            <FiSearch className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-blue-500" />
-            <p>
+          <div className="flex items-start gap-2 text-xs text-gray-500 bg-brand-light p-2.5 rounded-lg border border-light">
+            <FiSearch className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-brand" />
+            <p className="text-brand">
               Start typing to see suggestions, or enter your address manually
               below.
             </p>

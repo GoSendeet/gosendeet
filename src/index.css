@@ -307,6 +307,7 @@
   --color-green4000: #E8EFEC;
   --color-brand: #064E3B;
   --color-brand-light: #F0FDF480;
+  --color-brabd-light2: #DCFCE7;
   --color-grey100: #f0f2f5;
   --color-gray150: #64748B;
   --color-grey200: #6b7280;
@@ -618,6 +619,36 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
   transform: scale(1.01);
 }
 
+.slider-thumb::-webkit-slider-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #16a34a;
+  cursor: pointer;
+  appearance: none;
+}
+
+.slider-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #16a34a;
+  cursor: pointer;
+}
+
+/* Always show number input arrows */
+.price-input::-webkit-inner-spin-button,
+.price-input::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+/* Firefox */
+.price-input {
+  -moz-appearance: number-input;
+}
+
 @media (min-width: 1024px) {
   .direct-send {
     width: 200px;
@@ -645,4 +676,6 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
     margin-bottom: 0;
     margin-top: 0;
   }
+
+  
 }
