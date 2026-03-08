@@ -171,7 +171,6 @@ const Routes = ({
                 return (
                   <div
                     key={index}
-                    onClick={() => handleDeleteService(item.id)}
                     className={`relative min-h-[60px] gap-2 bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${
                       index === 0
                         ? "border-t-0"
@@ -208,20 +207,27 @@ const Routes = ({
                         }
                       >
                         <PopoverTrigger asChild>
-                          <button className="border p-1 rounded-md border-neutral200">
+                          <button
+                            className="border p-1 rounded-md border-neutral200"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setActiveModalId(index);
+                            }}
+                          >
                             <BsThreeDotsVertical
                               size={20}
                               className="p-1 cursor-pointer"
-                              onClick={() => {
-                                setActiveModalId(index);
-                              }}
                             />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-fit p-1">
+                        <PopoverContent
+                          className="w-fit p-1"
+                          onClick={(event) => event.stopPropagation()}
+                        >
                           <p
                             className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
-                            onClick={() => {
+                            onClick={(event) => {
+                              event.stopPropagation();
                               setServiceInfo(item);
                               setOpenRoutesModal(true);
                               setType("edit");
@@ -231,7 +237,8 @@ const Routes = ({
                           </p>
                           <p
                             className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
-                            onClick={() => {
+                            onClick={(event) => {
+                              event.stopPropagation();
                               setSelectedDeleteIndex(index);
                             }}
                           >
