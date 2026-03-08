@@ -72,15 +72,10 @@ const extractStateFromAddress = (address?: string): string => {
 const Calculator = () => {
   const navigate = useNavigate();
   const userId = sessionStorage.getItem("userId") || "";
-
   const location = useLocation();
-
   const [searchParams] = useSearchParams();
-
   const shareId = searchParams.get("shareId") || "";
-
   const { data: sharedQuote } = useGetSharedQuotes(shareId);
-
   const { results, inputData: stateInputData } = location.state || {};
   const [mode, setMode] = useState<FormMode>(
     location?.state?.mode ?? "gosendeet",
@@ -108,13 +103,27 @@ const Calculator = () => {
 
   const bookingRequest = inputData;
   const [data, setData] = useState(results || {});
+  const quoteContent = useMemo(() => {
+    if (Array.isArray(data?.data?.content)) {
+      return data.data.content;
+    }
+    if (Array.isArray(data?.data)) {
+      return data.data;
+    }
+    if (Array.isArray((data as any)?.content)) {
+      return (data as any).content;
+    }
+    return [];
+  }, [data]);
+  const hasQuotes = quoteContent.length > 0;
   const PRICE_MAX = useMemo(() => {
-    if (!data?.data?.length) return 0;
+    if (!hasQuotes) return 0;
 
     return Math.ceil(
-      Math.max(...data.data.map((item: any) => parsePrice(item.price))) * 1.1
+      Math.max(...quoteContent.map((item: any) => parsePrice(item.price))) *
+        1.1,
     );
-  }, [data]);
+  }, [hasQuotes, quoteContent]);
   const [sortBy, setSortBy] = useState("price-asc");
   const [filterPickupDate, setFilterPickupDate] = useState("");
   const [filterDeliveryDate, setFilterDeliveryDate] = useState("");
@@ -210,19 +219,19 @@ const Calculator = () => {
 
   // Get unique providers
   const uniqueProviders = useMemo(() => {
-    if (!data?.data) return [];
+    if (!hasQuotes) return [];
     const providers = [
-      ...new Set(data.data.map((item: any) => item?.courier?.name)),
+      ...new Set(quoteContent.map((item: any) => item?.courier?.name)),
     ].filter(Boolean);
     return providers as string[];
-  }, [data]);
+  }, [hasQuotes, quoteContent]);
 
   // Get unique delivery speeds
   const uniqueDeliverySpeeds = useMemo(() => {
-    if (!data?.data) return [];
+    if (!hasQuotes) return [];
     const speeds: string[] = [
       ...new Set(
-        data.data.map((item: any) =>
+        quoteContent.map((item: any) =>
           getDeliverySpeedFromBoolean(item?.nextDayDelivery),
         ),
       ),
@@ -237,13 +246,13 @@ const Calculator = () => {
       };
       return (order[a] ?? 3) - (order[b] ?? 3);
     });
-  }, [data]);
+  }, [hasQuotes, quoteContent]);
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
-    if (!data?.data || data?.data?.length === 0) return [];
+    if (!hasQuotes) return [];
 
-    let filtered = [...data.data];
+    let filtered = [...quoteContent];
 
     // Filter by pickup date
     if (filterPickupDate) {
@@ -348,7 +357,8 @@ const Calculator = () => {
 
     return filtered;
   }, [
-    data,
+    hasQuotes,
+    quoteContent,
     sortBy,
     filterPickupDate,
     filterDeliveryDate,
@@ -501,7 +511,7 @@ const Calculator = () => {
         />
       </div>
 
-      {(!data?.data || data?.data?.length === 0) && (
+      {!hasQuotes && (
         <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
           <img src={empty} alt="empty quotes" className="h-50" />
 
@@ -519,7 +529,7 @@ const Calculator = () => {
 
       {mode === "compare" && (
         <>
-          {data?.data && data?.data?.length > 0 && (
+          {hasQuotes && (
             <>
               {/* Make this clickable so when clicked user the Left Sidebar - Filters is visible for small screen  */}
               <div
@@ -914,7 +924,7 @@ const Calculator = () => {
                       <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
                         Providers
                       </h4>
-                      <div className="w-full h-45 overflow-y-auto">
+                      <div className="w-full overflow-y-auto">
                         <div className="flex flex-col items-start gap-3">
                           {uniqueProviders.map((provider) => (
                             <button
@@ -1096,9 +1106,7 @@ const Calculator = () => {
 
                   {/* Results Cards */}
                   <div className="flex flex-col gap-4">
-                    {filteredAndSortedData.length === 0 &&
-                      data?.data &&
-                      data?.data?.length > 0 && (
+                    {filteredAndSortedData.length === 0 && hasQuotes && (
                         <div className="flex flex-col items-center justify-center py-12">
                           <p className="text-center font-bold text-gray-600 text-lg mb-2">
                             No results match your filters
@@ -1282,7 +1290,7 @@ const Calculator = () => {
         </>
       )}
 
-      {mode === "gosendeet" && data?.data && data?.data?.length > 0 && (
+      {mode === "gosendeet" && hasQuotes && (
         <div className="max-w-3xl mx-auto my-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6 mb-8">
@@ -1347,11 +1355,11 @@ const Calculator = () => {
                     Estimated Delivery Date
                   </p>
                   <p className="text-lg font-bold text-[#1a1a1a]">
-                    {data?.data?.[0]?.estimatedDeliveryDate}
+                    {quoteContent[0]?.estimatedDeliveryDate}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                  {data?.data?.[0]?.pickupOptions[0]}
+                  {quoteContent[0]?.pickupOptions?.[0]}
                 </span>
               </div>
 
@@ -1362,7 +1370,7 @@ const Calculator = () => {
                     Delivery Fee
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{data?.data?.[0]?.deliveryFee || "0"}
+                    ₦{quoteContent[0]?.deliveryFee || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1370,7 +1378,7 @@ const Calculator = () => {
                     Service Charge
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{data?.data?.[0]?.serviceCharge || "0"}
+                    ₦{quoteContent[0]?.serviceCharge || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1378,8 +1386,9 @@ const Calculator = () => {
                   <span className="text-brand font-bold">
                     {/* removes NGN */}₦{" "}
                     {CurrencyFormatter(
-                      parsePrice(data?.data?.[0]?.price).toFixed(2),
+                     parsePrice(quoteContent[0]?.price).toFixed(2),
                     )}
+                   
                   </span>
                 </div>
               </div>
@@ -1387,7 +1396,7 @@ const Calculator = () => {
               {/* Book Now Button */}
               <Button
                 onClick={() => {
-                  const quoteItem = data?.data?.[0];
+                  const quoteItem = quoteContent[0];
                   handleClick(quoteItem);
                 }}
                 className={cn(

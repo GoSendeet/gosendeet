@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { countries } from "@/constants";
-import { AddServiceModal } from "./modals/AddServiceModal";
+import { AddRoutesModal } from "./modals/AddRoutesModal";
 import { AddPricingModal } from "./modals/AddPricingModal";
 import { FiEdit, FiInfo } from "react-icons/fi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,7 +38,7 @@ const AddCompany = () => {
   const [status, setStatus] = useState("");
   const [searchParams] = useSearchParams();
   const companyId = searchParams.get("id") ?? ""; //?id=a3f93a6d-13b6-4684-bef4-171889b1cbc1
-  const [openService, setOpenService] = useState(false);
+  const [openRoutesModal, setOpenRoutesModal] = useState(false);
   const [serviceInfo, setServiceInfo] = useState({});
 
   const [openPricing, setOpenPricing] = useState(false);
@@ -593,63 +593,63 @@ const AddCompany = () => {
             </p>
             {companyServices && companyServices?.length > 0
               ? companyServices?.map((item: any, index: number) => {
-                  const isDeleteModalOpen = openDeleteModal === index;
-                  return (
-                    <div
-                      key={index}
-                      className="flex md:flex-row flex-col md:items-center md:gap-4 gap-2 justify-between mb-4"
-                    >
-                      <p className="bg-purple100 py-2 px-4 font-medium w-fit">
-                        {item?.companyServiceLevel?.name}
-                      </p>
+                const isDeleteModalOpen = openDeleteModal === index;
+                return (
+                  <div
+                    key={index}
+                    className="flex md:flex-row flex-col md:items-center md:gap-4 gap-2 justify-between mb-4"
+                  >
+                    <p className="bg-purple100 py-2 px-4 font-medium w-fit">
+                      {item?.companyServiceLevel?.name}
+                    </p>
 
-                      <div className="flex gap-4 items-center">
-                        <Button
-                          variant={"ghost"}
-                          size={"ghost"}
-                          className="text-neutral600"
-                          onClick={() => {
-                            setServiceInfo(item);
-                            setOpenService(true);
-                            setType("edit");
-                          }}
-                          disabled={companyId === ""}
-                        >
-                          <FiEdit size={20} className="cursor-pointer" /> Edit
-                        </Button>
+                    <div className="flex gap-4 items-center">
+                      <Button
+                        variant={"ghost"}
+                        size={"ghost"}
+                        className="text-neutral600"
+                        onClick={() => {
+                          setServiceInfo(item);
+                          setOpenRoutesModal(true);
+                          setType("edit");
+                        }}
+                        disabled={companyId === ""}
+                      >
+                        <FiEdit size={20} className="cursor-pointer" /> Edit
+                      </Button>
 
-                        <Button
-                          variant={"ghost"}
-                          size={"ghost"}
-                          className="text-[#F56630] hover:text-[#F56630]"
-                          onClick={() => {
-                            setOpenDeleteModal(index);
-                          }}
-                          disabled={companyId === ""}
-                        >
-                          <BiSolidTrashAlt
-                            size={20}
-                            className="cursor-pointer text-[#F56630]"
-                          />{" "}
-                          Delete
-                        </Button>
-                        <DeleteModal
-                          onOpenChange={(open) => {
-                            open
-                              ? setOpenDeleteModal(index)
-                              : setOpenDeleteModal(null);
-                          }}
-                          open={isDeleteModalOpen}
-                          title={"Delete company service"}
-                          data={item.companyServiceLevel.name ?? ""}
-                          id={item?.id ?? ""}
-                          handleDelete={handleDeleteService}
-                          loading={pendingDeleteService}
-                        />
-                      </div>
+                      <Button
+                        variant={"ghost"}
+                        size={"ghost"}
+                        className="text-[#F56630] hover:text-[#F56630]"
+                        onClick={() => {
+                          setOpenDeleteModal(index);
+                        }}
+                        disabled={companyId === ""}
+                      >
+                        <BiSolidTrashAlt
+                          size={20}
+                          className="cursor-pointer text-[#F56630]"
+                        />{" "}
+                        Delete
+                      </Button>
+                      <DeleteModal
+                        onOpenChange={(open) => {
+                          open
+                            ? setOpenDeleteModal(index)
+                            : setOpenDeleteModal(null);
+                        }}
+                        open={isDeleteModalOpen}
+                        title={"Delete company service"}
+                        data={item.companyServiceLevel.name ?? ""}
+                        id={item?.id ?? ""}
+                        handleDelete={handleDeleteService}
+                        loading={pendingDeleteService}
+                      />
                     </div>
-                  );
-                })
+                  </div>
+                );
+              })
               : null}
 
             <div className="">
@@ -660,7 +660,7 @@ const AddCompany = () => {
                   className="text-purple500"
                   onClick={() => {
                     setType("create");
-                    setOpenService(true);
+                    setOpenRoutesModal(true);
                   }}
                   disabled={companyId === ""}
                 >
@@ -671,7 +671,7 @@ const AddCompany = () => {
                   variant={"secondary"}
                   onClick={() => {
                     setType("create");
-                    setOpenService(true);
+                    setOpenRoutesModal(true);
                   }}
                   disabled={companyId === ""}
                 >
@@ -707,11 +707,10 @@ const AddCompany = () => {
                     return (
                       <div
                         key={index}
-                        className={`relative min-h-[60px] gap-2 text-center bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${
-                          index === 0
+                        className={`relative min-h-[60px] gap-2 text-center bg-white py-2 px-3 xl:px-4 text-sm flex items-center ${index === 0
                             ? "border-t-0"
                             : "border-t border-t-neutral300"
-                        } hover:bg-purple300`}
+                          } hover:bg-purple300`}
                       >
                         <div className="w-[25%]">
                           <p>{item?.serviceLevel.name}</p>
@@ -833,10 +832,10 @@ const AddCompany = () => {
         </div>
       </div>
 
-      <AddServiceModal
+      <AddRoutesModal
         companyId={companyId}
-        openService={openService}
-        setOpenService={setOpenService}
+        openRoutesModal={openRoutesModal}
+        setOpenRoutesModal={setOpenRoutesModal}
         info={serviceInfo}
         setInfo={setServiceInfo}
         type={type}
@@ -849,7 +848,7 @@ const AddCompany = () => {
         type={type}
         info={pricingInfo}
         setPricingInfo={setPricingInfo}
-        // companyServiceId={serviceId}
+      // companyServiceId={serviceId}
       />
     </div>
   );

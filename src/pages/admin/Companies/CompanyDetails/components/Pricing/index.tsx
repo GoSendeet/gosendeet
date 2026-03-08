@@ -80,6 +80,35 @@ const Pricing = ({
       ids: [id],
     });
 
+  const companyServiceList = Array.isArray(companyServices?.content)
+    ? companyServices.content
+    : Array.isArray(companyServices)
+      ? companyServices
+      : [];
+
+  const getCrossAreaRouteLabel = (item: any) => {
+    const route =
+      item?.companyService?.crossAreaRoute ??
+      item?.crossAreaRoute ??
+      (item?.companyServiceId
+        ? companyServiceList.find((svc: any) => svc.id === item.companyServiceId)
+            ?.crossAreaRoute
+        : undefined) ??
+      (item?.companyService?.id
+        ? companyServiceList.find((svc: any) => svc.id === item.companyService.id)
+            ?.crossAreaRoute
+        : undefined) ??
+      (item?.serviceLevel?.id
+        ? companyServiceList.find(
+            (svc: any) => svc.companyServiceLevel?.id === item.serviceLevel.id,
+          )?.crossAreaRoute
+        : undefined);
+
+    return route ? `${route.areaA} - ${route.areaB} (${item?.pickupOptions?.[0]?.name || '-'})` : "-";
+  };
+  
+  
+
   return (
     <div className="py-4">
       <div className="flex justify-between items-center gap-4 mb-6">
@@ -100,7 +129,8 @@ const Pricing = ({
           Pricing
         </Button>
       </div>
-      {companyPricing && companyPricing?.content?.length > 0 && (
+      {companyPricing?.content && companyPricing?.content?.length > 0 && (
+        
         <>
           <div className="lg:hidden">
             {companyPricing?.content?.map((item: any, index: number) => (
@@ -141,10 +171,10 @@ const Pricing = ({
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-brand text-sm">
-                    Service Level
+                    Company Route
                   </span>
                   <span className="truncate ml-2 text-sm">
-                    {item?.serviceLevel?.name}
+                    {getCrossAreaRouteLabel(item)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
@@ -165,10 +195,26 @@ const Pricing = ({
                 </div>
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium text-brand text-sm">
-                    Zone Multiplier
+                    Distance Multiplier
                   </span>
                   <span className="truncate ml-2 text-sm">
-                    {item?.zoneMultiplier}
+                    {item?.distanceMultiplier}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Bulk Multiplier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.bulkMultiplier}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-brand text-sm">
+                    Express Multiplier
+                  </span>
+                  <span className="truncate ml-2 text-sm">
+                    {item?.expressMultiplier}
                   </span>
                 </div>
                 <div className="flex justify-between items-center mb-2">
@@ -186,13 +232,15 @@ const Pricing = ({
           <div className="hidden lg:block overflow-auto mb-4">
             <div className="min-w-[1000px] w-full">
               <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 lg:text-md font-inter font-semibold bg-brand-light w-full">
-                <span className="w-[1%] mr-4">
+                {/* <span className="w-[1%] mr-4">
                   <input type="checkbox" name="" id="" className="mt-[2px]" />
-                </span>
-                <span className="flex-1">Service level</span>
+                </span> */}
+                <span className="flex-1">Company Route</span>
                 <span className="flex-1">Base Price</span>
                 <span className="flex-1">Weight Multiplier</span>
-                <span className="flex-1">Zone Multiplier</span>
+                <span className="flex-1">Distance Multiplier</span>
+                <span className="flex-1">Bulk Multiplier</span>
+                <span className="flex-1">Express Multiplier</span>
                 <span className="flex-1">% Discount </span>
                 <span className="w-[2%]"></span>
               </div>
@@ -207,16 +255,16 @@ const Pricing = ({
                         : "border-t border-t-neutral300"
                     } hover:bg-brand-light`}
                   >
-                    <span className="w-[1%] mr-4">
+                    {/* <span className="w-[1%] mr-4">
                       <input
                         type="checkbox"
                         name=""
                         id=""
                         className="mt-[2px]"
                       />
-                    </span>
+                    </span> */}
                     <div className="flex-1">
-                      <p>{item?.serviceLevel?.name}</p>
+                      <p>{getCrossAreaRouteLabel(item)}</p>
                     </div>
                     <div className="flex-1">
                       <p># {item?.basePrice}</p>
@@ -225,7 +273,13 @@ const Pricing = ({
                       <p>{item?.weightMultiplier}</p>
                     </div>
                     <div className="flex-1">
-                      <p>{item?.zoneMultiplier}</p>
+                      <p>{item?.distanceMultiplier}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.bulkMultiplier}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.expressMultiplier}</p>
                     </div>
                     <div className="flex-1">
                       <p>{item?.discountPercent}</p>
