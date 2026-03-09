@@ -1,15 +1,12 @@
-import { useRef } from "react"
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
 import empty from "@/assets/images/green-empty-bg.png";
 import Rating from "@/components/Rating";
 import { FiPackage } from "react-icons/fi";
-import { TrendingUp } from "lucide-react";
-// import { SiFedex, SiDhl, SiUps } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
