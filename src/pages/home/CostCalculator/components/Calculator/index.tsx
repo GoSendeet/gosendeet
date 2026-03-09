@@ -2,8 +2,7 @@ import { useRef } from "react"
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useEffect, useMemo, useState } from "react";
-import { PaginationComponent } from "@/components/Pagination";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
 import empty from "@/assets/images/green-empty-bg.png";
@@ -15,6 +14,7 @@ import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   Box,
+  ChevronDown,
   Copy,
   MapPin,
   Share2,
@@ -22,17 +22,31 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { shareQuotes } from "@/services/user";
+import { shareQuotes, getQuotes } from "@/services/user";
 import { APP_BASE_URL } from "@/services/axios";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/gosendeet-black-logo.png";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 const parsePrice = (price: string | number | undefined | null): number => {
   if (!price) return 0;
   if (typeof price === "number") return price;
   return parseFloat(String(price).replace(/[^\d.]/g, "")) || 0;
+};
+
+const normalizeQuotesResponse = (response: any): any[] => {
+  if (Array.isArray(response?.data?.content)) {
+    return response.data.content;
+  }
+  if (Array.isArray(response?.data)) {
+    return response.data;
+  }
+  if (Array.isArray(response?.content)) {
+    return response.content;
+  }
+  return [];
 };
 
 const CITY_TO_STATE = NIGERIAN_STATES_AND_CITIES.reduce<Record<string, string>>(
@@ -98,22 +112,11 @@ const Calculator = () => {
 
   const PRICE_MIN = 0;
   const PRICE_STEP = 200;
-  const ITEMS_PER_PAGE = 4;
-
-
+  const PAGE_SIZE = 8;
   const bookingRequest = inputData;
   const [data, setData] = useState(results || {});
   const quoteContent = useMemo(() => {
-    if (Array.isArray(data?.data?.content)) {
-      return data.data.content;
-    }
-    if (Array.isArray(data?.data)) {
-      return data.data;
-    }
-    if (Array.isArray((data as any)?.content)) {
-      return (data as any).content;
-    }
-    return [];
+    return normalizeQuotesResponse(data);
   }, [data]);
   const hasQuotes = quoteContent.length > 0;
   const PRICE_MAX = useMemo(() => {
@@ -137,9 +140,13 @@ const Calculator = () => {
   const [debouncedMinPrice, setDebouncedMinPrice] = useState(minPrice);
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(maxPrice);
   const [showFilters, setShowFilters] = useState<boolean>(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  const pageRef = useRef(1);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isFetchingQuotes, setIsFetchingQuotes] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   
   const minPriceRef = useRef<HTMLInputElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (PRICE_MAX > 0) {
@@ -212,6 +219,112 @@ const Calculator = () => {
     return () => clearTimeout(timer);
   }, [maxPrice]);
 
+  const isSharedView = Boolean(shareId);
+
+  const quotePayload = useMemo(() => {
+    if (!bookingRequest || Object.keys(bookingRequest).length === 0) return [];
+    return [
+      {
+        ...bookingRequest,
+        itemValue: Number(
+          bookingRequest.itemValue ?? bookingRequest.itemPrice ?? 0,
+        ),
+        quantity: bookingRequest.quantity ?? 1,
+        packageDescription: bookingRequest.packageDescription ?? {
+          isFragile: false,
+          isPerishable: false,
+          isExclusive: false,
+          isHazardous: false,
+        },
+      },
+    ];
+  }, [bookingRequest]);
+
+  const derivedHasNextDay = useMemo(() => {
+    const speeds = selectedDeliverySpeed.filter((s) => s !== "Any Speed");
+    if (speeds.length === 0 || speeds.length > 1) return undefined;
+    return speeds[0] === "Next Day";
+  }, [selectedDeliverySpeed]);
+
+  const filterParams = useMemo(() => {
+    const companyName =
+      selectedProviders.length > 0 ? selectedProviders.join(",") : undefined;
+    const minPriceParam =
+      typeof debouncedMinPrice === "number" ? debouncedMinPrice : undefined;
+    const maxPriceParam =
+      typeof debouncedMaxPrice === "number" ? debouncedMaxPrice : undefined;
+
+    return {
+      search: undefined,
+      minPrice: minPriceParam,
+      maxPrice: maxPriceParam,
+      companyName,
+      hasNextDay: derivedHasNextDay,
+    };
+  }, [
+    selectedProviders,
+    debouncedMinPrice,
+    debouncedMaxPrice,
+    derivedHasNextDay,
+  ]);
+
+  const fetchQuotesPage = useCallback(
+    async (pageToLoad: number, replace: boolean) => {
+      if (isSharedView || quotePayload.length === 0 || mode === "tracking") {
+        return;
+      }
+
+      replace ? setIsFetchingQuotes(true) : setIsLoadingMore(true);
+
+      try {
+        const response = await getQuotes(
+          quotePayload,
+          mode === "gosendeet",
+          {
+            ...filterParams,
+            page: pageToLoad,
+            size: PAGE_SIZE,
+          },
+        );
+
+        const newQuotes = normalizeQuotesResponse(response);
+        setHasNextPage(newQuotes.length === PAGE_SIZE);
+
+        setData((prev: any) => {
+          const prevQuotes = replace ? [] : normalizeQuotesResponse(prev);
+          return {
+            ...response,
+            data: [...prevQuotes, ...newQuotes],
+          };
+        });
+      } catch (error: any) {
+        toast.error(error?.message || "Unable to fetch quotes");
+      } finally {
+        setIsFetchingQuotes(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [filterParams, isSharedView, mode, quotePayload, PAGE_SIZE],
+  );
+
+  useEffect(() => {
+    if (mode !== "compare" || isSharedView) return;
+    if (quotePayload.length === 0) return;
+    pageRef.current = 1;
+    setHasNextPage(true);
+    listRef.current?.scrollTo({ top: 0 });
+    fetchQuotesPage(1, true);
+  }, [
+    mode,
+    isSharedView,
+    quotePayload,
+    debouncedMinPrice,
+    debouncedMaxPrice,
+    selectedProviders,
+    selectedDeliverySpeed,
+    fetchQuotesPage,
+  ]);
+
   // Determine delivery speed based on nextDayDelivery boolean
   const getDeliverySpeedFromBoolean = (nextDayDelivery: boolean): string => {
     return nextDayDelivery ? "Next Day" : "Same Day";
@@ -225,6 +338,14 @@ const Calculator = () => {
     ].filter(Boolean);
     return providers as string[];
   }, [hasQuotes, quoteContent]);
+
+  const providerOptions = useMemo(() => {
+    const ordered = [
+      ...selectedProviders,
+      ...uniqueProviders.filter((p) => !selectedProviders.includes(p)),
+    ];
+    return ordered.length > 0 ? ordered : uniqueProviders;
+  }, [selectedProviders, uniqueProviders]);
 
   // Get unique delivery speeds
   const uniqueDeliverySpeeds = useMemo(() => {
@@ -247,6 +368,19 @@ const Calculator = () => {
       return (order[a] ?? 3) - (order[b] ?? 3);
     });
   }, [hasQuotes, quoteContent]);
+
+  const deliverySpeedOptions = useMemo(() => {
+    const fallback = ["Any Speed", "Same Day", "Next Day"];
+    const base = uniqueDeliverySpeeds.length > 0 ? uniqueDeliverySpeeds : fallback;
+    const withSelected = [
+      ...selectedDeliverySpeed,
+      ...base.filter((s) => !selectedDeliverySpeed.includes(s)),
+    ];
+    if (!withSelected.includes("Any Speed")) {
+      withSelected.unshift("Any Speed");
+    }
+    return withSelected;
+  }, [selectedDeliverySpeed, uniqueDeliverySpeeds]);
 
   // Filter and sort data
   const filteredAndSortedData = useMemo(() => {
@@ -369,6 +503,14 @@ const Calculator = () => {
     PRICE_MAX,
   ]);
 
+  const totalRows = filteredAndSortedData.length + (hasNextPage ? 1 : 0);
+  const rowVirtualizer = useVirtualizer({
+    count: totalRows,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 260,
+    overscan: 6,
+  });
+
   // Get unique pickup dates for filter
   // const uniquePickupDates = useMemo(() => {
   //   if (!data?.data) return [];
@@ -385,26 +527,21 @@ const Calculator = () => {
   //   ].filter(Boolean);
   // }, [data]);
 
-  // Reset to page 1 whenever filters/sort change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortBy, filterPickupDate, filterDeliveryDate, debouncedMinPrice, debouncedMaxPrice, selectedProviders, selectedDeliverySpeed, data]);
-
-  const lastPage = Math.ceil(filteredAndSortedData.length / ITEMS_PER_PAGE);
-
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredAndSortedData.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredAndSortedData, currentPage, ITEMS_PER_PAGE]);
-
   const clearFilters = () => {
     setFilterPickupDate("");
     setFilterDeliveryDate("");
-    setMinPrice(PRICE_MIN);
-    setMaxPrice(PRICE_MAX);
+    setMinPrice("");
+    setMaxPrice("");
     setSelectedProviders([]);
     setSelectedDeliverySpeed([]);
     setSortBy("price-asc");
+  };
+
+  const handleLoadMore = () => {
+    if (isLoadingMore || isFetchingQuotes || !hasNextPage) return;
+    const nextPage = pageRef.current + 1;
+    pageRef.current = nextPage;
+    fetchQuotesPage(nextPage, false);
   };
 
   const activeFiltersCount = [
@@ -511,28 +648,13 @@ const Calculator = () => {
         />
       </div>
 
-      {!hasQuotes && (
-        <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
-          <img src={empty} alt="empty quotes" className="h-50" />
-
-          <p className="text-center font-bold text-green-600 text-lg mb-1">
-            No courier services available
-          </p>
-          <p className="text-center text-gray-600 text-sm">
-            Use the form above to search for courier services by entering your
-            pickup location, destination, and package details.
-          </p>
-        </div>
-      )}
 
       {/* Results Section Header */}
 
       {mode === "compare" && (
         <>
-          {hasQuotes && (
-            <>
-              {/* Make this clickable so when clicked user the Left Sidebar - Filters is visible for small screen  */}
-              <div
+          {/* Make this clickable so when clicked user the Left Sidebar - Filters is visible for small screen  */}
+          {/* <div
                 className="md:hidden bg-white flex items-center justify-center gap-2 p-2.5 rounded-2xl mb-6 cursor-pointer shadow-md"
                 onClick={() => toggleMobileFilterBtn(true)}
               >
@@ -540,7 +662,7 @@ const Calculator = () => {
                 <h3 className="font-semibold text-base text-gray-900">
                   Filter & Sort
                 </h3>
-              </div>
+              </div> */}
 
               {/* Mobile Filter Overlay/Drawer */}
               <div
@@ -709,7 +831,7 @@ const Calculator = () => {
                       </h4>
                        <div className="w-full h-[160px] overflow-y-auto">
                         <div className="flex flex-col items-start gap-3">
-                          {uniqueProviders.map((provider) => (
+                          {providerOptions.map((provider) => (
                             <button
                               key={provider}
                               onClick={() => {
@@ -739,7 +861,7 @@ const Calculator = () => {
                         Delivery Speed
                       </h4>
                       <div className="flex flex-wrap gap-4">
-                        {uniqueDeliverySpeeds.map((speed) => (
+                        {deliverySpeedOptions.map((speed) => (
                           <button
                             key={speed}
                             onClick={() => {
@@ -783,7 +905,7 @@ const Calculator = () => {
                       <h3 className="font-semibold text-lg text-gray-900">
                         Filters
                       </h3>
-                      {activeFiltersCount > 0 && (
+                      {(
                         <button
                           onClick={clearFilters}
                           className="text-xs font-semibold text-brand cursor-pointer hover:text-green-800 bg-brand-light py-1 px-2 rounded transition-colors"
@@ -926,7 +1048,7 @@ const Calculator = () => {
                       </h4>
                       <div className="w-full overflow-y-auto">
                         <div className="flex flex-col items-start gap-3">
-                          {uniqueProviders.map((provider) => (
+                          {providerOptions.map((provider) => (
                             <button
                               key={provider}
                               onClick={() => {
@@ -956,7 +1078,7 @@ const Calculator = () => {
                         Delivery Speed
                       </h4>
                       <div className="flex flex-wrap gap-4">
-                        {uniqueDeliverySpeeds.map((speed) => (
+                        {deliverySpeedOptions.map((speed) => (
                           <button
                             key={speed}
                             onClick={() => {
@@ -1034,12 +1156,6 @@ const Calculator = () => {
                         <p className="text-sm text-gray-600">
                           Showing{" "}
                           <span className="font-semibold text-gray-900">
-                            {filteredAndSortedData.length > 0
-                              ? `${(currentPage - 1) * ITEMS_PER_PAGE + 1}–${Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedData.length)}`
-                              : 0}
-                          </span>{" "}
-                          of{" "}
-                          <span className="font-semibold text-gray-900">
                             {filteredAndSortedData.length}
                           </span>{" "}
                           option{filteredAndSortedData.length !== 1 ? "s" : ""}
@@ -1106,187 +1222,221 @@ const Calculator = () => {
 
                   {/* Results Cards */}
                   <div className="flex flex-col gap-4">
-                    {filteredAndSortedData.length === 0 && hasQuotes && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                          <p className="text-center font-bold text-gray-600 text-lg mb-2">
-                            No results match your filters
+                          {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
+                        <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
+                          <img src={empty} alt="empty quotes" className="h-50" />
+
+                          <p className="text-center font-bold text-green-600 text-lg mb-1">
+                            No courier services available
                           </p>
-                          <button
-                            onClick={clearFilters}
-                            className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
-                          >
-                            Clear all filters
-                          </button>
+                          <p className="text-center text-gray-600 text-sm">
+                            Use the form above to search for courier services by entering your
+                            pickup location, destination, and package details.
+                          </p>
                         </div>
                       )}
 
-                    {paginatedData.map((item: any, index: number) => {
-                      const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + index;
-                      // const badgeType =
-                      //   index === 0
-                      //     ? "TOP PICK"
-                      //     : index === 1
-                      //       ? "BEST"
-                      //       : index === 2
-                      //         ? "FASTEST"
-                      //         : "STANDARD";
-                      // const badgeColor =
-                      //   badgeType === "TOP PICK"
-                      //     ? "bg-green-600"
-                      //     : badgeType === "BEST"
-                      //       ? "bg-green-700"
-                      //       : badgeType === "FASTEST"
-                      //         ? "bg-gray-900"
-                      //         : "bg-gray-600";
-
-                      return (
-                        <div
-                          key={index}
-                          className={cn(
-                            "bg-white rounded-xl overflow-hidden",
-                            "border-2 border-gray-300",
-                            "shadow-md",
-                            "transition-all duration-300",
-                            "hover:shadow-lg hover:-translate-y-1 hover:border-green800",
-                            "relative",
-                          )}
+                    {filteredAndSortedData.length === 0 && (
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <p className="text-center font-bold text-gray-600 text-lg mb-2">
+                          No results match your filters
+                        </p>
+                        <button
+                          onClick={clearFilters}
+                          className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
                         >
-                          {/* Top Badge */}
-                          {/* <div className="absolute top-4 right-4 z-10">
-                          <span
-                            className={`${badgeColor} text-white text-xs font-bold px-3 py-1 rounded-full`}
-                          >
-                            {badgeType}
-                          </span>
-                        </div> */}
+                          Clear all filters
+                        </button>
+                      </div>
+                    )}
 
-                          <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
-                            {/* Left - Courier Logo & Info */}
-                            <div className="xl:w-1/4">
-                              <div className="flex-1 flex items-center gap-1">
-                                {item?.courier?.logo ? (
-                                  <img
-                                    src={item?.courier?.logo}
-                                    alt=""
-                                    className="w-[47px] lg:w-[57px] rounded-lg"
-                                  />
-                                ) : (
-                                  <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
-                                    <Box className="w-8 h-8 text-gray-700" />
-                                  </div>
-                                )}
-                                <div className="flex flex-col gap-2">
-                                  <h3 className="text-xs lg:text-lg font-bold text-gray-900">
-                                    {item?.courier?.name}
-                                  </h3>
-                                  <div className="flex items-center gap-1">
-                                    <Rating
-                                      value={item?.courier?.averageRatingScore}
-                                      readOnly
-                                    />
-                                    <div className="text-xs text-gray-600 space-y-1">
-                                      <p>({item?.courier?.totalRatings})</p>
+                    {filteredAndSortedData.length > 0 && (
+                      <div
+                        ref={listRef}
+                        className="relative max-h-[70vh] lg:max-h-[75vh] overflow-y-auto pr-1"
+                      >
+                        <div
+                          className="relative w-full"
+                          style={{ height: rowVirtualizer.getTotalSize() }}
+                        >
+                          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                            const isLoaderRow =
+                              virtualRow.index > filteredAndSortedData.length - 1;
+
+                            if (isLoaderRow) {
+                              return (
+                                <div
+                                  key={virtualRow.key}
+                                  className="absolute left-0 top-0 w-full"
+                                  style={{
+                                    transform: `translateY(${virtualRow.start}px)`,
+                                  }}
+                                >
+                                  <button
+                                    onClick={handleLoadMore}
+                                    disabled={isLoadingMore || isFetchingQuotes}
+                                    className={cn(
+                                      "w-full flex items-center justify-center gap-3",
+                                      "rounded-2xl border border-[#D1D5DB] bg-white",
+                                      "py-4 text-sm font-semibold text-green100",
+                                      "shadow-sm transition-colors",
+                                      (isLoadingMore || isFetchingQuotes) &&
+                                        "opacity-70 cursor-not-allowed",
+                                    )}
+                                  >
+                                    {isLoadingMore || isFetchingQuotes
+                                      ? "Loading more options..."
+                                      : `Show ${PAGE_SIZE} more options`}
+                                    <ChevronDown size={18} />
+                                  </button>
+                                </div>
+                              );
+                            }
+
+                            const item =
+                              filteredAndSortedData[virtualRow.index];
+                            const globalIndex = virtualRow.index;
+
+                            return (
+                              <div
+                                key={virtualRow.key}
+                                className="absolute left-0 top-0 w-full"
+                                style={{
+                                  transform: `translateY(${virtualRow.start}px)`,
+                                }}
+                              >
+                                <div
+                                  className={cn(
+                                    "bg-white rounded-xl overflow-hidden",
+                                    "border-2 border-gray-300",
+                                    "shadow-md",
+                                    "transition-all duration-300",
+                                    "hover:shadow-lg hover:-translate-y-1 hover:border-green800",
+                                    "relative",
+                                  )}
+                                >
+                                  <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
+                                    {/* Left - Courier Logo & Info */}
+                                    <div className="xl:w-1/4">
+                                      <div className="flex-1 flex items-center gap-1">
+                                        {item?.courier?.logo ? (
+                                          <img
+                                            src={item?.courier?.logo}
+                                            alt=""
+                                            className="w-[47px] lg:w-[57px] rounded-lg"
+                                          />
+                                        ) : (
+                                          <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
+                                            <Box className="w-8 h-8 text-gray-700" />
+                                          </div>
+                                        )}
+                                        <div className="flex flex-col gap-2">
+                                          <h3 className="text-xs lg:text-lg font-bold text-gray-900">
+                                            {item?.courier?.name}
+                                          </h3>
+                                          <div className="flex items-center gap-1">
+                                            <Rating
+                                              value={
+                                                item?.courier
+                                                  ?.averageRatingScore
+                                              }
+                                              readOnly
+                                            />
+                                            <div className="text-xs text-gray-600 space-y-1">
+                                              <p>
+                                                ({item?.courier?.totalRatings})
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
+                                        <ShieldCheck size={14} /> Verified
+                                      </div>
+                                    </div>
+
+                                    {/* Center - Pickup/Delivery Timeline */}
+                                    <div className="xl:w-1/2 ">
+                                      <div className="flex lg:flex-row items-center justify-center gap-8">
+                                        <div className="lg:text-left text-center">
+                                          <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
+                                            PICKUP
+                                          </p>
+                                          <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
+                                            {item?.pickUpdateDate ||
+                                              "Not specified"}
+                                          </p>
+                                        </div>
+
+                                        <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
+                                          <p className="text-xs text-gray-600 font-semibold pt-2">
+                                            {item?.pickupOptions?.[0] ||
+                                              "Standard Delivery"}
+                                          </p>
+                                          <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
+                                          <p>{``}</p>
+                                        </div>
+
+                                        <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
+                                          <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
+                                            DROPOFF
+                                          </p>
+                                          <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
+                                            {item?.estimatedDeliveryDate ||
+                                              "Not specified"}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="block lg:hidden lg:text-left text-center mt-3">
+                                        <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
+                                          DROPOFF
+                                        </p>
+                                        <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
+                                          {item?.estimatedDeliveryDate ||
+                                            "Not specified"}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Right - Price & CTA */}
+                                    <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
+                                      <div className="mb-4">
+                                        <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
+                                          ₦
+                                          {parsePrice(item.price).toLocaleString()}
+                                        </p>
+                                      </div>
+
+                                      <Button
+                                        onClick={() => handleClick(item)}
+                                        className={cn(
+                                          globalIndex === 0
+                                            ? "bg-green100 hover:bg-green800 submit-btn-shadow"
+                                            : "bg-white text-green100 border-2",
+                                          "rounded-2xl md:w-[170px] w-full",
+                                        )}
+                                      >
+                                        {globalIndex === 0 ? (
+                                          <span className="flex items-center gap-2">
+                                            Select Option <ArrowRight />
+                                          </span>
+                                        ) : (
+                                          "Select"
+                                        )}
+                                      </Button>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
-                                <ShieldCheck size={14} /> Verified
-                              </div>
-                            </div>
-
-                            {/* Center - Pickup/Delivery Timeline */}
-                            <div className="xl:w-1/2 ">
-                              <div className="flex lg:flex-row items-center justify-center gap-8">
-
-                                <div className="lg:text-left text-center">
-                                  <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                    PICKUP
-                                  </p>
-                                  <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
-                                    {item?.pickUpdateDate || "Not specified"}
-                                  </p>
-                                </div>
-
-                                <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
-                                  <p className="text-xs text-gray-600 font-semibold pt-2">
-                                    {item?.pickupOptions?.[0] ||
-                                      "Standard Delivery"}
-                                  </p>
-                                  <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
-                                  <p>{``}</p>
-                                </div>
-
-                                <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
-                                  <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                    DROPOFF
-                                  </p>
-                                  <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                    {item?.estimatedDeliveryDate ||
-                                      "Not specified"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              <div className="block lg:hidden lg:text-left text-center mt-3">
-                                <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
-                                  DROPOFF
-                                </p>
-                                <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                  {item?.estimatedDeliveryDate ||
-                                    "Not specified"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Right - Price & CTA */}
-                            <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
-                              <div className="mb-4">
-                                <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
-                                  ₦{parsePrice(item.price).toLocaleString()}
-                                </p>
-                                {/* {index === 0 && (
-                                <p className="text-xs font-bold text-green-700 mt-1">
-                                  15% Savings
-                                </p>
-                              )} */}
-                              </div>
-
-                              <Button
-                                onClick={() => handleClick(item)}
-                                className={cn(
-                                  globalIndex === 0
-                                    ? "bg-green100 hover:bg-green800 submit-btn-shadow"
-                                    : "bg-white text-green100 border-2",
-                                  "rounded-2xl md:w-[170px] w-full",
-                                )}
-                              >
-                                {globalIndex === 0 ? (
-                                  <span className="flex items-center gap-2">
-                                    Select Option <ArrowRight />
-                                  </span>
-                                ) : (
-                                  "Select"
-                                )}
-                              </Button>
-                            </div>
-                          </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    )}
                   </div>
-
-                  {lastPage > 1 && (
-                    <PaginationComponent
-                      lastPage={lastPage}
-                      currentPage={currentPage}
-                      handlePageChange={setCurrentPage}
-                    />
-                  )}
                 </div>
               </div>
-            </>
-          )}
         </>
       )}
 
