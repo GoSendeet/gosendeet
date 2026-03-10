@@ -35,7 +35,12 @@ const Signup = () => {
     .object({
       username: z
         .string({ required_error: "Full name is required" })
+        .trim()
         .min(1, { message: "Full name cannot be empty" }),
+      lastname: z
+        .string({ required_error: "Last name is required" })
+        .trim()
+        .min(1, { message: "Last name cannot be empty" }),
       email: z
         .string({ required_error: "Email address is required" })
         .email({ message: "Invalid email address" }),
@@ -57,10 +62,16 @@ const Signup = () => {
   const franchiseSchema = z
     .object({
       username: z
-        .string({ required_error: "Full name is required" })
-        .min(1, { message: "Full name cannot be empty" }),
+        .string({ required_error: "First name is required" })
+        .trim()
+        .min(1, { message: "First name cannot be empty" }),
+      lastname: z
+        .string({ required_error: "Last name is required" })
+        .trim()
+        .min(1, { message: "Last name cannot be empty" }),
       companyName: z
         .string({ required_error: "Company name is required" })
+        .trim()
         .min(1, { message: "Company name cannot be empty" }),
       email: z
         .string({ required_error: "Email address is required" })
@@ -222,9 +233,15 @@ const Signup = () => {
                     </label>
                     <input
                       type="text"
+                       {...register("lastname")}
                       placeholder="e.g. Okafor"
                       className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
                     />
+                    {errors.lastname && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {(errors.lastname as any)?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
