@@ -115,6 +115,7 @@ const Calculator = () => {
   const quoteContent = useMemo(() => {
     return normalizeQuotesResponse(data);
   }, [data]);
+  
   const hasQuotes = quoteContent.length > 0;
   const PRICE_MAX = useMemo(() => {
     if (!hasQuotes) return 0;
@@ -1517,7 +1518,9 @@ const Calculator = () => {
                     Delivery Fee
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.deliveryFee || "0"}
+                    ₦{quoteContent[0]?.deliveryFee || CurrencyFormatter(
+                     parsePrice(quoteContent[0]?.price).toFixed(2),
+                    ) || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1525,7 +1528,9 @@ const Calculator = () => {
                     Service Charge
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.serviceCharge || "0"}
+                    ₦{quoteContent[0]?.serviceCharge || CurrencyFormatter(
+                     parsePrice(quoteContent[0]?.price * 0.005).toFixed(2),
+                    ) || "0"}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
@@ -1533,7 +1538,7 @@ const Calculator = () => {
                   <span className="text-brand font-bold">
                     {/* removes NGN */}₦{" "}
                     {CurrencyFormatter(
-                     parsePrice(quoteContent[0]?.price).toFixed(2),
+                     parsePrice((quoteContent[0]?.price * 0.005) + quoteContent[0]?.price).toFixed(2),
                     )}
                    
                   </span>
