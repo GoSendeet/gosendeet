@@ -9,9 +9,23 @@ export const userDetails = async (id: string) => {
   }
 };
 
-export const getQuotes = async ( data: any, direct: boolean = false) => {
+export const getQuotes = async (
+  data: any,
+  direct: boolean = false,
+  params?: {
+    search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    companyName?: string;
+    hasNextDay?: boolean;
+    page?: number;
+    size?: number;
+  },
+) => {
   try {
-    const res = await authApi.post(`/quotes?direct=${direct}`, data);
+    const res = await authApi.post(`/quotes?direct=${direct}`, data, {
+      params,
+    });
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };

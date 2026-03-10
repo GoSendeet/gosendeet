@@ -31,15 +31,13 @@ import ErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking
 import PublicDispatchPage from "./pages/dispatch/PublicDispatchPage";
 import FranchiseLayout from "./layouts/FranchiseLayout";
 import Franchise from "./pages/franchise";
-import TawkMessengerReact from "@tawk.to/tawk-messenger-react";
+import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 
 function App() {
   return (
     <>
-    <TawkMessengerReact
-                propertyId="69160ce5a373f9195a3a09e0"
-                widgetId="1j9v24p05"/>
+    <ChatwootWidget />
     <Router>
       <Routes>
           <Route path="/" element={<Home />} />

@@ -15,8 +15,6 @@ import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 const Delivery = () => {
   const location = useLocation();
   const { bookingRequest, bookingDetails } = location?.state || {};
-  console.log(bookingRequest);
-  console.log(bookingDetails);
   const userId = sessionStorage.getItem("userId") || "";
   const [bookingData, setBookingData] = useState({});
 
