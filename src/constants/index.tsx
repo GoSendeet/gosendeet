@@ -579,3 +579,12 @@ export const statusOptions = [
   { value: "CANCELLED", title: "Cancelled" },
   { value: "FAILED_DELIVERY", title: "Failed Delivery" },
 ]
+
+export const franchiseDashboardTab = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "deliveries", label: "Deliveries" },
+  { key: "earnings", label: "Earnings" },
+  { key: "performance", label: "Performance" },
+  { key: "notifications", label: "Notifications" },
+  { key: "settings", label: "Profile & Settings" },
+]
