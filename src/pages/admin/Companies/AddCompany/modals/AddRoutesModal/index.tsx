@@ -26,7 +26,7 @@ import {
   // useGetLocationCode,
   useGetPackageType,
   useGetPickupOptions,
-  useGetServiceLevel,
+  // useGetServiceLevel,
 } from "@/queries/admin/useGetAdminSettings";
 import { MultiSelect } from "@/components/ui/multi";
 import {
@@ -35,17 +35,17 @@ import {
 } from "@/services/companies";
 import { allowOnlyNumbers } from "@/lib/utils";
 
-export function AddServiceModal({
+export function AddRoutesModal({
   companyId,
-  openService,
-  setOpenService,
+  openRoutesModal,
+  setOpenRoutesModal,
   info,
   type,
   setInfo,
 }: {
   companyId: string;
-  openService: boolean;
-  setOpenService: any;
+  openRoutesModal: boolean;
+  setOpenRoutesModal: any;
   info: any;
   type: string;
   setInfo: any;
@@ -56,10 +56,6 @@ export function AddServiceModal({
   const [selectedPackageTypes, setSelectedPackageTypes] = useState<string[]>(
     []
   );
-  // const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [selectedRoutes, setSelectedRoutes] = useState<string[]>([]);
-
-  const { data: service_level } = useGetServiceLevel({ minimize: true });
   const { data: pickup_options } = useGetPickupOptions({ minimize: true });
   const { data: package_types } = useGetPackageType({ minimize: true });
   // const { data: location_codes } = useGetLocationCode({ minimize: true });
@@ -74,26 +70,21 @@ export function AddServiceModal({
   });
   const packageOptions = package_types?.data?.map((item: any) => {
     return {
-      label: item.name,
+      // label: `${item.name} (${item.maxWeight}kg)`,
+      label: (<div className="flex flex-col"> <span className="text-gray-900 font-semibold">{item.name}</span> <span className="font-light text-[0.6rem]"> Max weight: ({item.maxWeight} kg) </span></div>),
       value: item.id,
     };
   });
-  // const locationOptions = location_codes?.data?.map((item: any) => {
-  //   return {
-  //     label: item.name,
-  //     value: item.id,
-  //   };
-  // });
+  
   const routeOptions = cross_area_routes?.data?.map((item: any) => {
     return {
       label: item.areaA + " - " + item.areaB,
       value: item.id,
     };
   });
-
   const schema = z.object({
-    serviceLevelId: z
-      .string({ required_error: "Service level is required" })
+    crossAreaRouteId: z
+      .string({ required_error: "Cross area route is required" })
       .min(1, { message: "Please select an option" }),
     pickupOptionIds: z
       .array(z.string())
@@ -101,18 +92,22 @@ export function AddServiceModal({
     packageTypeIds: z
       .array(z.string())
       .nonempty({ message: "Select at least one package type" }),
-    // locationCodeIds: z
+    // basePrice: z
+    //   .string({ required_error: "Base price is required" })
+    //   .min(1, { message: "Please enter a base price" }),
+    // weightMultiplier: z
+    //   .string({ required_error: "Weight multiplier is required" })
+    //   .min(1, { message: "Please enter a weight multiplier" }),
+    // zoneMultiplier: z
+    //   .string({ required_error: "Zone multiplier is required" })
+    //   .min(1, { message: "Please enter a zone multiplier" }),
+    // discountPercent: z
+    //   .string({ required_error: "Discount percent is required" })
+    //   .min(1, { message: "Please enter a discount percent" }),
+    // crossAreaRouteIds: z
     //   .array(z.string())
-    //   .nonempty({ message: "Select at least one location code" }),
-    crossAreaRouteIds: z
-      .array(z.string())
-      .nonempty({ message: "Select at least one cross area route" }),
-    // coverageAreaId: z
-    //   .string({ required_error: "Coverage area is required" })
-    //   .min(1, { message: "Please select an option" }),
-    weightLimit: z
-      .string({ required_error: "Weight limit is required" })
-      .min(1, { message: "Please enter a limit" }),
+    //   .nonempty({ message: "Select at least one cross area route" }),
+
     isNextDayDelivery: z.boolean(),
     numberOfDaysForPickup: z
       .string({ required_error: "Number of days is required" })
@@ -131,15 +126,17 @@ export function AddServiceModal({
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
-      serviceLevelId: "",
+      crossAreaRouteId: "",
       // coverageAreaId: "",
       pickupOptionIds: [],
       packageTypeIds: [],
+      numberOfDaysForDelivery: "",
+      numberOfDaysForPickup: "",
+      isNextDayDelivery: false,
       // locationCodeIds: [],
-      crossAreaRouteIds: [],
+      // crossAreaRouteIds: [],
     },
   });
-
   // Initialize once when `info` is available
   useEffect(() => {
     if (info?.pickupOptions) {
@@ -152,44 +149,28 @@ export function AddServiceModal({
       setSelectedPackageTypes(defaultIds);
       setValue("packageTypeIds", defaultIds);
     }
-    // if (info?.locationCodes) {
-    //   const defaultIds = info.locationCodes.map((item: any) => item.id);
-    //   setSelectedLocations(defaultIds);
-    //   setValue("locationCodeIds", defaultIds);
-    // }
-    if (info?.crossAreaRoutes) {
-      const defaultIds = info.crossAreaRoutes.map((item: any) => item.id);
-      setSelectedRoutes(defaultIds);
-      setValue("crossAreaRouteIds", defaultIds);
-    }
   }, [info]);
 
   // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
-    if (openService && type === "edit" && info) {
+    if (openRoutesModal && type === "edit" && info) {
       reset({
-        serviceLevelId: info?.companyServiceLevel?.id,
+        crossAreaRouteId:
+          info?.crossAreaRoute?.id ??
+          "",
         // coverageAreaId: info?.coverageArea?.id,
         pickupOptionIds: info?.pickupOptions?.map((item: any) => item.id) || [],
         packageTypeIds: info?.packageTypes?.map((item: any) => item.id) || [],
-        // locationCodeIds: info?.locationCodes?.map((item: any) => item.id) || [],
-        crossAreaRouteIds:
-          info?.crossAreaRoutes?.map((item: any) => item.id) || [],
-        weightLimit: info.weightLimit?.toString() ?? "",
         isNextDayDelivery: info?.isNextDayDelivery ?? false,
         numberOfDaysForPickup: info.numberOfDaysForPickup?.toString() ?? "",
         numberOfDaysForDelivery: info.numberOfDaysForDelivery?.toString() ?? "",
       });
-    } else if (openService && type === "create") {
+    } else if (openRoutesModal && type === "create") {
       setInfo(null);
       reset({
-        serviceLevelId: "", // or the default ID string if editing
+        crossAreaRouteId: "",
         pickupOptionIds: [], // empty array for multi-select
         packageTypeIds: [],
-        // locationCodeIds: [],
-        crossAreaRouteIds: [],
-        // coverageAreaId: "",
-        weightLimit: "",
         isNextDayDelivery: false,
         numberOfDaysForPickup: "",
         numberOfDaysForDelivery: "",
@@ -197,9 +178,9 @@ export function AddServiceModal({
       setSelectedPickupOptions([]);
       setSelectedPackageTypes([]);
       // setSelectedLocations([]);
-      setSelectedRoutes([]);
+      // setSelectedRoutes([]);
     }
-  }, [openService, info, type, reset]);
+  }, [openRoutesModal, info, type, reset]);
   const queryClient = useQueryClient();
 
   const { mutate: createServices, isPending: pendingCreate } = useMutation({
@@ -207,19 +188,18 @@ export function AddServiceModal({
     onSuccess: () => {
       toast.success("Successful");
       reset({
-        serviceLevelId: "",
         // coverageAreaId: "",
+        crossAreaRouteId: "",
         pickupOptionIds: [],
         packageTypeIds: [],
         // locationCodeIds: [],
-        crossAreaRouteIds: [],
+        // crossAreaRouteIds: [],
         isNextDayDelivery: false,
       });
       setSelectedPickupOptions([]);
       setSelectedPackageTypes([]);
-      // setSelectedLocations([]);
-      setSelectedRoutes([]);
-      setOpenService(false);
+      // setSelectedRoutes([]);
+      setOpenRoutesModal(false);
       queryClient.invalidateQueries({
         queryKey: ["company_services"],
       });
@@ -235,7 +215,7 @@ export function AddServiceModal({
 
     onSuccess: () => {
       toast.success("Successful");
-      setOpenService(false);
+      setOpenRoutesModal(false);
       reset();
       queryClient.invalidateQueries({
         queryKey: ["company_services"],
@@ -261,14 +241,14 @@ export function AddServiceModal({
   };
 
   return (
-    <Dialog open={openService} onOpenChange={setOpenService}>
+    <Dialog open={openRoutesModal} onOpenChange={setOpenRoutesModal}>
       <DialogContent className="gap-0">
         <DialogTitle className="text-[20px] text-brand font-semibold font-inter mb-2">
-          {type === "create" ? "Add a new service" : "Edit a company service"}
+          {type === "create" ? "Add a new route" : "Edit a company route"}
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-neutral600">
-          {type === "create" ? "Create" : "Edit"} a service option for this
-          company by defining the service type and other custom details.
+          {type === "create" ? "Create" : "Edit"} a route for this
+          company by defining the route details and other custom details.
         </DialogDescription>
         <>
           <div className="py-4 text-sm mt-4">
@@ -277,67 +257,52 @@ export function AddServiceModal({
               className="flex flex-col md:gap-5 gap-4"
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="serviceLevel"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Select service level
+                <div className="flex flex-col w-full">
+                  <label htmlFor="name" className="font-inter text-brand font-semibold">
+                    Select Cross Area Route
                   </label>
-                  <div className="flex justify-between items-center gap-2 border-b mb-2">
+                  <div className="border-b mb-2">
+                    <input type="hidden" {...register("crossAreaRouteId")} />
                     <Select
-                      onValueChange={(val) => setValue("serviceLevelId", val)}
-                      defaultValue={info?.companyServiceLevel?.id}
+                      onValueChange={(val) =>
+                        setValue("crossAreaRouteId", val, { shouldValidate: true })
+                      }
+                      defaultValue={info?.crossAreaRoute?.id}
                       disabled={type === "edit"}
                     >
                       <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select option" />
+                        <SelectValue placeholder="Select option"  />
                       </SelectTrigger>
-                      <SelectContent>
-                        {service_level?.data?.map(
-                          (item: any, index: number) => (
-                            <SelectItem className="focus:bg-brand-light" value={item.id} key={index}>
-                              {item.name}
-                            </SelectItem>
-                          )
-                        )}
+                      <SelectContent >
+                        {routeOptions?.map(
+                            (item: any, index: number) => (
+                              <SelectItem
+                                value={item.value}
+                                key={index}
+                              >
+                                {item.label}
+                              </SelectItem>
+                            )
+                          )}
+                        {/* {type === "edit" &&
+                          service_level &&
+                          service_level?.data?.content?.map(
+                            (item: any, index: number) => (
+                              <SelectItem value={item.id} key={index}>
+                                {item.name}
+                              </SelectItem>
+                            )
+                          )} */}
                       </SelectContent>
                     </Select>
                   </div>
-                  {errors.serviceLevelId && (
+                  {errors.crossAreaRouteId && (
                     <p className="error text-xs text-[#FF0000]">
-                      {errors.serviceLevelId.message}
+                      {errors.crossAreaRouteId.message}
                     </p>
                   )}
                 </div>
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="pickupOption"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Select pickup option
-                  </label>
-                  <div className="flex justify-between items-center gap-2 border-b mb-2">
-                    <MultiSelect
-                      options={pickupOptions}
-                      value={selectedPickupOptions}
-                      placeholder="Select options"
-                      // value={selected || []}
-                      onChange={(val) => {
-                        setSelectedPickupOptions(val);
-                        setValue(
-                          "pickupOptionIds",
-                          val as [string, ...string[]]
-                        );
-                      }}
-                    />
-                  </div>
-                  {errors.pickupOptionIds && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.pickupOptionIds.message}
-                    </p>
-                  )}
-                </div>
+
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
@@ -429,53 +394,133 @@ export function AddServiceModal({
                   )}
                 </div> */}
 
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label htmlFor="name" className="font-inter text-brand font-semibold">
-                    Select cross area route
+                            <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="pickupOption"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Select pickup option
                   </label>
-                  <div className="border-b mb-2">
+                  <div className="flex justify-between items-center gap-2 border-b mb-2">
                     <MultiSelect
-                      options={routeOptions}
-                      value={selectedRoutes}
+                      options={pickupOptions}
+                      value={selectedPickupOptions}
                       placeholder="Select options"
                       // value={selected || []}
                       onChange={(val) => {
-                        setSelectedRoutes(val);
+                        setSelectedPickupOptions(val);
                         setValue(
-                          "crossAreaRouteIds",
+                          "pickupOptionIds",
                           val as [string, ...string[]]
                         );
                       }}
                     />
                   </div>
-                  {errors.crossAreaRouteIds && (
+                  {errors.pickupOptionIds && (
                     <p className="error text-xs text-[#FF0000]">
-                      {errors.crossAreaRouteIds.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label htmlFor="name" className="font-inter text-brand font-semibold">
-                    Weight limit (kg)
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("weightLimit")}
-                      defaultValue={info?.weightLimit}
-                      placeholder="Enter weight limit"
-                      className="w-full outline-0 border-b-0 py-2 "
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.weightLimit && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.weightLimit.message}
+                      {errors.pickupOptionIds.message}
                     </p>
                   )}
                 </div>
               </div>
+              {/* <div className="flex md:flex-row flex-col gap-4 items-center">
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="basePrice"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Base Price
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("basePrice")}
+                      defaultValue={info?.basePrice}
+                      placeholder="Enter base price"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.basePrice && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.basePrice.message}
+                    </p>
+                  )}
+                </div>
 
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="discountPercent"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Discount Percent
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("discountPercent")}
+                      defaultValue={info?.discountPercent}
+                      placeholder="Enter discount percentage"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.discountPercent && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.discountPercent.message}
+                    </p>
+                  )}
+                </div>
+              </div> */}
+              {/* <div className="flex md:flex-row flex-col gap-4 items-center">
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="weightMultiplier"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Weight Multiplier
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("weightMultiplier")}
+                      defaultValue={info?.weightMultiplier}
+                      placeholder="Enter weight multiplier"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.weightMultiplier && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.weightMultiplier.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col lg:w-1/2 w-full">
+                  <label
+                    htmlFor="zoneMultiplier"
+                    className="font-inter text-brand font-semibold"
+                  >
+                    Zone Multiplier
+                  </label>
+                  <div className="border-b mb-2">
+                    <input
+                      type="text"
+                      {...register("zoneMultiplier")}
+                      defaultValue={info?.zoneMultiplier}
+                      placeholder="Enter zone multiplier"
+                      className="w-full outline-0 border-b-0 py-2"
+                      onKeyDown={allowOnlyNumbers}
+                    />
+                  </div>
+                  {errors.zoneMultiplier && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.zoneMultiplier.message}
+                    </p>
+                  )}
+                </div>
+              </div> */}
               <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
@@ -541,7 +586,7 @@ export function AddServiceModal({
                 className=" w-fit bg-brand"
                 loading={type === "create" ? pendingCreate : pendingUpdate}
               >
-                {type === "create" ? "Add service" : "Edit service"}
+                {type === "create" ? "Add Route" : "Edit Route"}
               </Button>
             </form>
           </div>
