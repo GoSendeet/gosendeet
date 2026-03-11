@@ -26,7 +26,6 @@ const Ratings = ({ companyId }: { companyId: string }) => {
   const { data: stats, isLoading: statsLoading } =
     useGetCompanyRatingStats(companyId);
   const ratingStats = stats?.data;
-  console.log(stats);
 
   useEffect(() => {
     const totalPages = company_ratings?.data?.page?.totalPages;

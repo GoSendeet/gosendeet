@@ -29,6 +29,8 @@ import PublicRoutes from "./lib/PublicRoutes";
 import AdminRoutes from "./lib/AdminRoutes";
 import ErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking/ErrorPage";
 import PublicDispatchPage from "./pages/dispatch/PublicDispatchPage";
+import FranchiseLayout from "./layouts/FranchiseLayout";
+import Franchise from "./pages/franchise";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 
@@ -51,6 +53,10 @@ function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/dispatch/:trackingId/:token" element={<PublicDispatchPage />} />
+
+          <Route path="franchise" element={<FranchiseLayout />}>
+            <Route index element={<Franchise />} />
+          </Route>
 
         <Route element={<PublicRoutes />}>
           <Route path="/signup" element={<Signup />} />

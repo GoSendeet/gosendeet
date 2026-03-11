@@ -126,7 +126,6 @@ const Companies = () => {
       count: companyStats?.archivedCompanies,
     },
   ];
-
   return (
     <div>
       <div className="mb-4">

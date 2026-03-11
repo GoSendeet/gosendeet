@@ -56,6 +56,7 @@ export interface AddressModalProps extends BaseModalProps {
   type: "pickup" | "destination";
   value: string;
   onSelect: (location: string) => void;
+  otherAddress?: string;
 }
 
 export interface PackageTypeModalProps extends BaseModalProps {
