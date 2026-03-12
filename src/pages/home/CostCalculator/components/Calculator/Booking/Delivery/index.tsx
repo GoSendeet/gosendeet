@@ -129,6 +129,9 @@ const Delivery = () => {
       receiverPhone: data.receiver_phone,
       receiverEmail: data.receiver_email, // NUllable
       pickupLocation: bookingRequest?.pickupLocation,
+      senderName: data.sender_name,
+      senderPhoneNumber: data.sender_phone,
+      senderEmail: data.sender_email,
       destination: bookingRequest?.dropOffLocation,
       courierCost: amount,
       tax: 0,
@@ -141,15 +144,10 @@ const Delivery = () => {
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
-      senderName: data.sender_name,
-      senderPhone: data.sender_phone,
-      senderEmail: data.sender_email,
       ...payload,
     });
     mutate(payload);
   };
-  const senderPhone = watch("sender_phone");
-
   return (
     <Layout>
       <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
