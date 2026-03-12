@@ -147,6 +147,68 @@ const getCityOptions = (state?: string) => {
 const sanitizeStreetInput = (value: string) =>
   value.replace(STREET_SANITIZE_REGEX, "");
 
+const APARTMENT_PREFIXES = [
+  "apt", "apartment", "unit", "suite", "flat", "floor",
+  "flr", "no.", "room", "blk", "block", "#",
+];
+
+const isApartmentLike = (s: string) => {
+  const lower = s.toLowerCase().trim();
+  return APARTMENT_PREFIXES.some((prefix) => lower.startsWith(prefix));
+};
+
+/** Parse a stored address string into its components using known lookup tables. */
+const parseAddressFields = (address: string) => {
+  const parts = address.split(",").map((p) => p.trim()).filter(Boolean);
+
+  if (parts[parts.length - 1]?.toLowerCase() === "nigeria") parts.pop();
+
+  let state = "";
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (STATE_LOOKUP[normalizeStateKey(parts[i])]) {
+      state = parts[i];
+      parts.splice(i, 1);
+      break;
+    }
+  }
+
+  let city = "";
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (NORMALIZED_CITY_LOOKUP[normalizeCityKey(parts[i])]) {
+      city = parts[i];
+      parts.splice(i, 1);
+      break;
+    }
+  }
+
+  let street = "";
+  let apartment = "";
+  if (parts.length <= 1) {
+    street = parts[0] || "";
+  } else {
+    let aptStartIndex = -1;
+    for (let i = 1; i < parts.length; i++) {
+      if (isApartmentLike(parts[i])) {
+        aptStartIndex = i;
+        break;
+      }
+    }
+    if (aptStartIndex > 0) {
+      apartment = parts.slice(aptStartIndex).join(", ");
+      street = parts.slice(0, aptStartIndex).join(", ");
+    } else {
+      street = parts.join(", ");
+    }
+  }
+
+  return {
+    street: sanitizeStreetInput(street),
+    apartment,
+    city,
+    state,
+  };
+};
+
 /**
  * Unified AddressModal - Replaces PickupLocationModal and DestinationModal
  * Handles both pickup and destination address selection with type-based customization
@@ -157,6 +219,7 @@ export function AddressModal({
   onOpenChange,
   value,
   onSelect,
+  otherAddress,
 }: AddressModalProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -184,17 +247,7 @@ export function AddressModal({
   // Parse existing value and pre-fill form when modal opens
   useEffect(() => {
     if (open && value) {
-      // Parse the formatted address: "street, apartment, city, state"
-      const parts = value.split(",").map((p) => p.trim());
-      if (parts.length >= 4) {
-        const [street, apartment, city, state] = parts;
-        setManualAddress({
-          street: sanitizeStreetInput(street || ""),
-          apartment: apartment || "",
-          city: city || "",
-          state: state || "",
-        });
-      }
+      setManualAddress(parseAddressFields(value));
     } else if (open && !value) {
       // Reset to blank when opening without a value
       setManualAddress({
@@ -387,6 +440,18 @@ export function AddressModal({
       return;
     }
 
+    if (otherAddress) {
+      const other = parseAddressFields(otherAddress);
+      if (
+        street.trim().toLowerCase() === other.street.trim().toLowerCase() &&
+        normalizeCityKey(city) === normalizeCityKey(other.city) &&
+        normalizeStateKey(state) === normalizeStateKey(other.state)
+      ) {
+        toast.error("Pickup location and destination cannot be the same.");
+        return;
+      }
+    }
+
     const addressParts = [street];
     if (apartment.trim()) {
       addressParts.push(apartment);
@@ -447,7 +512,7 @@ export function AddressModal({
     manualAddress.city && !baseCityOptions.includes(manualAddress.city)
       ? [...baseCityOptions, manualAddress.city]
       : baseCityOptions;
-console.log(suggestions)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">

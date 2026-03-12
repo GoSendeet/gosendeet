@@ -977,6 +977,7 @@ const FormHorizontalBar = ({
               open={pickupModalOpen}
               onOpenChange={setPickupModalOpen}
               value={pickupLocation || ""}
+              otherAddress={dropOffLocation || ""}
               onSelect={(location) => {
                 setValue("pickupLocation", location, { shouldValidate: true });
                 // Immediately save to sessionStorage to ensure persistence
@@ -990,6 +991,7 @@ const FormHorizontalBar = ({
               open={destinationModalOpen}
               onOpenChange={setDestinationModalOpen}
               value={dropOffLocation || ""}
+              otherAddress={pickupLocation || ""}
               onSelect={(location) => {
                 setValue("dropOffLocation", location, { shouldValidate: true });
                 // Immediately save to sessionStorage to ensure persistence

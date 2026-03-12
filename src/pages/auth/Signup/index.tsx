@@ -35,6 +35,7 @@ const Signup = () => {
     .object({
       username: z
         .string({ required_error: "Full name is required" })
+        .trim()
         .min(1, { message: "Full name cannot be empty" }),
       email: z
         .string({ required_error: "Email address is required" })
@@ -48,6 +49,11 @@ const Signup = () => {
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
         .min(8, { message: "Password must be at least 8 characters" }),
+      agreedToTerms: z.literal(true, {
+        errorMap: () => ({
+          message: "You must agree to the Terms & Conditions and Privacy Policy",
+        }),
+      }),
     })
     .refine((data) => data.password === data.confirmPassword, {
       path: ["confirmPassword"],
@@ -58,9 +64,11 @@ const Signup = () => {
     .object({
       username: z
         .string({ required_error: "Full name is required" })
+        .trim()
         .min(1, { message: "Full name cannot be empty" }),
       companyName: z
         .string({ required_error: "Company name is required" })
+        .trim()
         .min(1, { message: "Company name cannot be empty" }),
       email: z
         .string({ required_error: "Email address is required" })
@@ -77,6 +85,11 @@ const Signup = () => {
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
         .min(8, { message: "Password must be at least 8 characters" }),
+      agreedToTerms: z.literal(true, {
+        errorMap: () => ({
+          message: "You must agree to the Terms & Conditions and Privacy Policy",
+        }),
+      }),
     })
     .refine((data) => data.password === data.confirmPassword, {
       path: ["confirmPassword"],
@@ -202,7 +215,7 @@ const Signup = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm  text-blue100 mb-2">
-                      First Name
+                      FullName
                     </label>
                     <input
                       type="text"
@@ -216,15 +229,38 @@ const Signup = () => {
                       </p>
                     )}
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block text-sm  text-blue100 mb-2">
                       Last Name
                     </label>
                     <input
                       type="text"
+                       {...register("lastname")}
                       placeholder="e.g. Okafor"
                       className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
                     />
+                    {errors.lastname && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {(errors.lastname as any)?.message}
+                      </p>
+                    )}
+                  </div> */}
+                  {/* Email */}
+                  <div>
+                    <label className="block text-sm  text-blue100 mb-2">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      {...register("email")}
+                      placeholder="name@example.com"
+                      className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
+                    />
+                    {errors.email && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {(errors.email as any)?.message}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -249,24 +285,6 @@ const Signup = () => {
                     </div>
                   </>
                 )}
-
-                {/* Email */}
-                <div>
-                  <label className="block text-sm  text-blue100 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    {...register("email")}
-                    placeholder="name@example.com"
-                    className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-red-500 mt-1">
-                      {(errors.email as any)?.message}
-                    </p>
-                  )}
-                </div>
 
                 {/* Company Email (Franchise Only) */}
                 {userType === "franchise" && (
@@ -378,19 +396,33 @@ const Signup = () => {
                 </div>
 
                 {/* Terms */}
-                <div className="text-sm text-grey300 py-2">
-                  I agree to the{" "}
-                  <Link to="/terms">
-                    <span className="text-green500 bold  hover:underline">
-                      Terms & Conditions
+                <div className="py-2">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      {...register("agreedToTerms")}
+                      className="mt-0.5 w-4 h-4 accent-green-600 cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-sm text-grey300">
+                      I agree to the{" "}
+                      <Link to="/terms">
+                        <span className="text-green500 bold hover:underline">
+                          Terms & Conditions
+                        </span>
+                      </Link>{" "}
+                      and{" "}
+                      <Link to="/privacy">
+                        <span className="text-green500 bold hover:underline">
+                          Privacy Policy
+                        </span>
+                      </Link>
                     </span>
-                  </Link>{" "}
-                  and{" "}
-                  <Link to="/privacy">
-                    <span className="text-green500 bold hover:underline">
-                      Privacy Policy
-                    </span>
-                  </Link>
+                  </label>
+                  {errors.agreedToTerms && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {(errors.agreedToTerms as { message?: string })?.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Submit Button */}
