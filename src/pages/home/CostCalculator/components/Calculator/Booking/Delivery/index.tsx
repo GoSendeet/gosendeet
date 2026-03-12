@@ -79,7 +79,6 @@ const Delivery = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
     reset,
   } = useForm<z.infer<typeof schema>>({
