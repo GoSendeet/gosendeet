@@ -19,23 +19,26 @@ export function PickupDateModal({
 }: PickupDateModalProps) {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState("10am-2pm");
+  const [activeSlot, setActiveSlot] = useState("10am-2pm");
+
+  const timeSlots = ["10am-2pm", "2pm-6pm"];
 
   useEffect(() => {
     if (open && value) {
-      // Parse existing value if it contains a time slot
       const parts = value.split(' ');
+      setSelectedDate(parts[0]);
       if (parts.length >= 2) {
-        setSelectedDate(parts[0]);
-        // Check if the time slot matches our options
         const timeSlot = parts.slice(1).join(' ');
-        if (timeSlot === "10am-2pm" || timeSlot === "2pm-6pm") {
-          setSelectedTimeSlot(timeSlot);
-        }
-      } else {
-        setSelectedDate(value);
+        setSelectedTimeSlot(timeSlot);
+        setActiveSlot(timeSlot === "2pm-6pm" ? "2pm-6pm" : "10am-2pm");
       }
     }
   }, [open, value]);
+
+  const handleSlotClick = (slot: string) => {
+    setActiveSlot(slot);
+    setSelectedTimeSlot(slot);
+  };
 
   // Generate next 3 days (today, tomorrow, day after)
   const generateDates = () => {
@@ -74,12 +77,9 @@ export function PickupDateModal({
     return "";
   };
 
-  const timeSlots = ["10am-2pm", "2pm-6pm"];
-
   const handleConfirm = () => {
-    if (selectedDate) {
-      const fullDateTime = `${selectedDate} ${selectedTimeSlot}`;
-      onSelect(fullDateTime);
+    if (selectedDate && selectedTimeSlot) {
+      onSelect(`${selectedDate} ${selectedTimeSlot}`);
       onOpenChange(false);
     }
   };
@@ -162,21 +162,34 @@ export function PickupDateModal({
                 Select Time
               </p>
               <div className="grid grid-cols-2 gap-3">
-                {timeSlots.map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() => setSelectedTimeSlot(time)}
-                    className={cn(
-                      "py-3 px-4 rounded-xl border-2 transition-all font-semibold text-sm",
-                      selectedTimeSlot === time
-                        ? `${INPUT_FOCUS_BORDER} bg-[#ECFDF5] text-[#0A4F32] border-[#0A4F32]`
-                        : "border-gray-200 hover:border-[#0A4F32] hover:bg-[#ECFDF5] text-gray-700"
-                    )}
-                  >
-                    {time}
-                  </button>
-                ))}
+                {timeSlots.map((slot) => {
+                  const isSelected = activeSlot === slot;
+                  return (
+                    <div
+                      key={slot}
+                      onClick={() => handleSlotClick(slot)}
+                      className={cn(
+                        "py-3 px-4 rounded-xl border-2 transition-all font-semibold text-sm cursor-pointer text-center",
+                        isSelected
+                          ? `${INPUT_FOCUS_BORDER} bg-[#ECFDF5] text-[#0A4F32] border-[#0A4F32]`
+                          : "border-gray-200 hover:border-[#0A4F32] hover:bg-[#ECFDF5] text-gray-700"
+                      )}
+                    >
+                      {isSelected ? (
+                        <input
+                          type="text"
+                          value={selectedTimeSlot}
+                          onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-transparent outline-none text-[#0A4F32] font-semibold text-center w-full"
+                          autoFocus
+                        />
+                      ) : (
+                        slot
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
