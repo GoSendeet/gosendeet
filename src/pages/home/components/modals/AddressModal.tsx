@@ -12,7 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddressModalProps, ManualAddressData } from "@/types/forms";
-import { validateManualAddress, ADDRESS_LIMITS } from "@/utils/form-validators";
+import {
+  validateManualAddress,
+  ADDRESS_LIMITS,
+  STREET_ALLOWED_REGEX,
+  STREET_SANITIZE_REGEX,
+} from "@/utils/form-validators";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { toast } from "sonner";
 
@@ -139,6 +144,9 @@ const getCityOptions = (state?: string) => {
   return [...ALL_CITIES];
 };
 
+const sanitizeStreetInput = (value: string) =>
+  value.replace(STREET_SANITIZE_REGEX, "");
+
 /**
  * Unified AddressModal - Replaces PickupLocationModal and DestinationModal
  * Handles both pickup and destination address selection with type-based customization
@@ -181,7 +189,7 @@ export function AddressModal({
       if (parts.length >= 4) {
         const [street, apartment, city, state] = parts;
         setManualAddress({
-          street: street || "",
+          street: sanitizeStreetInput(street || ""),
           apartment: apartment || "",
           city: city || "",
           state: state || "",
@@ -269,7 +277,7 @@ export function AddressModal({
     if (sublocality) streetParts.push(sublocality);
     if (neighborhood) streetParts.push(neighborhood);
 
-    const fullStreet = streetParts.join(", ");
+    const fullStreet = sanitizeStreetInput(streetParts.join(", "));
     const canonicalState = resolveStateValue(state);
     const normalizedCity = resolveCityValue(city, canonicalState || state);
     const resolvedState =
@@ -412,9 +420,15 @@ export function AddressModal({
   const isApartmentTooLong =
     manualAddress.apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH;
   const hasValidLengths = !isStreetTooLong && !isApartmentTooLong;
+  const isStreetInvalid =
+    Boolean(manualAddress.street.trim()) &&
+    !STREET_ALLOWED_REGEX.test(manualAddress.street.trim());
 
   const isFormValid =
-    Boolean(hasRequiredFields) && isLocationServiceable && hasValidLengths;
+    Boolean(hasRequiredFields) &&
+    isLocationServiceable &&
+    hasValidLengths &&
+    !isStreetInvalid;
 
   // Type-specific content
   const title = type === "pickup" ? "Pickup Location" : "Destination";
@@ -501,17 +515,23 @@ console.log(suggestions)
             <input
               type="text"
               value={manualAddress.street}
-              onChange={(e) =>
-                setManualAddress({ ...manualAddress, street: e.target.value })
-              }
+              onChange={(e) => {
+                const sanitized = sanitizeStreetInput(e.target.value);
+                setManualAddress({ ...manualAddress, street: sanitized });
+              }}
               placeholder="e.g., 123 Main Street"
               maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
-                isStreetTooLong
+                isStreetTooLong || isStreetInvalid
                   ? "border-red-400 focus:border-red-500"
                   : `border-gray-200 ${INPUT_FOCUS_BORDER}`
               }`}
             />
+            {isStreetInvalid && (
+              <p className="text-xs text-red-500 mt-1">
+                Only letters, numbers, and commas are allowed.
+              </p>
+            )}
             {isStreetTooLong && (
               <p className="text-xs text-red-500 mt-1">
                 Street address cannot exceed {ADDRESS_LIMITS.STREET_MAX_LENGTH}{" "}
