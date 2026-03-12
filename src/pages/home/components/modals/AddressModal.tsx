@@ -433,7 +433,7 @@ export function AddressModal({
     manualAddress.city && !baseCityOptions.includes(manualAddress.city)
       ? [...baseCityOptions, manualAddress.city]
       : baseCityOptions;
-
+console.log(suggestions)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
@@ -560,28 +560,14 @@ export function AddressModal({
             )}
           </div>
 
-          {/* City Selection */}
+              {/* Country (Fixed) */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              City <span className="text-red-500">*</span>
+              Country
             </label>
-            <Select
-              value={manualAddress.city || undefined}
-              onValueChange={handleCityChange}
-            >
-              <SelectTrigger
-                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
-              >
-                <SelectValue placeholder="Select city" />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                {cityOptions.map((city) => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm text-gray-600">
+              Nigeria
+            </div>
           </div>
 
           {/* State Selection */}
@@ -608,15 +594,31 @@ export function AddressModal({
             </Select>
           </div>
 
-          {/* Country (Fixed) */}
+          {/* City Selection */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Country
+              City <span className="text-red-500">*</span>
             </label>
-            <div className="px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm text-gray-600">
-              Nigeria
-            </div>
+            <Select
+              value={manualAddress.city || undefined}
+              onValueChange={handleCityChange}
+            >
+              <SelectTrigger
+                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
+              >
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent className="max-h-64">
+                {cityOptions.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+      
 
           {/* Submit Button */}
           <Button
