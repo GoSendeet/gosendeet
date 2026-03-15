@@ -26,6 +26,12 @@ import { useLocation } from "react-router-dom";
 // import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 // import { usePlacesAutocompleteV2 } from "@/hooks/usePlacesAutocompleteV2";
 
+const ADDRESS_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9\\s,.'\\-/#]+$");
+const ADDRESS_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9\\s,.'\\-/#]", "g");
+
+const sanitizeAddressInput = (value: string) =>
+  value.replace(ADDRESS_SANITIZE_REGEX, "");
+
 const CreateBooking = ({
   bookingRequest,
   setData,
@@ -123,10 +129,18 @@ const CreateBooking = ({
   const schema = z.object({
     pickupLocation: z
       .string({ required_error: "Pickup location is required" })
-      .min(1, { message: "Please enter pickup location" }),
+      .min(1, { message: "Please enter pickup location" })
+      .regex(ADDRESS_ALLOWED_REGEX, {
+        message:
+          "Only letters, numbers, spaces, and , . ' - / # are allowed",
+      }),
     dropOffLocation: z
       .string({ required_error: "Drop off location is required" })
-      .min(1, { message: "Please enter drop off location" }),
+      .min(1, { message: "Please enter drop off location" })
+      .regex(ADDRESS_ALLOWED_REGEX, {
+        message:
+          "Only letters, numbers, spaces, and , . ' - / # are allowed",
+      }),
     packageTypeId: z
       .string({ required_error: "Package type is required" })
       .min(1, { message: "Please enter package type" }),
@@ -267,8 +281,9 @@ const CreateBooking = ({
                     type="text"
                     {...register("pickupLocation")}
                     onChange={(e) => {
-                      setPickupValue(e.target.value);
-                      setValue("pickupLocation", e.target.value, {
+                      const sanitized = sanitizeAddressInput(e.target.value);
+                      setPickupValue(sanitized);
+                      setValue("pickupLocation", sanitized, {
                         shouldValidate: true,
                       });
                       setOpenPickupSuggestions(true);
@@ -284,8 +299,9 @@ const CreateBooking = ({
                         <li
                           key={place_id}
                           onClick={() => {
-                            setPickupValue(description, false);
-                            setValue("pickupLocation", description, {
+                            const sanitized = sanitizeAddressInput(description);
+                            setPickupValue(sanitized, false);
+                            setValue("pickupLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearPickupSuggestions();
@@ -323,8 +339,9 @@ const CreateBooking = ({
                     type="text"
                     {...register("dropOffLocation")}
                     onChange={(e) => {
-                      setDestValue(e.target.value);
-                      setValue("dropOffLocation", e.target.value, {
+                      const sanitized = sanitizeAddressInput(e.target.value);
+                      setDestValue(sanitized);
+                      setValue("dropOffLocation", sanitized, {
                         shouldValidate: true,
                       });
                       setOpenDestSuggestions(true);
@@ -339,8 +356,9 @@ const CreateBooking = ({
                         <li
                           key={place_id}
                           onClick={() => {
-                            setDestValue(description, false);
-                            setValue("dropOffLocation", description, {
+                            const sanitized = sanitizeAddressInput(description);
+                            setDestValue(sanitized, false);
+                            setValue("dropOffLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearDestSuggestions();

@@ -164,7 +164,7 @@ useEffect(() => {
                     </span>
                   </p>
                   <p className="flex justify-between items-center font-medium text-sm">
-                    <span className="text-neutral600">Tracking ID</span>
+                    <span className="text-neutral600">Tracking Number</span>
                     <span className="text-right font-semibold">
                       {data?.data?.trackingNumber}
                     </span>

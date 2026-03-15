@@ -163,7 +163,6 @@ export function PackageTypeModal({
   };
 
   const weightPresets = getWeightPresets();
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
