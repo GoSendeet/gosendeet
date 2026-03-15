@@ -1368,7 +1368,7 @@ const Calculator = () => {
 
                                         <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
                                           <p className="text-xs text-gray-600 font-semibold pt-2">
-                                            {item?.pickupOptions?.[0] ||
+                                            {item?.serviceLevelAgreements?.[0] ||
                                               "Standard Delivery"}
                                           </p>
                                           <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>

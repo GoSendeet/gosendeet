@@ -15,6 +15,7 @@ import {
   updateCoverageArea,
 } from "@/services/adminSettings";
 import { useEffect } from "react";
+import { CustomInput } from "@/components/CustomInput";
 
 export function CoverageAreaModal({
   open,
@@ -124,45 +125,29 @@ export function CoverageAreaModal({
               onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col gap-8"
             >
-              <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="name" className="font-inter text-brand font-semibold">
-                    Name
-                  </label>
-                <div className="flex justify-between items-center gap-2 border-b">
-                  <input
-                    type="text"
-                    {...register("name")}
-                    defaultValue={info?.name}
-                    placeholder="Enter name"
-                    className="w-full outline-0 border-b-0 py-2 "
-                  />
-                </div>
-                {errors.name && (
-                  <p className="error text-xs text-[#FF0000]">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
+              <CustomInput
+                inputType="text"
+                label="Name"
+                wrapperClassName="w-full"
+                registration={register("name")}
+                error={errors.name?.message}
+                inputProps={{ placeholder: "Enter name" }}
+              />
 
-              <div className="flex flex-col gap-2 w-full">
-                <label htmlFor="code" className="font-inter text-brand font-semibold">
-                    Code
-                  </label>
-                <div className="flex justify-between items-center gap-2 border-b">
-                  <input
-                    type="text"
-                    {...register("code")}
-                    defaultValue={info?.code}
-                    placeholder="Enter code"
-                    className="w-full outline-0 border-b-0 py-2 "
-                  />
-                </div>
-                {errors.code && (
-                  <p className="error text-xs text-[#FF0000]">
-                    {errors.code.message}
-                  </p>
-                )}
-              </div>
+              <CustomInput
+                inputType="text"
+                label="Code"
+                wrapperClassName="w-full"
+                registration={register("code", {
+                  setValueAs: (value) =>
+                    typeof value === "string" ? value.toUpperCase() : value,
+                })}
+                error={errors.code?.message}
+                inputProps={{
+                  placeholder: "Enter code",
+                  className: "uppercase",
+                }}
+              />
 
               <Button
                 variant={"secondary"}
