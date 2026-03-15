@@ -5,13 +5,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useGetCompanyServices } from "@/queries/admin/useGetAdminCompanies";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { CustomInput } from "@/components/CustomInput";
 
 export function AddPricingModal({
   companyId,
@@ -60,9 +54,6 @@ export function AddPricingModal({
     bulkMultiplier: z
       .string({ required_error: "Bulk multiplier is required" })
       .min(1, { message: "Please enter a bulk multiplier" }),
-    expressMultiplier: z
-      .string({ required_error: "Express multiplier is required" })
-      .min(1, { message: "Please enter an express multiplier" }),
     discountPercent: z
       .string({ required_error: "Discount percent is required" })
       .min(1, { message: "Please enter a discount percent" }),
@@ -102,7 +93,6 @@ export function AddPricingModal({
         distanceMultiplier: info.distanceMultiplier?.toString() ?? "",
         bulkMultiplier: info.bulkMultiplier?.toString() ?? "",
         weightLimit: info.weightLimit?.toString() ?? "",
-        expressMultiplier: info.expressMultiplier?.toString() ?? "",
         discountPercent: info.discountPercent?.toString() ?? "",
         notes: info?.notes,
       });
@@ -115,7 +105,6 @@ export function AddPricingModal({
         weightMultiplier: "",
         distanceMultiplier: "",
         bulkMultiplier: "",
-        expressMultiplier: "",
         discountPercent: "",
         notes: "",
       });
@@ -134,7 +123,6 @@ export function AddPricingModal({
         weightMultiplier: "",
         distanceMultiplier: "",
         bulkMultiplier: "",
-        expressMultiplier: "",
         discountPercent: "",
         notes: "",
       });
@@ -199,233 +187,107 @@ export function AddPricingModal({
               className="flex flex-col md:gap-5 gap-4"
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label
-                    htmlFor="companyServiceLineId"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Select Company Route
-                  </label>
-                  <div className="flex justify-between items-center gap-2 border-b mb-2">
-                    <Select
-                      value={companyServiceLineId}
-                      onValueChange={(val) =>
-                        setValue("companyServiceLineId", val)
-                      }
-                      defaultValue={companyServiceLineId}
-                      disabled={type === "edit"}
-                    >
-                      <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select option"  />
-                      </SelectTrigger>
-                      <SelectContent >
-                        {
-                          company_services?.data?.content?.map((item: any) => (
-                            <SelectItem value={item.id} key={item.id}>
-                              {`${item.crossAreaRoute?.areaA} - ${item?.crossAreaRoute?.areaB} (${item?.pickupOptions?.[0]?.name || '-'})`}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {errors.companyServiceLineId && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.companyServiceLineId.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="select"
+                  label="Select Company Route"
+                  wrapperClassName="w-full"
+                  value={companyServiceLineId}
+                  placeholder="Select option"
+                  options={
+                    company_services?.data?.content?.map((item: any) => ({
+                      label: `${item.crossAreaRoute?.areaA} - ${item?.crossAreaRoute?.areaB}`,
+                      value: item.id,
+                    })) ?? []
+                  }
+                  error={errors.companyServiceLineId?.message}
+                  disabled={type === "edit"}
+                  onValueChange={(val) =>
+                    setValue("companyServiceLineId", val, { shouldValidate: true })
+                  }
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="basePrice"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Base Price
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("basePrice")}
-                      defaultValue={info?.basePrice}
-                      placeholder="Enter base price"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.basePrice && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.basePrice.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Base Price"
+                  registration={register("basePrice")}
+                  error={errors.basePrice?.message}
+                  inputProps={{
+                    placeholder: "Enter base price",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
 
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="discountPercent"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Discount Percent
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("discountPercent")}
-                      defaultValue={info?.discountPercent}
-                      placeholder="Enter discount percentage"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.discountPercent && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.discountPercent.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Discount Percent"
+                  registration={register("discountPercent")}
+                  error={errors.discountPercent?.message}
+                  inputProps={{
+                    placeholder: "Enter discount percentage",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="weightMultiplier"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Weight Multiplier
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("weightMultiplier")}
-                      defaultValue={info?.weightMultiplier}
-                      placeholder="Enter weight multiplier"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.weightMultiplier && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.weightMultiplier.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Weight Multiplier"
+                  registration={register("weightMultiplier")}
+                  error={errors.weightMultiplier?.message}
+                  inputProps={{
+                    placeholder: "Enter weight multiplier",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
 
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="distanceMultiplier"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Distance Multiplier
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("distanceMultiplier")}
-                      defaultValue={info?.distanceMultiplier}
-                      placeholder="Enter distance multiplier"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.distanceMultiplier && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.distanceMultiplier.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Distance Multiplier"
+                  registration={register("distanceMultiplier")}
+                  error={errors.distanceMultiplier?.message}
+                  inputProps={{
+                    placeholder: "Enter distance multiplier",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="bulkMultiplier"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Bulk Multiplier
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("bulkMultiplier")}
-                      defaultValue={info?.bulkMultiplier}
-                      placeholder="Enter bulk multiplier"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.bulkMultiplier && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.bulkMultiplier.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="expressMultiplier"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Express Multiplier
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("expressMultiplier")}
-                      defaultValue={info?.expressMultiplier}
-                      placeholder="Enter express multiplier"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.expressMultiplier && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.expressMultiplier.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Bulk Multiplier"
+                  registration={register("bulkMultiplier")}
+                  error={errors.bulkMultiplier?.message}
+                  inputProps={{
+                    placeholder: "Enter bulk multiplier",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
+                 <CustomInput
+                  inputType="number"
+                  label="Weight limit (kg)"
+                  registration={register("weightLimit")}
+                  error={errors.weightLimit?.message}
+                  inputProps={{
+                    placeholder: "Enter weight limit",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="notes" className="font-inter text-brand font-semibold">
-                    Notes
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("notes")}
-                      defaultValue={info?.notes}
-                      placeholder="Enter notes"
-                      className="w-full outline-0 border-b-0 py-2"
-                    />
-                  </div>
-                  {errors.notes && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.notes.message}
-                    </p>
-                  )}
-                </div>
-                     <div className="flex flex-col lg:w-1/2 w-full">
-                  <label htmlFor="name" className="font-inter text-brand font-semibold">
-                    Weight limit (kg)
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("weightLimit")}
-                      defaultValue={info?.weightLimit}
-                      placeholder="Enter weight limit"
-                      className="w-full outline-0 border-b-0 py-2 "
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.weightLimit && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.weightLimit.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="text"
+                  label="Notes"
+                  wrapperClassName="w-full"
+                  registration={register("notes")}
+                  error={errors.notes?.message}
+                  inputProps={{ placeholder: "Enter notes" }}
+                />
+            
               </div>
 
               <Button

@@ -5,13 +5,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,12 +13,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPackageType, updatePackageType } from "@/services/adminSettings";
 import { uploadImage } from "@/services/documents";
 import { useEffect, useState, useRef } from "react";
-import { Switch } from "@/components/ui/switch";
 import {
   useGetAdminDimensionUnits,
   useGetAdminWeightUnits,
 } from "@/queries/admin/useGetAdminSettings";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { CustomInput } from "@/components/CustomInput";
 
 export function PackageTypeModal({
   open,
@@ -91,6 +84,7 @@ export function PackageTypeModal({
   const weightUnit = watch("weightUnit");
   const dimensionUnit = watch("dimensionUnit");
   const imageUrl = watch("imageUrl");
+  const active = watch("active") ?? false;
 
   // Image upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -259,318 +253,162 @@ export function PackageTypeModal({
               className="flex flex-col gap-4"
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Name
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("name")}
-                      defaultValue={info?.name}
-                      placeholder="Enter name"
-                      className="w-full outline-0 border-b-0 py-2"
-                    />
-                  </div>
-                  {errors.name && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Length
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("length", {
-                        setValueAs: (v) => (v === "" ? undefined : Number(v)),
-                      })}
-                      defaultValue={info?.length}
-                      placeholder="Enter length"
-                      className="w-full outline-0 border-b-0 py-2 "
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.length && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.length.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="text"
+                  label="Name"
+                  wrapperClassName="w-full"
+                  registration={register("name")}
+                  error={errors.name?.message}
+                  inputProps={{ placeholder: "Enter name" }}
+                />
+                <CustomInput
+                  inputType="number"
+                  label="Length"
+                  wrapperClassName="w-full"
+                  registration={register("length", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  })}
+                  error={errors.length?.message}
+                  inputProps={{
+                    placeholder: "Enter length",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Width
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("width", {
-                        setValueAs: (v) => (v === "" ? undefined : Number(v)),
-                      })}
-                      defaultValue={info?.width}
-                      placeholder="Enter width"
-                      className="w-full outline-0 border-b-0 py-2 "
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.width && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.width.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Height
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("height", {
-                        setValueAs: (v) => (v === "" ? undefined : Number(v)),
-                      })}
-                      defaultValue={info?.height}
-                      placeholder="Enter height"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.height && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.height.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Width"
+                  wrapperClassName="w-full"
+                  registration={register("width", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  })}
+                  error={errors.width?.message}
+                  inputProps={{
+                    placeholder: "Enter width",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
+                <CustomInput
+                  inputType="number"
+                  label="Height"
+                  wrapperClassName="w-full"
+                  registration={register("height", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  })}
+                  error={errors.height?.message}
+                  inputProps={{
+                    placeholder: "Enter height",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Max Weight
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("maxWeight", {
-                        setValueAs: (v) => (v === "" ? undefined : Number(v)),
-                      })}
-                      defaultValue={info?.maxWeight}
-                      placeholder="Enter max weight"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.maxWeight && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.maxWeight.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Weight Unit
-                  </label>
-                  <div className="border-b mb-2">
-                    <Select
-                      onValueChange={(val) =>
-                        setValue("weightUnit", val, { shouldValidate: true })
-                      }
-                      value={weightUnit}
-                    >
-                      <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select weight unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {weightUnits &&
-                          weightUnits.map((item: string, index: number) => (
-                            <SelectItem key={index} value={item}>
-                              {item}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {errors.weightUnit && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.weightUnit.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="number"
+                  label="Max Weight"
+                  wrapperClassName="w-full"
+                  registration={register("maxWeight", {
+                    setValueAs: (v) => (v === "" ? undefined : Number(v)),
+                  })}
+                  error={errors.maxWeight?.message}
+                  inputProps={{
+                    placeholder: "Enter max weight",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                />
+                <CustomInput
+                  inputType="select"
+                  label="Weight Unit"
+                  wrapperClassName="w-full"
+                  value={weightUnit}
+                  placeholder="Select weight unit"
+                  options={
+                    weightUnits?.map((item: string) => ({
+                      label: item,
+                      value: item,
+                    })) ?? []
+                  }
+                  error={errors.weightUnit?.message}
+                  onValueChange={(val) =>
+                    setValue("weightUnit", val, { shouldValidate: true })
+                  }
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Dimension Unit
-                  </label>
-                  <div className="border-b mb-2">
-                    <Select
-                      onValueChange={(val) =>
-                        setValue("dimensionUnit", val, { shouldValidate: true })
-                      }
-                      value={dimensionUnit}
-                    >
-                      <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select dimension unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dimensionUnits &&
-                          dimensionUnits.map((item: string, index: number) => (
-                            <SelectItem key={index} value={item}>
-                              {item}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {errors.dimensionUnit && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.dimensionUnit.message}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Code
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("code")}
-                      defaultValue={info?.code}
-                      placeholder="Enter code"
-                      className="w-full outline-0 border-b-0 py-2 "
-                    />
-                  </div>
-                  {errors.code && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.code.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="select"
+                  label="Dimension Unit"
+                  wrapperClassName="w-full"
+                  value={dimensionUnit}
+                  placeholder="Select dimension unit"
+                  options={
+                    dimensionUnits?.map((item: string) => ({
+                      label: item,
+                      value: item,
+                    })) ?? []
+                  }
+                  error={errors.dimensionUnit?.message}
+                  onValueChange={(val) =>
+                    setValue("dimensionUnit", val, { shouldValidate: true })
+                  }
+                />
+                <CustomInput
+                  inputType="text"
+                  label="Code"
+                  wrapperClassName="w-full"
+                  registration={register("code")}
+                  error={errors.code?.message}
+                  inputProps={{ placeholder: "Enter code" }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Description
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("description")}
-                      defaultValue={info?.description}
-                      placeholder="Enter description"
-                      className="w-full outline-0 border-b-0 py-2 "
-                    />
-                  </div>
-                  {errors.description && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.description.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="text"
+                  label="Description"
+                  wrapperClassName="w-full"
+                  registration={register("description")}
+                  error={errors.description?.message}
+                  inputProps={{ placeholder: "Enter description" }}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="image" className="font-inter font-semibold">
-                    Package Image <span className="text-red-500">*</span>
-                  </label>
-
-                  {/* Image Preview */}
-                  {(previewUrl || imageUrl) && (
-                    <div className="mt-2 mb-3">
-                      <div className="relative w-32 h-32 border-2 border-gray-200 rounded-lg overflow-hidden">
-                        <img
-                          src={previewUrl || imageUrl}
-                          alt="Package preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* File Input */}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-
-                  <div className="flex gap-2 items-center mt-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-xs"
-                    >
-                      Choose Image
-                    </Button>
-
-                    {selectedFile && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleImageUpload}
-                        loading={isUploading}
-                        className="text-xs"
-                      >
-                        Upload
-                      </Button>
-                    )}
-                  </div>
-
-                  {selectedFile && !isUploading && (
-                    <p className="text-xs text-gray-600 mt-1">
-                      Selected: {selectedFile.name}
-                    </p>
-                  )}
-
-                  {imageUrl && (
-                    <p className="text-xs text-green-600 mt-1 break-all">
-                      ✓ Image uploaded successfully
-                    </p>
-                  )}
-
-                  {errors.imageUrl && (
-                    <p className="error text-xs text-[#FF0000] mt-1">
-                      {errors.imageUrl.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="image"
+                  label={
+                    <>
+                      Package Image <span className="text-red-500">*</span>
+                    </>
+                  }
+                  wrapperClassName="w-full"
+                  previewUrl={previewUrl}
+                  imageUrl={imageUrl}
+                  selectedFileName={selectedFile?.name}
+                  isUploading={isUploading}
+                  fileInputRef={fileInputRef}
+                  onFileSelect={handleFileSelect}
+                  onUpload={handleImageUpload}
+                  error={errors.imageUrl?.message}
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter font-semibold">
-                    Status
-                  </label>
-                  <div className="py-2">
-                    <Switch
-                      defaultChecked={info?.active}
-                      onCheckedChange={(val) => setValue("active", val)}
-                    />
-                  </div>
-                </div>
+                <CustomInput
+                  inputType="toggle"
+                  label="Status"
+                  checked={active}
+                  onCheckedChange={(val) => setValue("active", val)}
+                />
               </div>
 
               <Button
                 variant={"secondary"}
+                className=" bg-brand"
                 loading={type === "edit" ? pendingUpdate : pendingCreate}
               >
                 {type === "edit" ? "Update" : "Add"}

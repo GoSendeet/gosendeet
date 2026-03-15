@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createServiceLevel, updateServiceLevel } from "@/services/adminSettings";
 import { useEffect } from "react";
+import { CustomInput } from "@/components/CustomInput";
 
 export function ServiceLevelModal({
   open,
@@ -25,9 +26,26 @@ export function ServiceLevelModal({
   info: any;
 }) {
   const schema = z.object({
-    serviceLevel: z
-      .string({ required_error: "Service level is required" })
-      .min(1, { message: "Please enter a level" }),
+    name: z
+      .string({ required_error: "Service level name is required" })
+      .min(1, { message: "Please enter a name" })
+      .regex(/^[A-Za-z\s]+$/, {
+        message: "Name must contain only letters and spaces",
+      }),
+    multiplier: z.coerce
+      .number({ required_error: "Multiplier is required" })
+      .positive({ message: "Multiplier must be greater than 0" }),
+    eta_min_days: z.coerce
+      .number({ required_error: "Minimum ETA is required" })
+      .int({ message: "Minimum ETA must be a whole number" })
+      .min(1, { message: "Minimum ETA must be at least 1 day" }),
+    eta_max_days: z.coerce
+      .number({ required_error: "Maximum ETA is required" })
+      .int({ message: "Maximum ETA must be a whole number" })
+      .min(1, { message: "Maximum ETA must be at least 1 day" }),
+  }).refine((data) => data.eta_max_days >= data.eta_min_days, {
+    message: "Maximum ETA must be greater than or equal to minimum ETA",
+    path: ["eta_max_days"],
   });
 
   const {
@@ -43,11 +61,17 @@ export function ServiceLevelModal({
   useEffect(() => {
     if (open && type === "edit" && info) {
       reset({
-        serviceLevel: info.name,
+        name: info.name ?? "",
+        multiplier: info.multiplier ?? "",
+        eta_min_days: info.eta_min_days ?? "",
+        eta_max_days: info.eta_max_days ?? "",
       });
     } else if (open && type === "create") {
       reset({
-        serviceLevel: "",
+        name: "",
+        multiplier: "" as unknown as number,
+        eta_min_days: "" as unknown as number,
+        eta_max_days: "" as unknown as number,
       });
     }
   }, [open, info, type, reset]);
@@ -88,15 +112,20 @@ export function ServiceLevelModal({
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    const payload = {
+      name: data.name.trim(),
+      multiplier: data.multiplier,
+      eta_min_days: data.eta_min_days,
+      eta_max_days: data.eta_max_days,
+    };
+
     type === "create" &&
-      createService({
-        name: data.serviceLevel,
-      });
+      createService(payload);
 
     type === "edit" &&
       updateService({
         id: info?.id,
-        data: { name: data.serviceLevel },
+        data: payload,
       });
   };
 
@@ -115,28 +144,54 @@ export function ServiceLevelModal({
               onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col gap-8"
             >
-              <div className="flex flex-col gap-2 w-full">
-                {/* <label
-                  htmlFor="serviceLevel"
-                  className="font-inter font-semibold px-4"
-                >
-                  Service Level
-                </label> */}
-                <div className="flex justify-between items-center gap-2 border-b">
-                  <input
-                    type="text"
-                    {...register("serviceLevel")}
-                    defaultValue={info?.name}
-                    placeholder="Enter service level"
-                    className="w-full outline-0 border-b-0 py-2 px-4 "
-                  />
-                </div>
-                {errors.serviceLevel && (
-                  <p className="error text-xs text-[#FF0000] px-4">
-                    {errors.serviceLevel.message}
-                  </p>
-                )}
-              </div>
+              <CustomInput
+                inputType="text"
+                label="Service level name"
+                wrapperClassName="w-full"
+                registration={register("name")}
+                error={errors.name?.message}
+                inputProps={{
+                  placeholder: "Enter service level name",
+                }}
+                className="px-4"
+              />
+
+              <CustomInput
+                inputType="number"
+                label="Multiplier"
+                wrapperClassName="w-full"
+                registration={register("multiplier")}
+                error={errors.multiplier?.message}
+                inputProps={{
+                  placeholder: "Enter multiplier",
+                  step: "any",
+                }}
+                className="px-4"
+              />
+
+              <CustomInput
+                inputType="number"
+                label="Minimum ETA days"
+                wrapperClassName="w-full"
+                registration={register("eta_min_days")}
+                error={errors.eta_min_days?.message}
+                inputProps={{
+                  placeholder: "Enter minimum ETA days",
+                }}
+                className="px-4"
+              />
+
+              <CustomInput
+                inputType="number"
+                label="Maximum ETA days"
+                wrapperClassName="w-full"
+                registration={register("eta_max_days")}
+                error={errors.eta_max_days?.message}
+                inputProps={{
+                  placeholder: "Enter maximum ETA days",
+                }}
+                className="px-4"
+              />
 
               <Button
                 variant={"secondary"}

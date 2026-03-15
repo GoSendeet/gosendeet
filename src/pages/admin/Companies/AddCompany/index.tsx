@@ -60,6 +60,37 @@ const AddCompany = () => {
   const companyServices = company_services?.data?.content || [];
   const companyPricing = company_pricing?.data?.content || [];
 
+  const getServiceLevelNames = (item: any) => {
+    if (Array.isArray(item?.serviceLevelAgreements) && item.serviceLevelAgreements.length > 0) {
+      return item.serviceLevelAgreements.map((level: any) => level?.name).filter(Boolean);
+    }
+    if (Array.isArray(item?.serviceLevels) && item.serviceLevels.length > 0) {
+      return item.serviceLevels.map((level: any) => level?.name).filter(Boolean);
+    }
+    return [
+      item?.companyServiceLevel?.name,
+      item?.serviceLevelAgreement?.name,
+      item?.serviceLevel?.name,
+    ].filter(Boolean);
+  };
+
+  const getServiceCardTitle = (item: any) => {
+    const routeLabel = item?.crossAreaRoute
+      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+      : null;
+    const serviceLevels = getServiceLevelNames(item);
+
+    return routeLabel ?? serviceLevels.join(", ") ?? "Company service";
+  };
+
+  const getDeleteLabel = (item: any) => {
+    const routeLabel = item?.crossAreaRoute
+      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
+      : "";
+    const serviceLevelLabel = getServiceLevelNames(item).join(", ");
+    return routeLabel || serviceLevelLabel || "company service";
+  };
+
   const schema = z.object({
     name: z
       .string({ required_error: "Company name is required" })
@@ -594,14 +625,34 @@ const AddCompany = () => {
             {companyServices && companyServices?.length > 0
               ? companyServices?.map((item: any, index: number) => {
                 const isDeleteModalOpen = openDeleteModal === index;
+                const serviceLevels = getServiceLevelNames(item);
+                const packageTypeNames =
+                  item?.packageTypes?.map((pkg: any) => pkg?.name).filter(Boolean) ?? [];
                 return (
                   <div
                     key={index}
                     className="flex md:flex-row flex-col md:items-center md:gap-4 gap-2 justify-between mb-4"
                   >
-                    <p className="bg-purple100 py-2 px-4 font-medium w-fit">
-                      {item?.companyServiceLevel?.name}
-                    </p>
+                    <div className="bg-purple100 py-3 px-4 rounded-lg">
+                      <p className="font-medium w-fit">
+                        {getServiceCardTitle(item)}
+                      </p>
+                      <div className="text-sm text-neutral700 mt-2 space-y-1">
+                        <p>
+                          <span className="font-medium">Service Levels:</span>{" "}
+                          {serviceLevels.length > 0 ? serviceLevels.join(", ") : "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium">Package Types:</span>{" "}
+                          {packageTypeNames.length > 0 ? packageTypeNames.join(", ") : "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium">ETA:</span>{" "}
+                          Pickup {item?.numberOfDaysForPickup ?? "-"} days, Delivery{" "}
+                          {item?.numberOfDaysForDelivery ?? "-"} days
+                        </p>
+                      </div>
+                    </div>
 
                     <div className="flex gap-4 items-center">
                       <Button
@@ -641,7 +692,7 @@ const AddCompany = () => {
                         }}
                         open={isDeleteModalOpen}
                         title={"Delete company service"}
-                        data={item.companyServiceLevel.name ?? ""}
+                        data={getDeleteLabel(item)}
                         id={item?.id ?? ""}
                         handleDelete={handleDeleteService}
                         loading={pendingDeleteService}

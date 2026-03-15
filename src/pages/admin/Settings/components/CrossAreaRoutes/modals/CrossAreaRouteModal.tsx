@@ -15,14 +15,8 @@ import {
   updateCrossAreaRoute,
 } from "@/services/adminSettings";
 import { useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useGetCoverageArea } from "@/queries/admin/useGetAdminSettings";
+import { CustomInput } from "@/components/CustomInput";
 
 export function CrossAreaRoutesModal({
   open,
@@ -145,63 +139,41 @@ export function CrossAreaRoutesModal({
               onSubmit={handleSubmit(onSubmit)}
               className="flex flex-col gap-8"
             >
-              <div className="flex flex-col w-full">
-                <label htmlFor="name" className="font-inter text-brand font-semibold">
-                  From
-                </label>
-                <div className="border-b mb-2">
-                  <Select
-                    onValueChange={(val) => setValue("coverageAreaAId", val)}
-                    defaultValue={coverageAreaAId}
-                  >
-                    <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                      <SelectValue placeholder="Select an area" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {coverageAreaAList &&
-                        coverageAreaAList.map((item: any, index: number) => (
-                          <SelectItem key={index} value={item.id}>
-                            {item.name} - {item.code}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {errors.coverageAreaAId && (
-                  <p className="error text-xs text-[#FF0000]">
-                    {errors.coverageAreaAId.message}
-                  </p>
-                )}
-              </div>
+              <CustomInput
+                inputType="select"
+                label="From"
+                wrapperClassName="w-full"
+                value={coverageAreaAId}
+                placeholder="Select an area"
+                options={
+                  coverageAreaAList?.map((item: any) => ({
+                    label: `${item.name} - ${item.code}`,
+                    value: item.id,
+                  })) ?? []
+                }
+                error={errors.coverageAreaAId?.message}
+                onValueChange={(val) =>
+                  setValue("coverageAreaAId", val, { shouldValidate: true })
+                }
+              />
 
-              <div className="flex flex-col w-full">
-                <label htmlFor="name" className="font-inter text-brand font-semibold">
-                  To
-                </label>
-                <div className="border-b mb-2">
-                  <Select
-                    onValueChange={(val) => setValue("coverageAreaBId", val)}
-                    defaultValue={coverageAreaBId}
-                  >
-                    <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                      <SelectValue placeholder="Select an area" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {coverageAreaAList &&
-                        coverageAreaAList.map((item: any, index: number) => (
-                          <SelectItem key={index} value={item.id}>
-                            {item.name} - {item.code}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {errors.coverageAreaBId && (
-                  <p className="error text-xs text-[#FF0000]">
-                    {errors.coverageAreaBId.message}
-                  </p>
-                )}
-              </div>
+              <CustomInput
+                inputType="select"
+                label="To"
+                wrapperClassName="w-full"
+                value={coverageAreaBId}
+                placeholder="Select an area"
+                options={
+                  coverageAreaAList?.map((item: any) => ({
+                    label: `${item.name} - ${item.code}`,
+                    value: item.id,
+                  })) ?? []
+                }
+                error={errors.coverageAreaBId?.message}
+                onValueChange={(val) =>
+                  setValue("coverageAreaBId", val, { shouldValidate: true })
+                }
+              />
 
               <Button
                 variant={"secondary"}

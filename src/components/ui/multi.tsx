@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, type ReactNode } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Option = {
-  label: string;
+  label: ReactNode;
   value: string;
 };
 
@@ -57,14 +57,23 @@ export function MultiSelect({
               const selectedOptions = options?.filter((opt) =>
                 value.includes(opt.value)
               );
-              const first = selectedOptions[0]?.label;
-              const remaining = selectedOptions.length - 1;
+              const visibleOptions = selectedOptions.slice(0, 3);
+              const remaining = selectedOptions.length - visibleOptions.length;
 
               return (
                 <span className="flex justify-between items-center w-full">
-                 <span className="max-w-[150px] truncate">{first}</span>
+                  <span className="flex items-center gap-1 ">
+                    {visibleOptions.map((option, index) => (
+                      <span
+                        key={value[index] ?? index}
+                        className=" rounded-full bg-[#f5fcf7] px-2 py-[2px] text-xs text-brand"
+                      >
+                        {option.label}
+                      </span>
+                    ))}
+                  </span>
                   {remaining > 0 && (
-                    <span className="text-grey500 py-[2px] ml-1 px-2 mb-0 rounded-full text-xs bg-brand-light">
+                    <span className="text-grey500 py-[2px] ml-1 px-2 mb-0 rounded-full text-xs bg-[#f5fcf7]">
                       +{remaining} more
                     </span>
                   )}
