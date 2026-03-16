@@ -20,9 +20,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import usePlacesAutocomplete from "use-places-autocomplete";
+import usePlacesAutocomplete, { getDetails } from "use-places-autocomplete";
 import { useClickAway } from "@/hooks/useClickAway";
 import { useLocation } from "react-router-dom";
+import { AddressBreakdown } from "@/types/forms";
 // import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 // import { usePlacesAutocompleteV2 } from "@/hooks/usePlacesAutocompleteV2";
 
@@ -50,6 +51,8 @@ const CreateBooking = ({
   // ✅ separate states
   const [openPickupSuggestions, setOpenPickupSuggestions] = useState(false);
   const [openDestSuggestions, setOpenDestSuggestions] = useState(false);
+  const [pickupBreakdown, setPickupBreakdown] = useState<AddressBreakdown | null>(null);
+  const [dropOffBreakdown, setDropOffBreakdown] = useState<AddressBreakdown | null>(null);
 
   // ✅ separate refs
   const pickupRef = useRef<HTMLDivElement>(null!);
@@ -168,6 +171,29 @@ const CreateBooking = ({
   });
 
   const packageTypeId = watch("packageTypeId");
+
+  // ----- Address Breakdown Extraction -----
+  const extractBreakdownFromPlaceId = async (placeId: string): Promise<AddressBreakdown | null> => {
+    try {
+      const details = await getDetails({ placeId, fields: ["address_components"] });
+      if (typeof details === "string" || !details.address_components) return null;
+      let city = "";
+      let state = "";
+      for (const component of details.address_components) {
+        const type = component.types[0];
+        if (type === "locality" || (type === "administrative_area_level_2" && !city)) {
+          city = component.long_name;
+        }
+        if (type === "administrative_area_level_1") {
+          state = component.long_name;
+        }
+      }
+      return city || state ? { city, state } : null;
+    } catch {
+      return null;
+    }
+  };
+
   // ----- Helpers -----
   const normalizeData = (data: any) => ({
     ...data,
@@ -175,8 +201,14 @@ const CreateBooking = ({
   });
 
   const saveInputData = (data: any) => {
-    const normalized = normalizeData(data);
-    setInputData(normalized); // Update local state
+    const normalized = normalizeData({
+      ...data,
+      pickupCity: pickupBreakdown?.city,
+      pickupState: pickupBreakdown?.state,
+      dropOffCity: dropOffBreakdown?.city,
+      dropOffState: dropOffBreakdown?.state,
+    });
+    setInputData(normalized);
     sessionStorage.setItem("bookingInputData", JSON.stringify(normalized));
   };
 
@@ -298,13 +330,15 @@ const CreateBooking = ({
                       {pickupSuggestions.map(({ place_id, description }) => (
                         <li
                           key={place_id}
-                          onClick={() => {
+                          onClick={async () => {
                             const sanitized = sanitizeAddressInput(description);
                             setPickupValue(sanitized, false);
                             setValue("pickupLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearPickupSuggestions();
+                            const breakdown = await extractBreakdownFromPlaceId(place_id);
+                            setPickupBreakdown(breakdown);
                           }}
                           className="px-2 py-1 cursor-pointer hover:bg-gray-100"
                         >
@@ -355,13 +389,15 @@ const CreateBooking = ({
                       {destSuggestions.map(({ place_id, description }) => (
                         <li
                           key={place_id}
-                          onClick={() => {
+                          onClick={async () => {
                             const sanitized = sanitizeAddressInput(description);
                             setDestValue(sanitized, false);
                             setValue("dropOffLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearDestSuggestions();
+                            const breakdown = await extractBreakdownFromPlaceId(place_id);
+                            setDropOffBreakdown(breakdown);
                           }}
                           className="px-2 py-1 cursor-pointer hover:bg-gray-100"
                         >

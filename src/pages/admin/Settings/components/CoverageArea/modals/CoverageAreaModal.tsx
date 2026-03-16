@@ -16,6 +16,7 @@ import {
 } from "@/services/adminSettings";
 import { useEffect } from "react";
 import { CustomInput } from "@/components/CustomInput";
+import { useGetCoverageArea } from "@/queries/admin/useGetAdminSettings";
 
 export function CoverageAreaModal({
   open,
@@ -35,16 +36,30 @@ export function CoverageAreaModal({
     code: z
       .string({ required_error: "Code is required" })
       .min(1, { message: "Please enter a code" }),
+    level: z.enum(["CITY", "STATE"], {
+      required_error: "Level is required",
+    }),
+    parentStateId: z.string().optional(),
   });
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
+
+  const level = watch("level");
+
+  // Load state-level coverage areas for the parentState dropdown
+  const { data: coverageAreaData } = useGetCoverageArea({ minimize: true });
+  const stateAreas = (coverageAreaData?.data ?? []).filter(
+    (item: any) => item.level === "STATE"
+  );
 
   // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
@@ -52,11 +67,15 @@ export function CoverageAreaModal({
       reset({
         name: info.name,
         code: info.code,
+        level: info.level,
+        parentStateId: info.parentState?.id ?? "",
       });
     } else if (open && type === "create") {
       reset({
         name: "",
         code: "",
+        level: undefined,
+        parentStateId: "",
       });
     }
   }, [open, info, type, reset]);
@@ -80,7 +99,7 @@ export function CoverageAreaModal({
 
   const { mutate: updateArea, isPending: pendingUpdate } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: any }) =>
-      updateCoverageArea(id, data), // ✅ call with correct shape
+      updateCoverageArea(id, data),
 
     onSuccess: () => {
       toast.success("Successful");
@@ -97,18 +116,21 @@ export function CoverageAreaModal({
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
-    type === "create" &&
-      createArea({
-        name: data.name,
-        code: data.code,
-      });
+    const payload: any = {
+      name: data.name,
+      code: data.code,
+      level: data.level,
+    };
+    if (data.level === "CITY" && data.parentStateId) {
+      payload.parentStateId = data.parentStateId;
+    }
 
-    type === "edit" &&
-      updateArea({
-        id: info?.id,
-        data: { name: data.name, code: data.code },
-      });
+    type === "create" && createArea(payload);
+    type === "edit" && updateArea({ id: info?.id, data: payload });
   };
+
+  const levelValue = watch("level");
+  const parentStateIdValue = watch("parentStateId");
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -148,6 +170,45 @@ export function CoverageAreaModal({
                   className: "uppercase",
                 }}
               />
+
+              <CustomInput
+                inputType="select"
+                label="Level"
+                wrapperClassName="w-full"
+                value={levelValue}
+                placeholder="Select level"
+                options={[
+                  { label: "City", value: "CITY" },
+                  { label: "State", value: "STATE" },
+                ]}
+                error={errors.level?.message}
+                onValueChange={(val) => {
+                  setValue("level", val as "CITY" | "STATE", {
+                    shouldValidate: true,
+                  });
+                  setValue("parentStateId", "");
+                }}
+              />
+
+              {level === "CITY" && (
+                <CustomInput
+                  inputType="select"
+                  label="Parent State"
+                  wrapperClassName="w-full"
+                  value={parentStateIdValue}
+                  placeholder="Select parent state"
+                  options={
+                    stateAreas.map((item: any) => ({
+                      label: `${item.name} - ${item.code}`,
+                      value: item.id,
+                    }))
+                  }
+                  error={errors.parentStateId?.message}
+                  onValueChange={(val) =>
+                    setValue("parentStateId", val, { shouldValidate: true })
+                  }
+                />
+              )}
 
               <Button
                 variant={"secondary"}

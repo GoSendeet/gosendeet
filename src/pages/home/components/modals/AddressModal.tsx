@@ -459,7 +459,7 @@ export function AddressModal({
     addressParts.push(city, state, "Nigeria");
     const formattedAddress = addressParts.join(", ");
 
-    onSelect(formattedAddress);
+    onSelect(formattedAddress, { city, state });
     onOpenChange(false);
     setManualAddress({
       street: "",
