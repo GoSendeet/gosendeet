@@ -138,6 +138,7 @@ const Calculator = () => {
   const [debouncedMinPrice, setDebouncedMinPrice] = useState(minPrice);
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(maxPrice);
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [selectedDirectQuoteIndex, setSelectedDirectQuoteIndex] = useState(0);
   const pageRef = useRef(1);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isFetchingQuotes, setIsFetchingQuotes] = useState(false);
@@ -1460,6 +1461,34 @@ const Calculator = () => {
               {shareUrl ? "Copy Link" : "Share Quote"}
             </Button>
           </div>
+
+          {/* Service Level Options */}
+          {quoteContent.length > 1 && (
+            <div className="flex gap-3 mb-4">
+              {quoteContent.map((quote: any, idx: number) => {
+                const label = quote?.serviceLevelAgreements?.[0] ?? `Option ${idx + 1}`;
+                const isSelected = selectedDirectQuoteIndex === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedDirectQuoteIndex(idx)}
+                    className={cn(
+                      "flex-1 py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all duration-200",
+                      isSelected
+                        ? "border-brand bg-brand text-white shadow-md"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-brand hover:text-brand",
+                    )}
+                  >
+                    <span>{label}</span>
+                    <p className={cn("text-xs mt-1 font-normal", isSelected ? "text-white/80" : "text-gray-400")}>
+                      ₦{CurrencyFormatter(parsePrice(quote?.price).toFixed(2))}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="bg-white rounded-3xl border border-gray-200 shadow-lg overflow-hidden">
             {/* Quote Details */}
             <div className="px-8 py-6 space-y-6">
@@ -1503,11 +1532,11 @@ const Calculator = () => {
                     Estimated Delivery Date
                   </p>
                   <p className="text-lg font-bold text-[#1a1a1a]">
-                    {quoteContent[0]?.estimatedDeliveryDate}
+                    {quoteContent[selectedDirectQuoteIndex]?.estimatedDeliveryDate}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                  {quoteContent[0]?.pickupOptions?.[0]}
+                  {quoteContent[selectedDirectQuoteIndex]?.pickupOptions?.[0]}
                 </span>
               </div>
 
@@ -1518,8 +1547,8 @@ const Calculator = () => {
                     Delivery Fee
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.deliveryFee || CurrencyFormatter(
-                     parsePrice(quoteContent[0]?.price).toFixed(2),
+                    ₦{quoteContent[selectedDirectQuoteIndex]?.deliveryFee || CurrencyFormatter(
+                     parsePrice(quoteContent[selectedDirectQuoteIndex]?.price).toFixed(2),
                     ) || "0"}
                   </span>
                 </div>
@@ -1528,8 +1557,8 @@ const Calculator = () => {
                     Service Charge
                   </span>
                   <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.serviceCharge || CurrencyFormatter(
-                     parsePrice(quoteContent[0]?.price * 0.005).toFixed(2),
+                    ₦{quoteContent[selectedDirectQuoteIndex]?.serviceCharge || CurrencyFormatter(
+                     parsePrice(quoteContent[selectedDirectQuoteIndex]?.price * 0.005).toFixed(2),
                     ) || "0"}
                   </span>
                 </div>
@@ -1538,9 +1567,9 @@ const Calculator = () => {
                   <span className="text-brand font-bold">
                     {/* removes NGN */}₦{" "}
                     {CurrencyFormatter(
-                     parsePrice((quoteContent[0]?.price * 0.005) + quoteContent[0]?.price).toFixed(2),
+                     parsePrice((quoteContent[selectedDirectQuoteIndex]?.price * 0.005) + quoteContent[selectedDirectQuoteIndex]?.price).toFixed(2),
                     )}
-                   
+
                   </span>
                 </div>
               </div>
@@ -1548,7 +1577,7 @@ const Calculator = () => {
               {/* Book Now Button */}
               <Button
                 onClick={() => {
-                  const quoteItem = quoteContent[0];
+                  const quoteItem = quoteContent[selectedDirectQuoteIndex];
                   handleClick(quoteItem);
                 }}
                 className={cn(
