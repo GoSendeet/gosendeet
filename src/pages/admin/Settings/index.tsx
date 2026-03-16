@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import PackageType from "./components/PackageType";
 import ServiceLevel from "./components/ServiceLevel";
 import CoverageArea from "./components/CoverageArea";
-import PickupOption from "./components/PickupOption";
 // import LocationCode from "./components/LocationCode";
 import DeliveryProgress from "./components/DeliveryProgress";
 import CrossAreaRoutes from "./components/CrossAreaRoutes";
@@ -18,7 +17,7 @@ const Settings = () => {
     { key: "type", label: "Package Types" },
     { key: "level", label: "Service Levels" },
     { key: "area", label: "Coverage Areas" },
-    { key: "option", label: "Pickup Options" },
+    // { key: "option", label: "Pickup Options" },
     // { key: "code", label: "Location Codes" },
     { key: "cross", label: "Cross Area Routes" },
     { key: "progress", label: "Delivery Progress" },
@@ -96,7 +95,7 @@ const Settings = () => {
             {activeTab === "type" && <PackageType />}
             {activeTab === "level" && <ServiceLevel />}
             {activeTab === "area" && <CoverageArea />}
-            {activeTab === "option" && <PickupOption />}
+            {/* {activeTab === "option" && <PickupOption />} */}
             {/* {activeTab === "code" && <LocationCode />} */}
             {activeTab === "cross" && <CrossAreaRoutes />}
             {activeTab === "progress" && <DeliveryProgress />}

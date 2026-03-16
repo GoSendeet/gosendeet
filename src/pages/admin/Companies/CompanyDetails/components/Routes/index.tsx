@@ -130,7 +130,7 @@ const Routes = ({
                   </span>
                   <span className="truncate ml-2 text-sm">
                     {item?.crossAreaRoute
-                      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB} (${item?.pickupOptions?.[0]?.name || '-'})`
+                      ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
                       : "-"}
                   </span>
                 </div>
@@ -188,7 +188,7 @@ const Routes = ({
                     <div className="flex-1">
                       <p>
                         {item?.crossAreaRoute
-                          ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB} (${item?.pickupOptions[0].name})`
+                          ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
                           : "-"} 
                       </p>
                     </div>

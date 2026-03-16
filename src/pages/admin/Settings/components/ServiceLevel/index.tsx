@@ -15,6 +15,14 @@ import { usePaginationSync } from "@/hooks/usePaginationSync";
 import { PaginationComponent } from "@/components/Pagination";
 import MobileCard from "@/components/MobileCard";
 
+type ServiceLevelItem = {
+  id: string;
+  name: string;
+  multiplier?: number;
+  eta_min_days?: number;
+  eta_max_days?: number;
+};
+
 const ServiceLevel = () => {
   const [lastPage, setLastPage] = useState(1);
   const { currentPage, updatePage } = usePaginationSync(lastPage);
@@ -30,7 +38,7 @@ const ServiceLevel = () => {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [type, setType] = useState("");
-  const [info, setInfo] = useState<{ id: string; name: string } | null>(null);
+  const [info, setInfo] = useState<ServiceLevelItem | null>(null);
   const queryClient = useQueryClient();
 
   const { mutate: deleteService, isPending: pendingDelete } = useMutation({
@@ -117,6 +125,12 @@ const ServiceLevel = () => {
                 <div className="text-sm">
                   <p className="font-medium text-brand">Service Level</p>
                   <p className="truncate">{item?.name}</p>
+                  <p className="mt-2 font-medium text-brand">Multiplier</p>
+                  <p>{item?.multiplier ?? "-"}</p>
+                  <p className="mt-2 font-medium text-brand">ETA Min Days</p>
+                  <p>{item?.eta_min_days ?? "-"}</p>
+                  <p className="mt-2 font-medium text-brand">ETA Max Days</p>
+                  <p>{item?.eta_max_days ?? "-"}</p>
                 </div>
               </MobileCard>
             ))}
@@ -124,9 +138,12 @@ const ServiceLevel = () => {
 
             {/* Table for large screen */}
           <div className="hidden lg:block overflow-x-auto">
-            <div className="min-w-[700px] w-full relative">
+            <div className="min-w-[980px] w-full relative">
               <div className="flex justify-between text-brand text-left px-3 xl:px-4 py-4 text-md font-inter font-semibold bg-brand-light w-full">
-                <span className="flex-1">Service Level</span>
+                <span className="flex-[1.5]">Service Level</span>
+                <span className="flex-1">Multiplier</span>
+                <span className="flex-1">ETA Min Days</span>
+                <span className="flex-1">ETA Max Days</span>
                 <span className="w-[5%]"></span>
               </div>
 
@@ -140,8 +157,17 @@ const ServiceLevel = () => {
                         : "border-t border-t-neutral300"
                     } hover:bg-brand-light`}
                   >
-                    <div className="flex-1">
+                    <div className="flex-[1.5]">
                       <p>{item?.name}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.multiplier ?? "-"}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.eta_min_days ?? "-"}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p>{item?.eta_max_days ?? "-"}</p>
                     </div>
 
                     <div className="w-[5%] flex items-center gap-4">

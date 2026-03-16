@@ -20,11 +20,18 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import usePlacesAutocomplete from "use-places-autocomplete";
+import usePlacesAutocomplete, { getDetails } from "use-places-autocomplete";
 import { useClickAway } from "@/hooks/useClickAway";
 import { useLocation } from "react-router-dom";
+import { AddressBreakdown } from "@/types/forms";
 // import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 // import { usePlacesAutocompleteV2 } from "@/hooks/usePlacesAutocompleteV2";
+
+const ADDRESS_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9\\s,.'\\-/#]+$");
+const ADDRESS_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9\\s,.'\\-/#]", "g");
+
+const sanitizeAddressInput = (value: string) =>
+  value.replace(ADDRESS_SANITIZE_REGEX, "");
 
 const CreateBooking = ({
   bookingRequest,
@@ -44,6 +51,8 @@ const CreateBooking = ({
   // ✅ separate states
   const [openPickupSuggestions, setOpenPickupSuggestions] = useState(false);
   const [openDestSuggestions, setOpenDestSuggestions] = useState(false);
+  const [pickupBreakdown, setPickupBreakdown] = useState<AddressBreakdown | null>(null);
+  const [dropOffBreakdown, setDropOffBreakdown] = useState<AddressBreakdown | null>(null);
 
   // ✅ separate refs
   const pickupRef = useRef<HTMLDivElement>(null!);
@@ -123,10 +132,18 @@ const CreateBooking = ({
   const schema = z.object({
     pickupLocation: z
       .string({ required_error: "Pickup location is required" })
-      .min(1, { message: "Please enter pickup location" }),
+      .min(1, { message: "Please enter pickup location" })
+      .regex(ADDRESS_ALLOWED_REGEX, {
+        message:
+          "Only letters, numbers, spaces, and , . ' - / # are allowed",
+      }),
     dropOffLocation: z
       .string({ required_error: "Drop off location is required" })
-      .min(1, { message: "Please enter drop off location" }),
+      .min(1, { message: "Please enter drop off location" })
+      .regex(ADDRESS_ALLOWED_REGEX, {
+        message:
+          "Only letters, numbers, spaces, and , . ' - / # are allowed",
+      }),
     packageTypeId: z
       .string({ required_error: "Package type is required" })
       .min(1, { message: "Please enter package type" }),
@@ -154,6 +171,29 @@ const CreateBooking = ({
   });
 
   const packageTypeId = watch("packageTypeId");
+
+  // ----- Address Breakdown Extraction -----
+  const extractBreakdownFromPlaceId = async (placeId: string): Promise<AddressBreakdown | null> => {
+    try {
+      const details = await getDetails({ placeId, fields: ["address_components"] });
+      if (typeof details === "string" || !details.address_components) return null;
+      let city = "";
+      let state = "";
+      for (const component of details.address_components) {
+        const type = component.types[0];
+        if (type === "locality" || (type === "administrative_area_level_2" && !city)) {
+          city = component.long_name;
+        }
+        if (type === "administrative_area_level_1") {
+          state = component.long_name;
+        }
+      }
+      return city || state ? { city, state } : null;
+    } catch {
+      return null;
+    }
+  };
+
   // ----- Helpers -----
   const normalizeData = (data: any) => ({
     ...data,
@@ -161,8 +201,14 @@ const CreateBooking = ({
   });
 
   const saveInputData = (data: any) => {
-    const normalized = normalizeData(data);
-    setInputData(normalized); // Update local state
+    const normalized = normalizeData({
+      ...data,
+      pickupCity: pickupBreakdown?.city,
+      pickupState: pickupBreakdown?.state,
+      dropOffCity: dropOffBreakdown?.city,
+      dropOffState: dropOffBreakdown?.state,
+    });
+    setInputData(normalized);
     sessionStorage.setItem("bookingInputData", JSON.stringify(normalized));
   };
 
@@ -267,8 +313,9 @@ const CreateBooking = ({
                     type="text"
                     {...register("pickupLocation")}
                     onChange={(e) => {
-                      setPickupValue(e.target.value);
-                      setValue("pickupLocation", e.target.value, {
+                      const sanitized = sanitizeAddressInput(e.target.value);
+                      setPickupValue(sanitized);
+                      setValue("pickupLocation", sanitized, {
                         shouldValidate: true,
                       });
                       setOpenPickupSuggestions(true);
@@ -283,12 +330,15 @@ const CreateBooking = ({
                       {pickupSuggestions.map(({ place_id, description }) => (
                         <li
                           key={place_id}
-                          onClick={() => {
-                            setPickupValue(description, false);
-                            setValue("pickupLocation", description, {
+                          onClick={async () => {
+                            const sanitized = sanitizeAddressInput(description);
+                            setPickupValue(sanitized, false);
+                            setValue("pickupLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearPickupSuggestions();
+                            const breakdown = await extractBreakdownFromPlaceId(place_id);
+                            setPickupBreakdown(breakdown);
                           }}
                           className="px-2 py-1 cursor-pointer hover:bg-gray-100"
                         >
@@ -323,8 +373,9 @@ const CreateBooking = ({
                     type="text"
                     {...register("dropOffLocation")}
                     onChange={(e) => {
-                      setDestValue(e.target.value);
-                      setValue("dropOffLocation", e.target.value, {
+                      const sanitized = sanitizeAddressInput(e.target.value);
+                      setDestValue(sanitized);
+                      setValue("dropOffLocation", sanitized, {
                         shouldValidate: true,
                       });
                       setOpenDestSuggestions(true);
@@ -338,12 +389,15 @@ const CreateBooking = ({
                       {destSuggestions.map(({ place_id, description }) => (
                         <li
                           key={place_id}
-                          onClick={() => {
-                            setDestValue(description, false);
-                            setValue("dropOffLocation", description, {
+                          onClick={async () => {
+                            const sanitized = sanitizeAddressInput(description);
+                            setDestValue(sanitized, false);
+                            setValue("dropOffLocation", sanitized, {
                               shouldValidate: true,
                             });
                             clearDestSuggestions();
+                            const breakdown = await extractBreakdownFromPlaceId(place_id);
+                            setDropOffBreakdown(breakdown);
                           }}
                           className="px-2 py-1 cursor-pointer hover:bg-gray-100"
                         >

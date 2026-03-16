@@ -5,35 +5,23 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { changePassword } from "@/services/auth";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Switch } from "@/components/ui/switch";
 import {
-  // useGetCoverageArea,
   useGetCrossAreaRoute,
-  // useGetLocationCode,
   useGetPackageType,
-  useGetPickupOptions,
-  // useGetServiceLevel,
+  useGetServiceLevel,
 } from "@/queries/admin/useGetAdminSettings";
-import { MultiSelect } from "@/components/ui/multi";
 import {
   createCompanyServices,
   updateCompanyServices,
 } from "@/services/companies";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { CustomInput } from "@/components/CustomInput";
 
 export function AddRoutesModal({
   companyId,
@@ -50,27 +38,28 @@ export function AddRoutesModal({
   type: string;
   setInfo: any;
 }) {
-  const [selectedPickupOptions, setSelectedPickupOptions] = useState<string[]>(
+  const [selectedServiceLevels, setSelectedServiceLevels] = useState<string[]>(
     []
   );
   const [selectedPackageTypes, setSelectedPackageTypes] = useState<string[]>(
     []
   );
-  const { data: pickup_options } = useGetPickupOptions({ minimize: true });
+  const { data: service_levels } = useGetServiceLevel({ minimize: true });
   const { data: package_types } = useGetPackageType({ minimize: true });
   // const { data: location_codes } = useGetLocationCode({ minimize: true });
   const { data: cross_area_routes } = useGetCrossAreaRoute({ minimize: true });
   // const { data: coverage_areas } = useGetCoverageArea({ minimize: true });
 
-  const pickupOptions = pickup_options?.data?.map((item: any) => {
+  const serviceLevelOptions = service_levels?.data?.map((item: any) => {
     return {
       label: item.name,
       value: item.id,
     };
   });
+
+  
   const packageOptions = package_types?.data?.map((item: any) => {
     return {
-      // label: `${item.name} (${item.maxWeight}kg)`,
       label: (<div className="flex flex-col"> <span className="text-gray-900 font-semibold">{item.name}</span> <span className="font-light text-[0.6rem]"> Max weight: ({item.maxWeight} kg) </span></div>),
       value: item.id,
     };
@@ -86,28 +75,12 @@ export function AddRoutesModal({
     crossAreaRouteId: z
       .string({ required_error: "Cross area route is required" })
       .min(1, { message: "Please select an option" }),
-    pickupOptionIds: z
+    serviceLevelAgreementIds: z
       .array(z.string())
-      .nonempty({ message: "Select at least one pickup option" }),
+      .nonempty({ message: "Select at least one service level agreement" }),
     packageTypeIds: z
       .array(z.string())
       .nonempty({ message: "Select at least one package type" }),
-    // basePrice: z
-    //   .string({ required_error: "Base price is required" })
-    //   .min(1, { message: "Please enter a base price" }),
-    // weightMultiplier: z
-    //   .string({ required_error: "Weight multiplier is required" })
-    //   .min(1, { message: "Please enter a weight multiplier" }),
-    // zoneMultiplier: z
-    //   .string({ required_error: "Zone multiplier is required" })
-    //   .min(1, { message: "Please enter a zone multiplier" }),
-    // discountPercent: z
-    //   .string({ required_error: "Discount percent is required" })
-    //   .min(1, { message: "Please enter a discount percent" }),
-    // crossAreaRouteIds: z
-    //   .array(z.string())
-    //   .nonempty({ message: "Select at least one cross area route" }),
-
     isNextDayDelivery: z.boolean(),
     numberOfDaysForPickup: z
       .string({ required_error: "Number of days is required" })
@@ -122,13 +95,14 @@ export function AddRoutesModal({
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {
       crossAreaRouteId: "",
       // coverageAreaId: "",
-      pickupOptionIds: [],
+      serviceLevelAgreementIds: [],
       packageTypeIds: [],
       numberOfDaysForDelivery: "",
       numberOfDaysForPickup: "",
@@ -137,19 +111,28 @@ export function AddRoutesModal({
       // crossAreaRouteIds: [],
     },
   });
+  const isNextDayDelivery = watch("isNextDayDelivery");
   // Initialize once when `info` is available
   useEffect(() => {
-    if (info?.pickupOptions) {
-      const defaultIds = info.pickupOptions.map((item: any) => item.id);
-      setSelectedPickupOptions(defaultIds);
-      setValue("pickupOptionIds", defaultIds);
-    }
+    const serviceLevelIds =
+      info?.serviceLevels?.map((item: any) => item.id) ??
+      info?.serviceLevelAgreements?.map((item: any) => item.id) ??
+      (info?.companyServiceLevel?.id
+        ? [info.companyServiceLevel.id]
+        : info?.serviceLevel?.id
+          ? [info.serviceLevel.id]
+          : info?.serviceLevelAgreement?.id
+            ? [info.serviceLevelAgreement.id]
+            : []);
+    setSelectedServiceLevels(serviceLevelIds);
+    setValue("serviceLevelAgreementIds", serviceLevelIds);
+
     if (info?.packageTypes) {
       const defaultIds = info.packageTypes.map((item: any) => item.id);
       setSelectedPackageTypes(defaultIds);
       setValue("packageTypeIds", defaultIds);
     }
-  }, [info]);
+  }, [info, setValue]);
 
   // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
@@ -159,7 +142,16 @@ export function AddRoutesModal({
           info?.crossAreaRoute?.id ??
           "",
         // coverageAreaId: info?.coverageArea?.id,
-        pickupOptionIds: info?.pickupOptions?.map((item: any) => item.id) || [],
+        serviceLevelAgreementIds:
+          info?.serviceLevels?.map((item: any) => item.id) ??
+          info?.serviceLevelAgreements?.map((item: any) => item.id) ??
+          (info?.companyServiceLevel?.id
+            ? [info.companyServiceLevel.id]
+            : info?.serviceLevel?.id
+              ? [info.serviceLevel.id]
+              : info?.serviceLevelAgreement?.id
+                ? [info.serviceLevelAgreement.id]
+                : []),
         packageTypeIds: info?.packageTypes?.map((item: any) => item.id) || [],
         isNextDayDelivery: info?.isNextDayDelivery ?? false,
         numberOfDaysForPickup: info.numberOfDaysForPickup?.toString() ?? "",
@@ -169,13 +161,13 @@ export function AddRoutesModal({
       setInfo(null);
       reset({
         crossAreaRouteId: "",
-        pickupOptionIds: [], // empty array for multi-select
+        serviceLevelAgreementIds: [],
         packageTypeIds: [],
         isNextDayDelivery: false,
         numberOfDaysForPickup: "",
         numberOfDaysForDelivery: "",
       });
-      setSelectedPickupOptions([]);
+      setSelectedServiceLevels([]);
       setSelectedPackageTypes([]);
       // setSelectedLocations([]);
       // setSelectedRoutes([]);
@@ -190,13 +182,13 @@ export function AddRoutesModal({
       reset({
         // coverageAreaId: "",
         crossAreaRouteId: "",
-        pickupOptionIds: [],
+        serviceLevelAgreementIds: [],
         packageTypeIds: [],
         // locationCodeIds: [],
         // crossAreaRouteIds: [],
         isNextDayDelivery: false,
       });
-      setSelectedPickupOptions([]);
+      setSelectedServiceLevels([]);
       setSelectedPackageTypes([]);
       // setSelectedRoutes([]);
       setOpenRoutesModal(false);
@@ -257,83 +249,54 @@ export function AddRoutesModal({
               className="flex flex-col md:gap-5 gap-4"
             >
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="name" className="font-inter text-brand font-semibold">
-                    Select Cross Area Route
-                  </label>
-                  <div className="border-b mb-2">
-                    <input type="hidden" {...register("crossAreaRouteId")} />
-                    <Select
-                      onValueChange={(val) =>
-                        setValue("crossAreaRouteId", val, { shouldValidate: true })
-                      }
-                      defaultValue={info?.crossAreaRoute?.id}
-                      disabled={type === "edit"}
-                    >
-                      <SelectTrigger className="outline-0 border-0 focus-visible:border-transparent focus-visible:ring-transparent w-full py-2 px-0">
-                        <SelectValue placeholder="Select option"  />
-                      </SelectTrigger>
-                      <SelectContent >
-                        {routeOptions?.map(
-                            (item: any, index: number) => (
-                              <SelectItem
-                                value={item.value}
-                                key={index}
-                              >
-                                {item.label}
-                              </SelectItem>
-                            )
-                          )}
-                        {/* {type === "edit" &&
-                          service_level &&
-                          service_level?.data?.content?.map(
-                            (item: any, index: number) => (
-                              <SelectItem value={item.id} key={index}>
-                                {item.name}
-                              </SelectItem>
-                            )
-                          )} */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {errors.crossAreaRouteId && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.crossAreaRouteId.message}
-                    </p>
-                  )}
-                </div>
-
+                <input type="hidden" {...register("crossAreaRouteId")} />
+                <CustomInput
+                  inputType="select"
+                  label="Select Cross Area Route"
+                  placeholder="Select option"
+                  value={info?.crossAreaRoute?.id}
+                  options={routeOptions ?? []}
+                  error={errors.crossAreaRouteId?.message}
+                  wrapperClassName="w-full"
+                  disabled={type === "edit"}
+                  onValueChange={(val) =>
+                    setValue("crossAreaRouteId", val, { shouldValidate: true })
+                  }
+                />
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col w-full">
-                  <label
-                    htmlFor="packageType"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Select package type
-                  </label>
-                  <div className="flex justify-between items-center gap-2 border-b mb-2">
-                    <MultiSelect
-                      options={packageOptions}
-                      value={selectedPackageTypes}
-                      placeholder="Select options"
-                      // value={selected || []}
-                      onChange={(val) => {
-                        setSelectedPackageTypes(val);
-                        setValue(
-                          "packageTypeIds",
-                          val as [string, ...string[]]
-                        );
-                      }}
-                    />
-                  </div>
-                  {errors.packageTypeIds && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.packageTypeIds.message}
-                    </p>
-                  )}
-                </div>
+                <CustomInput
+                  inputType="multiSelect"
+                  label="Select service level agreement"
+                  placeholder="Select options"
+                  value={selectedServiceLevels}
+                  options={serviceLevelOptions ?? []}
+                  error={errors.serviceLevelAgreementIds?.message}
+                  wrapperClassName="w-full"
+                  onChange={(val) => {
+                    setSelectedServiceLevels(val);
+                    setValue("serviceLevelAgreementIds", val as [string, ...string[]], {
+                      shouldValidate: true,
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="flex md:flex-row flex-col gap-4 items-center">
+                <CustomInput
+                  inputType="multiSelect"
+                  label="Select package type"
+                  placeholder="Select options"
+                  value={selectedPackageTypes}
+                  options={packageOptions ?? []}
+                  error={errors.packageTypeIds?.message}
+                  wrapperClassName="w-full"
+                  onChange={(val) => {
+                    setSelectedPackageTypes(val);
+                    setValue("packageTypeIds", val as [string, ...string[]]);
+                  }}
+                />
                 {/* <div className="flex flex-col lg:w-1/2 w-full">
                   <label
                     htmlFor="coverageArea"
@@ -368,7 +331,7 @@ export function AddRoutesModal({
                 </div> */}
               </div>
 
-              <div className="flex md:flex-row flex-col gap-4 items-center">
+              {/* <div className="flex md:flex-row flex-col gap-4 items-center"> */}
                 {/* <div className="flex flex-col lg:w-1/2 w-full">
                   <label htmlFor="name" className="font-inter font-semibold">
                     Select location code
@@ -394,35 +357,19 @@ export function AddRoutesModal({
                   )}
                 </div> */}
 
-                            <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="pickupOption"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Select pickup option
-                  </label>
-                  <div className="flex justify-between items-center gap-2 border-b mb-2">
-                    <MultiSelect
-                      options={pickupOptions}
-                      value={selectedPickupOptions}
-                      placeholder="Select options"
-                      // value={selected || []}
-                      onChange={(val) => {
-                        setSelectedPickupOptions(val);
-                        setValue(
-                          "pickupOptionIds",
-                          val as [string, ...string[]]
-                        );
-                      }}
-                    />
-                  </div>
-                  {errors.pickupOptionIds && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.pickupOptionIds.message}
-                    </p>
-                  )}
-                </div>
-              </div>
+                {/* <CustomInput
+                  inputType="multiSelect"
+                  label="Select pickup option"
+                  placeholder="Select options"
+                  value={selectedPickupOptions}
+                  options={pickupOptions ?? []}
+                  error={errors.pickupOptionIds?.message}
+                  onChange={(val) => {
+                    setSelectedPickupOptions(val);
+                    setValue("pickupOptionIds", val as [string, ...string[]]);
+                  }}
+                /> */}
+              {/* </div> */}
               {/* <div className="flex md:flex-row flex-col gap-4 items-center">
                 <div className="flex flex-col lg:w-1/2 w-full">
                   <label
@@ -522,64 +469,35 @@ export function AddRoutesModal({
                 </div>
               </div> */}
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="numberOfDaysForPickup"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Number of days for pickup
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("numberOfDaysForPickup")}
-                      defaultValue={info?.numberOfDaysForPickup}
-                      placeholder="Enter number of days"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.numberOfDaysForPickup && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.numberOfDaysForPickup.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col lg:w-1/2 w-full">
-                  <label
-                    htmlFor="numberOfDaysForDelivery"
-                    className="font-inter text-brand font-semibold"
-                  >
-                    Number of days for delivery
-                  </label>
-                  <div className="border-b mb-2">
-                    <input
-                      type="text"
-                      {...register("numberOfDaysForDelivery")}
-                      defaultValue={info?.numberOfDaysForDelivery}
-                      placeholder="Enter number of days"
-                      className="w-full outline-0 border-b-0 py-2"
-                      onKeyDown={allowOnlyNumbers}
-                    />
-                  </div>
-                  {errors.numberOfDaysForDelivery && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.numberOfDaysForDelivery.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <Switch
-                  defaultChecked={info?.isNextDayDelivery}
-                  onCheckedChange={(val) => setValue("isNextDayDelivery", val)}
+                <CustomInput
+                  inputType="number"
+                  label="Number of days for pickup"
+                  inputProps={{
+                    placeholder: "Enter number of days",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                  registration={register("numberOfDaysForPickup")}
+                  error={errors.numberOfDaysForPickup?.message}
                 />
-                <label htmlFor="name" className="font-inter text-brand font-semibold">
-                  Allow next day delivery
-                </label>
+
+                <CustomInput
+                  inputType="number"
+                  label="Number of days for delivery"
+                  inputProps={{
+                    placeholder: "Enter number of days",
+                    onKeyDown: allowOnlyNumbers,
+                  }}
+                  registration={register("numberOfDaysForDelivery")}
+                  error={errors.numberOfDaysForDelivery?.message}
+                />
               </div>
+
+              <CustomInput
+                inputType="toggle"
+                label="Allow next day delivery"
+                checked={isNextDayDelivery}
+                onCheckedChange={(val) => setValue("isNextDayDelivery", val)}
+              />
 
               <Button
                 variant={"secondary"}
