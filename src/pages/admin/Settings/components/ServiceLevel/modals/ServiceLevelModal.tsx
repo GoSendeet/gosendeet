@@ -32,20 +32,6 @@ export function ServiceLevelModal({
       .regex(/^[A-Za-z\s]+$/, {
         message: "Name must contain only letters and spaces",
       }),
-    multiplier: z.coerce
-      .number({ required_error: "Multiplier is required" })
-      .positive({ message: "Multiplier must be greater than 0" }),
-    eta_min_days: z.coerce
-      .number({ required_error: "Minimum ETA is required" })
-      .int({ message: "Minimum ETA must be a whole number" })
-      .min(1, { message: "Minimum ETA must be at least 1 day" }),
-    eta_max_days: z.coerce
-      .number({ required_error: "Maximum ETA is required" })
-      .int({ message: "Maximum ETA must be a whole number" })
-      .min(1, { message: "Maximum ETA must be at least 1 day" }),
-  }).refine((data) => data.eta_max_days >= data.eta_min_days, {
-    message: "Maximum ETA must be greater than or equal to minimum ETA",
-    path: ["eta_max_days"],
   });
 
   const {
@@ -57,22 +43,11 @@ export function ServiceLevelModal({
     resolver: zodResolver(schema),
   });
 
-  // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
     if (open && type === "edit" && info) {
-      reset({
-        name: info.name ?? "",
-        multiplier: info.multiplier ?? "",
-        eta_min_days: info.eta_min_days ?? "",
-        eta_max_days: info.eta_max_days ?? "",
-      });
+      reset({ name: info.name ?? "" });
     } else if (open && type === "create") {
-      reset({
-        name: "",
-        multiplier: "" as unknown as number,
-        eta_min_days: "" as unknown as number,
-        eta_max_days: "" as unknown as number,
-      });
+      reset({ name: "" });
     }
   }, [open, info, type, reset]);
 
@@ -112,21 +87,9 @@ export function ServiceLevelModal({
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
-    const payload = {
-      name: data.name.trim(),
-      multiplier: data.multiplier,
-      eta_min_days: data.eta_min_days,
-      eta_max_days: data.eta_max_days,
-    };
-
-    type === "create" &&
-      createService(payload);
-
-    type === "edit" &&
-      updateService({
-        id: info?.id,
-        data: payload,
-      });
+    const payload = { name: data.name.trim() };
+    if (type === "create") createService(payload);
+    if (type === "edit") updateService({ id: info?.id, data: payload });
   };
 
   return (
@@ -152,43 +115,6 @@ export function ServiceLevelModal({
                 error={errors.name?.message}
                 inputProps={{
                   placeholder: "Enter service level name",
-                }}
-                className="px-4"
-              />
-
-              <CustomInput
-                inputType="number"
-                label="Multiplier"
-                wrapperClassName="w-full"
-                registration={register("multiplier")}
-                error={errors.multiplier?.message}
-                inputProps={{
-                  placeholder: "Enter multiplier",
-                  step: "any",
-                }}
-                className="px-4"
-              />
-
-              <CustomInput
-                inputType="number"
-                label="Minimum ETA days"
-                wrapperClassName="w-full"
-                registration={register("eta_min_days")}
-                error={errors.eta_min_days?.message}
-                inputProps={{
-                  placeholder: "Enter minimum ETA days",
-                }}
-                className="px-4"
-              />
-
-              <CustomInput
-                inputType="number"
-                label="Maximum ETA days"
-                wrapperClassName="w-full"
-                registration={register("eta_max_days")}
-                error={errors.eta_max_days?.message}
-                inputProps={{
-                  placeholder: "Enter maximum ETA days",
                 }}
                 className="px-4"
               />

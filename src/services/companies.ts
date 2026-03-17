@@ -58,7 +58,7 @@ export const updateCompanyStatus = async (status: string, data: any) => {
 
 export const createCompanyServices = async (data: any) => {
   try {
-    const res = await api.post(`/company-services`, data);
+    const res = await api.post(`/company-route-configs`, data);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -67,7 +67,7 @@ export const createCompanyServices = async (data: any) => {
 
 export const getCompanyServices = async (id: string) => {
   try {
-    const res = await api.get(`/company-services?companyId=${id}`);
+    const res = await api.get(`/company-route-configs?companyId=${id}`);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -76,7 +76,7 @@ export const getCompanyServices = async (id: string) => {
 
 export const deleteCompanyServices = async (id: string) => {
   try {
-    const res = await api.delete(`/company-services/${id}`);
+    const res = await api.delete(`/company-route-configs/${id}`);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -85,45 +85,16 @@ export const deleteCompanyServices = async (id: string) => {
 
 export const updateCompanyServices = async (id: string, data: any) => {
   try {
-    const res = await api.put(`/company-services/${id}`, data);
+    const res = await api.put(`/company-route-configs/${id}`, data);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
   }
 };
 
-export const createCompanyPricing = async (data: any) => {
+export const updateRouteStatus = async (id: string, isActive: boolean) => {
   try {
-    const res = await api.post(`/delivery-pricing`, data);
-    return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
-  }
-};
-
-export const updateCompanyPricing = async (id: string, data: any) => {
-  try {
-    const res = await api.put(`delivery-pricing/${id}`, data);
-    return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
-  }
-};
-
-export const getCompanyPricing = async (id: string) => {
-  try {
-    const res = await api.get(`/delivery-pricing?companyId=${id}`);
-    return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
-  }
-};
-
-export const deleteCompanyPricing = async (data: { ids: string[] }) => {
-  try {
-    const res = await api.delete(`delivery-pricing`, {
-      data, // Axios requires the payload to be inside a `data` key
-    });
+    const res = await api.patch(`/company-route-configs/${id}/status?isActive=${isActive}`);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
