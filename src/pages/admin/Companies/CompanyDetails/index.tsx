@@ -9,12 +9,10 @@ import CoverSheet from "./components/CoverSheet";
 import Orders from "./components/Orders";
 import Ratings from "./components/Ratings";
 import {
-  useGetCompanyPricing,
   useGetCompanyServices,
   useGetSingleCompany,
 } from "@/queries/admin/useGetAdminCompanies";
 import Routes from "./components/Routes";
-import Pricing from "./components/Pricing";
 import { Spinner } from "@/components/Spinner";
 import { BiEditAlt } from "react-icons/bi";
 import UpdateCompanyStatusModal from "../modals/UpdateCompanyStatusModal";
@@ -35,15 +33,11 @@ const CompanyDetails = () => {
   const { data: company_services } = useGetCompanyServices(companyId);
   const companyServices = company_services?.data || [];
 
-  const { data: company_pricing } = useGetCompanyPricing(companyId);
-  const companyPricing = company_pricing?.data || [];
-
   const tabs = [
     { key: "cover", label: "Cover Sheet" },
     { key: "orders", label: "Orders" },
     { key: "rating", label: "Ratings" },
     { key: "routes", label: "Routes" },
-    { key: "pricing", label: "Pricing" },
   ];
 
   const updateUnderline = (index: number) => {
@@ -169,13 +163,6 @@ const CompanyDetails = () => {
               {activeTab === "routes" && (
                 <Routes
                   companyId={companyId}
-                  companyServices={companyServices}
-                />
-              )}
-              {activeTab === "pricing" && (
-                <Pricing
-                  companyId={companyId}
-                  companyPricing={companyPricing}
                   companyServices={companyServices}
                 />
               )}

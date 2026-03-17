@@ -2,7 +2,7 @@ import { api, authApi } from "./axios";
 
 export const createServiceLevel = async (data: any) => {
   try {
-    const res = await api.post(`/service-level-agreements`, data);
+    const res = await api.post(`/service-levels`, data);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -19,7 +19,7 @@ export const getServiceLevel = async (options?: { page?: number; minimize?: bool
       params.append("minimize", options.minimize.toString());
     }
 
-    const res = await api.get(`/service-level-agreements?${params.toString()}`);
+    const res = await api.get(`/service-levels?${params.toString()}`);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -28,7 +28,7 @@ export const getServiceLevel = async (options?: { page?: number; minimize?: bool
 
 export const updateServiceLevel = async (id: string, data: any) => {
   try {
-    const res = await api.put(`/service-level-agreements/${id}`, data);
+    const res = await api.put(`/service-levels/${id}`, data);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
@@ -37,7 +37,7 @@ export const updateServiceLevel = async (id: string, data: any) => {
 
 export const deleteServiceLevel = async (id: string) => {
   try {
-    const res = await api.delete(`/service-level-agreements/${id}`);
+    const res = await api.delete(`/service-levels/${id}`);
     return res.data;
   } catch (error: any) {
     throw error?.response?.data || { message: error.message };
