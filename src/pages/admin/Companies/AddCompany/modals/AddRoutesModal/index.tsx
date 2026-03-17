@@ -208,7 +208,7 @@ export function AddRoutesModal({
     );
 
   const availableSlaOptions = serviceLevelOptions.filter(
-    (o) => !slaEntries.some((e) => e.serviceLevelId === o.value)
+    (o: { label: string; value: string }) => !slaEntries.some((e) => e.serviceLevelId === o.value)
   );
 
   const queryClient = useQueryClient();

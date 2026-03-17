@@ -38,37 +38,11 @@ const AddCompany = () => {
   const [isHydrated, setIsHydrated] = useState(false);
   const [openDeleteModal, setOpenDeleteModal] = useState<number | null>(null);
 
-  const [activeModalId, setActiveModalId] = useState<number | null>(null);
+  const [, setActiveModalId] = useState<number | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
   const { data: company_services } = useGetCompanyServices(companyId);
   const companyServices = company_services?.data?.content || [];
-
-  useEffect(() => {
-    const handleOutsideClick = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (modalRef.current && !modalRef.current.contains(target)) {
-        setActiveModalId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
-  useEffect(() => {
-    if (companyId) {
-      const stored = sessionStorage.getItem("companyFormData");
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          reset(parsed);
-        } catch (err) {
-          console.error("Error parsing stored company data", err);
-        }
-      }
-    }
-    setIsHydrated(true);
-  }, [companyId, reset]);
 
   const schema = z.object({
     name: z
@@ -115,6 +89,32 @@ const AddCompany = () => {
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (modalRef.current && !modalRef.current.contains(target)) {
+        setActiveModalId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  useEffect(() => {
+    if (companyId) {
+      const stored = sessionStorage.getItem("companyFormData");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          reset(parsed);
+        } catch (err) {
+          console.error("Error parsing stored company data", err);
+        }
+      }
+    }
+    setIsHydrated(true);
+  }, [companyId, reset]);
 
   const queryClient = useQueryClient();
 
@@ -385,7 +385,7 @@ const AddCompany = () => {
                         ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
                         : ""}
                       id={item?.id ?? ""}
-                      handleDelete={(id) => deleteService(id)}
+                      handleDelete={(id: string) => deleteService(id)}
                       loading={pendingDeleteService}
                     />
                   </div>
