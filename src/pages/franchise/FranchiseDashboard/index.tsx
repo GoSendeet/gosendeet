@@ -3,7 +3,7 @@ import ActivityStats from "./ActivityStats";
 import { Truck, Zap } from "lucide-react";
 import RecentActivity from "./RecentActivity";
 
-const FranchiseDashboard = () => {
+const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries: (statusTab: string) => void }) => {
   const [isOnline, setIsOnline] = useState(true);
 
   return (
@@ -64,7 +64,7 @@ const FranchiseDashboard = () => {
           </button>
         </div>
       </div>
-      
+
       {/* dashboard statistics */}
       <div className="mt-10">
         <ActivityStats />
@@ -73,7 +73,7 @@ const FranchiseDashboard = () => {
       {/* Action Buttons */}
       <div className="flex flex-col md:flex-row items-center gap-4 mt-6 font-inter">
         <button
-          onClick={() => (null)} 
+          onClick={() => onNavigateToDeliveries("Pending")}
           className="flex items-center justify-center md:justify-start gap-3 bg-green900 w-full lg:w-fit shadow-sm text-white px-4 py-3 rounded-xl cursor-pointer">
           <span>
             <Zap size={16} color="#ffff" />
@@ -82,7 +82,9 @@ const FranchiseDashboard = () => {
           <span className="text-sm font-light">(2)</span>
         </button>
 
-        <button className="flex items-center justify-center md:justify-start gap-3 shadow-sm w-full lg:w-fit border border-gray-200 bg-white text-[#0A0A0A] px-4 py-3 rounded-xl cursor-pointer">
+        <button
+          onClick={() => onNavigateToDeliveries("Active")}
+          className="flex items-center justify-center md:justify-start gap-3 shadow-sm w-full lg:w-fit border border-gray-200 bg-white text-[#0A0A0A] px-4 py-3 rounded-xl cursor-pointer">
           <span>
             <Truck size={16} />
           </span>

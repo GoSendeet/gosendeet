@@ -57,7 +57,7 @@ const Profiles = () => {
   // Reset pagination when status changes
   useEffect(() => {
     updatePage(1); // Reset to page 1
-  }, [userStatus, debouncedProfileSearchTerm, startStr, endStr]); // Reset when filters change
+  }, [userStatus, debouncedProfileSearchTerm, startStr, endStr, updatePage]); // Reset when filters change
 
   const { data, isLoading, isSuccess, isError } = useGetProfiles(
     currentPage, // 👈 Always fetch page 1 during status change
@@ -74,7 +74,7 @@ const Profiles = () => {
     if (totalPages && totalPages !== lastPage) {
       setLastPage(totalPages);
     }
-  }, [data?.data?.page?.totalPages]);
+  }, [data?.data?.page?.totalPages, lastPage]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
