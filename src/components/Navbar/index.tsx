@@ -103,7 +103,7 @@ const Navbar = () => {
           <div className="hidden lg:flex lg:flex-row gap-8 flex-col">
             <Link to="/signup">
               <Button size={"lg"} variant="outline">
-                Become a Franchise
+                Sign Up
               </Button>
             </Link>
 
