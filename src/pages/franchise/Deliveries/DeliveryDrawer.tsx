@@ -248,7 +248,7 @@ const TasksSummary = ({ tasks }: { tasks: DeliveryTask[] }) => (
   </div>
 );
 
-const TaskCard = ({ task, index }: { task: DeliveryTask; index: number }) => {
+const TaskCard = ({ task }: { task: DeliveryTask }) => {
   const typeStyle = taskTypeStyles[task.taskType];
   const afterDt = formatDateTime(task.completeAfter);
   const beforeDt = formatDateTime(task.completeBefore);
@@ -456,8 +456,8 @@ const DeliveryDrawer = ({
               No tasks found
             </div>
           ) : (
-            tasks.map((task, i) => (
-              <TaskCard key={task.id} task={task} index={i} />
+            tasks.map((task) => (
+              <TaskCard key={task.id} task={task} />
             ))
           )}
           {/* Package Details */}
