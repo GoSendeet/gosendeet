@@ -21,6 +21,7 @@ import { updateSingleCompany } from "@/services/companies";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export function UpdateCompanyModal({
   open,
@@ -70,6 +71,7 @@ export function UpdateCompanyModal({
     country: z
       .string({ required_error: "Country is required" })
       .min(3, { message: "Please enter country" }),
+    logo: z.string().url({ message: "Please provide a valid logo URL" }).optional(),
   });
 
   const {
@@ -94,6 +96,7 @@ export function UpdateCompanyModal({
         city: data.city ?? "",
         state: data.state ?? "",
         country: data.country ?? "",
+        logo: data.logo ?? "",
       });
     }
   }, [data, open, reset]);
@@ -315,6 +318,15 @@ export function UpdateCompanyModal({
                     </p>
                   )}
                 </div>
+              </div>
+
+              <div className="flex md:flex-row flex-col gap-4 items-center">
+                <ImageUpload
+                  label="Company Logo"
+                  imageUrl={watch("logo")}
+                  onUrlChange={(url) => setValue("logo", url, { shouldValidate: true })}
+                  error={errors.logo?.message}
+                />
               </div>
 
               <Button
