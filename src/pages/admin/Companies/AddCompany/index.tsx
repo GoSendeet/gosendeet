@@ -26,6 +26,7 @@ import { useGetCompanyServices } from "@/queries/admin/useGetAdminCompanies";
 import DeleteModal from "@/components/modals/DeleteModal";
 import { BiSolidTrashAlt } from "react-icons/bi";
 import { allowOnlyNumbers } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const AddCompany = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const AddCompany = () => {
   const [, setActiveModalId] = useState<number | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
+
   const { data: company_services } = useGetCompanyServices(companyId);
   const companyServices = company_services?.data?.content || [];
 
@@ -48,6 +50,7 @@ const AddCompany = () => {
     name: z
       .string({ required_error: "Company name is required" })
       .min(3, { message: "Please enter company name" }),
+    logo: z.string().url({ message: "Please provide a valid logo URL" }).optional(),
     website: z
       .string({ required_error: "Company website is required" })
       .url({ message: "Please enter valid url with https://" })
@@ -190,6 +193,15 @@ const AddCompany = () => {
                   />
                 </div>
                 {errors.name && <p className="error text-xs text-[#FF0000] px-4">{errors.name.message}</p>}
+              </div>
+
+              <div className="flex flex-col w-full px-4">
+                <ImageUpload
+                  label="Company Logo"
+                  imageUrl={watch("logo")}
+                  onUrlChange={(url) => setValue("logo", url, { shouldValidate: true })}
+                  error={errors.logo?.message}
+                />
               </div>
 
               <div className="flex flex-col w-full">
