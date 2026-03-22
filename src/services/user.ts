@@ -1,5 +1,14 @@
 import { api, authApi } from "./axios";
 
+const ensureAuthenticated = () => {
+  const authToken = sessionStorage.getItem("authToken");
+  const userId = sessionStorage.getItem("userId");
+
+  if (!authToken || !userId) {
+    throw { message: "Please sign in to continue" };
+  }
+};
+
 export const userDetails = async (id: string) => {
   try {
     const res = await api.get(`/users/${id}`);
@@ -70,6 +79,7 @@ export const updateUserProfile = async (id: string, data: any) => {
 
 export const createBooking = async (data: any) => {
   try {
+    ensureAuthenticated();
     const res = await api.post(`/bookings`, data);
     return res.data;
   } catch (error: any) {
@@ -79,6 +89,7 @@ export const createBooking = async (data: any) => {
 
 export const payForBooking = async (bookingId: string, successUrl: string, errorUrl: string) => {
   try {
+    ensureAuthenticated();
     const res = await api.post(`/booking/payments/initialize?bookingId=${bookingId}&successUrl=${successUrl}&errorUrl=${errorUrl}`);
     return res.data;
   } catch (error: any) {

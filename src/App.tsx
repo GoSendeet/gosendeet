@@ -12,7 +12,6 @@ import Checkout from "./pages/home/CostCalculator/components/Calculator/Booking/
 import Confirmation from "./pages/home/CostCalculator/components/Calculator/Booking/Confirmation";
 import Tracking from "./pages/home/Track/Tracking";
 import Signin from "./pages/auth/Signin";
-import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail";
@@ -61,7 +60,6 @@ function App() {
         <Route element={<PublicRoutes />}>
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
-          <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/:id/verify-email" element={<VerifyEmail />} />
           <Route path="/:id/reset-password" element={<ResetPassword />} />
