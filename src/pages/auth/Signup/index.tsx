@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
 import { useForm, Controller } from "react-hook-form";
+import google from "@/assets/icons/google.png";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import {
 import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { googleLogin } from "@/services/auth";
 
 const Signup = () => {
   const [userType, setUserType] = useState<"customer" | "franchise">(
@@ -30,6 +32,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const customerSchema = z
     .object({
@@ -37,6 +40,14 @@ const Signup = () => {
         .string({ required_error: "Full name is required" })
         .trim()
         .min(1, { message: "Full name cannot be empty" }),
+      firstName: z
+        .string({ required_error: "First Name is required" })
+        .trim()
+        .min(1, { message: "First Name name cannot be empty" }),
+      lastName: z
+        .string({ required_error: "Last Name is required" })
+        .trim()
+        .min(1, { message: "Last Name cannot be empty" }),
       email: z
         .string({ required_error: "Email address is required" })
         .email({ message: "Invalid email address" }),
@@ -51,7 +62,8 @@ const Signup = () => {
         .min(8, { message: "Password must be at least 8 characters" }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
-          message: "You must agree to the Terms & Conditions and Privacy Policy",
+          message:
+            "You must agree to the Terms & Conditions and Privacy Policy",
         }),
       }),
     })
@@ -66,6 +78,14 @@ const Signup = () => {
         .string({ required_error: "Full name is required" })
         .trim()
         .min(1, { message: "Full name cannot be empty" }),
+      firstName: z
+        .string({ required_error: "First Name is required" })
+        .trim()
+        .min(1, { message: "First Name name cannot be empty" }),
+      lastName: z
+        .string({ required_error: "Last Name is required" })
+        .trim()
+        .min(1, { message: "Last Name cannot be empty" }),
       companyName: z
         .string({ required_error: "Company name is required" })
         .trim()
@@ -87,7 +107,8 @@ const Signup = () => {
         .min(8, { message: "Password must be at least 8 characters" }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
-          message: "You must agree to the Terms & Conditions and Privacy Policy",
+          message:
+            "You must agree to the Terms & Conditions and Privacy Policy",
         }),
       }),
     })
@@ -124,16 +145,18 @@ const Signup = () => {
     mutate(data);
   };
 
-  // const handleGoogleLogin = () => {
-  //   googleLogin();
-  // };
+
+  const handleGoogleLogin = () => {
+    setLoading(true);
+    googleLogin();
+  };
 
   return (
     <AuthLayout>
       <div className="bg-neutral900 md:px-20 px-6 py-20 font-arial">
         <div className="flex lg:flex-row flex-col gap-10">
           {/* Left Section */}
-          <div className="xl:w-[40%] lg:w-[50%] flex flex-col justify-center">
+          <div className="xl:w-[40%] lg:w-[50%] flex flex-col justify-center self-start lg:sticky lg:top-8">
             {/* Heading */}
             <div className="mb-8">
               <p className="bg-green300 mb-4 border border-green600 w-fit px-6 py-2 flex items-center gap-2 rounded-full md:text-sm text-xs font-bold shadow-md relative z-10">
@@ -155,7 +178,7 @@ const Signup = () => {
             </p>
 
             {/* Trust Badge */}
-            <div className="bg-black h-[500px] relative flex flex-col justify-end items-end bg-signup text-white rounded-2xl p-6 mb-6">
+            <div className="bg-black h-125 relative flex flex-col justify-end items-end bg-signup text-white rounded-2xl p-6 mb-6">
               <div className="absolute inset-0 sign-gradient rounded-2xl z-10"></div>
               <div className="  mb-4 h-fit z-20">
                 <h4 className="font-bold mb-2 text-green-500 flex items-start gap-3">
@@ -184,27 +207,29 @@ const Signup = () => {
             <div className=" mx-auto w-full">
               {/* User Type Toggle */}
               <p className="mb-8 text-grey300">I want to register as a:</p>
-              <div className="bg-green4000 rounded-2xl p-1.5 flex gap-2 mb-8">
+              <div className="relative bg-green4000 rounded-2xl p-1.5 flex mb-8">
+                {/* sliding pill */}
+                <div
+                  className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-500 ease-in-out ${
+                    userType === "customer" ? "left-1.5" : "left-[50%]"
+                  }`}
+                />
                 <button
                   onClick={() => setUserType("customer")}
-                  className={`flex-1 py-2 px-4 rounded-xl font-semibold transition-all text-sm flex items-center justify-center gap-2 ${
-                    userType === "customer"
-                      ? "bg-white text-blue100"
-                      : "text-grey300"
+                  className={`relative z-10 flex-1 py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
+                    userType === "customer" ? "text-blue100" : "text-grey300"
                   }`}
                 >
-                  <User />
+                  <User size={16} />
                   Customer
                 </button>
                 <button
                   onClick={() => setUserType("franchise")}
-                  className={`flex-1 py-2 px-4 rounded-xl font-semibold transition-all text-sm flex items-center justify-center gap-2 ${
-                    userType === "franchise"
-                      ? "bg-white text-blue100"
-                      : "text-grey300"
+                  className={`relative z-10 flex-1 py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
+                    userType === "franchise" ? "text-blue100" : "text-grey300"
                   }`}
                 >
-                  <Store />
+                  <Store size={16} />
                   Franchise Partner
                 </button>
               </div>
@@ -215,53 +240,53 @@ const Signup = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm  text-blue100 mb-2">
-                      FullName
+                      First Name
                     </label>
                     <input
                       type="text"
-                      {...register("username")}
+                      {...register("firstName")}
                       placeholder="e.g. Adeola"
                       className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
                     />
-                    {errors.username && (
+                    {errors.firstName && (
                       <p className="text-xs text-red-500 mt-1">
-                        {(errors.username as any)?.message}
+                        {(errors.firstName as any)?.message}
                       </p>
                     )}
                   </div>
-                  {/* <div>
+                  <div>
                     <label className="block text-sm  text-blue100 mb-2">
                       Last Name
                     </label>
                     <input
                       type="text"
-                       {...register("lastname")}
+                      {...register("lastName")}
                       placeholder="e.g. Okafor"
                       className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
                     />
-                    {errors.lastname && (
+                    {errors.lastName && (
                       <p className="text-xs text-red-500 mt-1">
-                        {(errors.lastname as any)?.message}
-                      </p>
-                    )}
-                  </div> */}
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm  text-blue100 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      {...register("email")}
-                      placeholder="name@example.com"
-                      className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
-                    />
-                    {errors.email && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {(errors.email as any)?.message}
+                        {(errors.lastName as any)?.message}
                       </p>
                     )}
                   </div>
+                </div>
+                {/* Email */}
+                <div>
+                  <label className="block text-sm  text-blue100 mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    {...register("email")}
+                    placeholder="name@example.com"
+                    className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {(errors.email as any)?.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Company Fields (Franchise Only) */}
@@ -431,8 +456,18 @@ const Signup = () => {
                   loading={isPending}
                   className="w-full bg-green100 hover:bg-green800 text-white font-bold py-3 rounded-full text-base"
                 >
-                  Create Account
+                  Get Started
                   <ArrowRight size={20} />
+                </Button>
+                <p className="text-center text-gray-600">OR</p>
+                <Button
+                  variant={"outline"}
+                  className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
+                  onClick={handleGoogleLogin}
+                  loading={loading}
+                >
+                  <img src={google} alt="google" className="w-[20px]" />
+                  <span>Continue with Google</span>
                 </Button>
               </form>
 

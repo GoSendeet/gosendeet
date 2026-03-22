@@ -12,7 +12,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddressModalProps, ManualAddressData } from "@/types/forms";
-import { validateManualAddress, ADDRESS_LIMITS } from "@/utils/form-validators";
+import {
+  validateManualAddress,
+  ADDRESS_LIMITS,
+  STREET_ALLOWED_REGEX,
+  STREET_SANITIZE_REGEX,
+} from "@/utils/form-validators";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { toast } from "sonner";
 
@@ -139,6 +144,9 @@ const getCityOptions = (state?: string) => {
   return [...ALL_CITIES];
 };
 
+const sanitizeStreetInput = (value: string) =>
+  value.replace(STREET_SANITIZE_REGEX, "");
+
 const APARTMENT_PREFIXES = [
   "apt", "apartment", "unit", "suite", "flat", "floor",
   "flr", "no.", "room", "blk", "block", "#",
@@ -193,7 +201,12 @@ const parseAddressFields = (address: string) => {
     }
   }
 
-  return { street, apartment, city, state };
+  return {
+    street: sanitizeStreetInput(street),
+    apartment,
+    city,
+    state,
+  };
 };
 
 /**
@@ -317,7 +330,7 @@ export function AddressModal({
     if (sublocality) streetParts.push(sublocality);
     if (neighborhood) streetParts.push(neighborhood);
 
-    const fullStreet = streetParts.join(", ");
+    const fullStreet = sanitizeStreetInput(streetParts.join(", "));
     const canonicalState = resolveStateValue(state);
     const normalizedCity = resolveCityValue(city, canonicalState || state);
     const resolvedState =
@@ -446,7 +459,7 @@ export function AddressModal({
     addressParts.push(city, state, "Nigeria");
     const formattedAddress = addressParts.join(", ");
 
-    onSelect(formattedAddress);
+    onSelect(formattedAddress, { city, state });
     onOpenChange(false);
     setManualAddress({
       street: "",
@@ -472,9 +485,15 @@ export function AddressModal({
   const isApartmentTooLong =
     manualAddress.apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH;
   const hasValidLengths = !isStreetTooLong && !isApartmentTooLong;
+  const isStreetInvalid =
+    Boolean(manualAddress.street.trim()) &&
+    !STREET_ALLOWED_REGEX.test(manualAddress.street.trim());
 
   const isFormValid =
-    Boolean(hasRequiredFields) && isLocationServiceable && hasValidLengths;
+    Boolean(hasRequiredFields) &&
+    isLocationServiceable &&
+    hasValidLengths &&
+    !isStreetInvalid;
 
   // Type-specific content
   const title = type === "pickup" ? "Pickup Location" : "Destination";
@@ -561,17 +580,23 @@ export function AddressModal({
             <input
               type="text"
               value={manualAddress.street}
-              onChange={(e) =>
-                setManualAddress({ ...manualAddress, street: e.target.value })
-              }
+              onChange={(e) => {
+                const sanitized = sanitizeStreetInput(e.target.value);
+                setManualAddress({ ...manualAddress, street: sanitized });
+              }}
               placeholder="e.g., 123 Main Street"
               maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
-                isStreetTooLong
+                isStreetTooLong || isStreetInvalid
                   ? "border-red-400 focus:border-red-500"
                   : `border-gray-200 ${INPUT_FOCUS_BORDER}`
               }`}
             />
+            {isStreetInvalid && (
+              <p className="text-xs text-red-500 mt-1">
+                Only letters, numbers, and commas are allowed.
+              </p>
+            )}
             {isStreetTooLong && (
               <p className="text-xs text-red-500 mt-1">
                 Street address cannot exceed {ADDRESS_LIMITS.STREET_MAX_LENGTH}{" "}
@@ -620,28 +645,14 @@ export function AddressModal({
             )}
           </div>
 
-          {/* City Selection */}
+              {/* Country (Fixed) */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              City <span className="text-red-500">*</span>
+              Country
             </label>
-            <Select
-              value={manualAddress.city || undefined}
-              onValueChange={handleCityChange}
-            >
-              <SelectTrigger
-                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
-              >
-                <SelectValue placeholder="Select city" />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                {cityOptions.map((city) => (
-                  <SelectItem key={city} value={city}>
-                    {city}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm text-gray-600">
+              Nigeria
+            </div>
           </div>
 
           {/* State Selection */}
@@ -668,15 +679,31 @@ export function AddressModal({
             </Select>
           </div>
 
-          {/* Country (Fixed) */}
+          {/* City Selection */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Country
+              City <span className="text-red-500">*</span>
             </label>
-            <div className="px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm text-gray-600">
-              Nigeria
-            </div>
+            <Select
+              value={manualAddress.city || undefined}
+              onValueChange={handleCityChange}
+            >
+              <SelectTrigger
+                className={`w-full py-2 px-3 text-sm border-2 border-gray-200 rounded-xl ${INPUT_FOCUS_BORDER}`}
+              >
+                <SelectValue placeholder="Select city" />
+              </SelectTrigger>
+              <SelectContent className="max-h-64">
+                {cityOptions.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+      
 
           {/* Submit Button */}
           <Button

@@ -11,14 +11,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPackageType, updatePackageType } from "@/services/adminSettings";
-import { uploadImage } from "@/services/documents";
-import { useEffect, useState, useRef } from "react";
+import { useEffect } from "react";
 import {
   useGetAdminDimensionUnits,
   useGetAdminWeightUnits,
 } from "@/queries/admin/useGetAdminSettings";
 import { allowOnlyNumbers } from "@/lib/utils";
 import { CustomInput } from "@/components/CustomInput";
+import { ImageUpload } from "@/components/ImageUpload";
 
 export function PackageTypeModal({
   open,
@@ -86,12 +86,6 @@ export function PackageTypeModal({
   const imageUrl = watch("imageUrl");
   const active = watch("active") ?? false;
 
-  // Image upload state
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   // ✅ Reset form with incoming info when modal opens
   useEffect(() => {
     if (open && type === "edit" && info) {
@@ -155,77 +149,6 @@ export function PackageTypeModal({
       toast.error(error?.message || "Something went wrong");
     },
   });
-
-  // Handle file selection
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select a valid image file");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB");
-      return;
-    }
-
-    setSelectedFile(file);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Handle image upload
-  const handleImageUpload = async () => {
-    if (!selectedFile) {
-      toast.error("Please select an image first");
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      // Convert to base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const base64 = (reader.result as string).split(",")[1]; // Remove data:image/jpeg;base64, prefix
-          const response = await uploadImage(base64, selectedFile.name);
-
-          // Extract URL from nested response structure
-          const imageUrl =
-            response.data?.data?.url ||
-            response.data?.data?.image?.url ||
-            response.data?.data?.display_url;
-
-          if (imageUrl) {
-            setValue("imageUrl", imageUrl, { shouldValidate: true });
-            toast.success("Image uploaded successfully");
-            setSelectedFile(null);
-            setPreviewUrl(imageUrl);
-          } else {
-            toast.error("Failed to get image URL from response");
-            console.error("Unexpected response structure:", response);
-          }
-        } catch (error: any) {
-          toast.error(error?.message || "Failed to upload image");
-        } finally {
-          setIsUploading(false);
-        }
-      };
-      reader.readAsDataURL(selectedFile);
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to upload image");
-      setIsUploading(false);
-    }
-  };
 
   const onSubmit = (data: z.infer<typeof schema>) => {
     type === "create" && createType(data);
@@ -378,21 +301,10 @@ export function PackageTypeModal({
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center">
-                <CustomInput
-                  inputType="image"
-                  label={
-                    <>
-                      Package Image <span className="text-red-500">*</span>
-                    </>
-                  }
-                  wrapperClassName="w-full"
-                  previewUrl={previewUrl}
+                <ImageUpload
+                  label="Package Image *"
                   imageUrl={imageUrl}
-                  selectedFileName={selectedFile?.name}
-                  isUploading={isUploading}
-                  fileInputRef={fileInputRef}
-                  onFileSelect={handleFileSelect}
-                  onUpload={handleImageUpload}
+                  onUrlChange={(url) => setValue("imageUrl", url, { shouldValidate: true })}
                   error={errors.imageUrl?.message}
                 />
               </div>

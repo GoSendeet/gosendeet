@@ -130,7 +130,7 @@ export function CrossAreaRoutesModal({
         </DialogTitle>
         <DialogDescription className="font-medium text-sm text-brand">
           {type === "create"
-            ? "Add a cross area route."
+            ? "Add a directional cross area route (From → To)."
             : "Edit a cross area route."}
         </DialogDescription>
         <>
@@ -144,10 +144,10 @@ export function CrossAreaRoutesModal({
                 label="From"
                 wrapperClassName="w-full"
                 value={coverageAreaAId}
-                placeholder="Select an area"
+                placeholder="Select pickup area"
                 options={
                   coverageAreaAList?.map((item: any) => ({
-                    label: `${item.name} - ${item.code}`,
+                    label: `${item.name} - ${item.code} (${item.level})`,
                     value: item.id,
                   })) ?? []
                 }
@@ -162,10 +162,10 @@ export function CrossAreaRoutesModal({
                 label="To"
                 wrapperClassName="w-full"
                 value={coverageAreaBId}
-                placeholder="Select an area"
+                placeholder="Select dropoff area"
                 options={
                   coverageAreaAList?.map((item: any) => ({
-                    label: `${item.name} - ${item.code}`,
+                    label: `${item.name} - ${item.code} (${item.level})`,
                     value: item.id,
                   })) ?? []
                 }

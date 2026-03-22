@@ -51,24 +51,28 @@ const Delivery = () => {
       }),
     sender_email: z
       .string()
-      .email({ message: "Invalid email address" })
+      .email({ message: "Invalid Sender'semail address" })
       .or(z.literal("")) // allow empty string
       .optional(),
     receiver_name: z
       .string({ required_error: "Receiver’s name is required" })
       .trim()
-      .min(1, { message: "Name cannot be empty" })
+      .min(1, { message: "Receiver's Name cannot be empty" })
       .regex(/^[A-Za-z\s'-]+$/, { message: "Name must contain only letters" }),
 
     receiver_phone: z
       .string({ required_error: "Receiver’s number is required" })
+      .min(1, { message: "Receiver’s number cannot be empty" })
+      .min(11, { message: "Receiver’s number must be at least 11 digits" })
+      .max(15, { message: "Receiver’s number must be at most 15 digits" })
       .regex(/^\+?[0-9]{11,15}$/, {
-        message: "Receiver’s number is required",
+        message: "Receiver’s number is invalid",
       }),
 
     receiver_email: z
       .string()
-      .email({ message: "Receiver’s email is required" }),
+      .min(1, { message: "Receiver’s email is required" })
+       .email({ message: "Invalid Receiver's email address" })
     // .or(z.literal("")) // allow empty string
     // .optional(),
   });
@@ -76,7 +80,6 @@ const Delivery = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
     reset,
   } = useForm<z.infer<typeof schema>>({
@@ -132,6 +135,9 @@ const Delivery = () => {
       receiverPhone: data.receiver_phone,
       receiverEmail: data.receiver_email, // NUllable
       pickupLocation: bookingRequest?.pickupLocation,
+      senderName: data.sender_name,
+      senderPhoneNumber: data.sender_phone,
+      senderEmail: data.sender_email,
       destination: bookingRequest?.dropOffLocation,
       courierCost: amount,
       tax: 0,
@@ -144,15 +150,10 @@ const Delivery = () => {
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
-      senderName: data.sender_name,
-      senderPhone: data.sender_phone,
-      senderEmail: data.sender_email,
       ...payload,
     });
     mutate(payload);
   };
-  const senderPhone = watch("sender_phone");
-
   return (
     <Layout>
       <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
@@ -175,7 +176,7 @@ const Delivery = () => {
                 type="text"
                 placeholder="Enter your name"
                 register={register}
-                disabled
+                // disabled
               />
               {errors.sender_name && (
                 <p className="error text-xs text-[#FF0000]">
@@ -191,7 +192,7 @@ const Delivery = () => {
                 type="text"
                 placeholder="Enter your phone number"
                 register={register}
-                disabled={Boolean(senderPhone)}
+                // disabled={Boolean(senderPhone)}
                 onKeyDown={allowOnlyNumbers}
               />
 
@@ -209,7 +210,7 @@ const Delivery = () => {
               label="Sender’s Email"
               name="sender_email"
               type="text"
-              disabled
+              // disabled
               placeholder="Enter your email"
               register={register}
             />

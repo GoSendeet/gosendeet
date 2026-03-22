@@ -461,8 +461,8 @@ const PublicDispatchPage = () => {
               <div className="flex items-start gap-4">
                 {/* Animated icon with pulsing ring */}
                 <div className="relative flex-shrink-0">
-                  <div className="absolute inset-0 bg-orange-400 rounded-full opacity-20 animate-ping"></div>
-                  <div className="relative bg-gradient-to-br from-orange-500 to-amber-600 p-3 rounded-full shadow-lg">
+                  <div className="absolute inset-0 bg-emerald-50 rounded-full opacity-20 animate-ping"></div>
+                  <div className="relative bg-emerald-50  p-3 rounded-full shadow-lg">
                     <AlertCircle className="size-6 text-white" strokeWidth={2.5} fill="none" />
                   </div>
                 </div>
@@ -495,10 +495,10 @@ const PublicDispatchPage = () => {
 
         {/* Task Summary Banner */}
         {!allTasksCompleted && !isDeclined && (dispatchedTasks.length === 0 || activeTab === "review") && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <p className="text-lg font-semibold text-blue-900">
+                <p className="text-lg font-semibold text-brand">
                   {activeTab === "review" && dispatchedTasks.length > 0
                     ? `Review ${dispatchedTasks.length} new ${dispatchedTasks.length === 1 ? "task" : "tasks"}`
                     : "Task Overview"}
@@ -507,7 +507,7 @@ const PublicDispatchPage = () => {
               <div className="flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-neutral-600">To Review:</span>
-                  <span className="font-semibold text-orange-600">
+                  <span className="font-semibold text-gray-600">
                     {dispatchedTasks.length}
                   </span>
                 </div>
@@ -577,7 +577,7 @@ const PublicDispatchPage = () => {
                     className={cn(
                       "flex-1 px-4 py-3 rounded-lg font-medium text-sm transition-all",
                       activeTab === "review"
-                        ? "bg-orange-500 text-white shadow-md"
+                        ? "bg-emerald-400 text-white shadow-md"
                         : "bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
                     )}
                   >
@@ -586,8 +586,8 @@ const PublicDispatchPage = () => {
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-bold",
                         activeTab === "review"
-                          ? "bg-orange-600 text-white"
-                          : "bg-orange-100 text-orange-700"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-emerald-600 text-white"
                       )}>
                         {dispatchedTasks.length}
                       </span>
@@ -601,7 +601,7 @@ const PublicDispatchPage = () => {
                     className={cn(
                       "flex-1 px-4 py-3 rounded-lg font-medium text-sm transition-all",
                       activeTab === "ongoing"
-                        ? "bg-blue-500 text-white shadow-md"
+                        ? "bg-emerald-500 text-white shadow-md"
                         : "bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
                     )}
                   >
@@ -610,8 +610,8 @@ const PublicDispatchPage = () => {
                       <span className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-bold",
                         activeTab === "ongoing"
-                          ? "bg-blue-600 text-white"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-emerald-600 text-white"
+                          : "bg-blue-100 text-emerald-700"
                       )}>
                         {ongoingTasks.length}
                       </span>
@@ -736,8 +736,8 @@ const PublicDispatchPage = () => {
                       <div className="flex items-center gap-3">
                         <span className={cn(
                           "text-xs font-bold uppercase tracking-wide",
-                          task.taskType === "PICKUP" && "text-blue-600",
-                          task.taskType === "DROPOFF" && "text-green-600",
+                          task.taskType === "PICKUP" && "text-gray-600",
+                          task.taskType === "DROPOFF" && "text-gray-600",
                           task.taskType === "IN_HUB" && "text-neutral-600"
                         )}>
                           {task.taskType}
@@ -796,8 +796,8 @@ const PublicDispatchPage = () => {
                         </div>
 
                         {task.completeAfter && task.completeBefore && (
-                          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                            <p className="text-sm font-medium text-purple-900">
+                          <div className="bg-emerald-50 border border-emerald-400 rounded-lg p-3">
+                            <p className="text-sm font-medium text-emerald-600">
                               {(() => {
                                 const startDate = new Date(task.completeAfter);
                                 const endDate = new Date(task.completeBefore);
@@ -853,7 +853,7 @@ const PublicDispatchPage = () => {
                         disabled={startMutation.isPending}
                         loading={startMutation.isPending && startMutation.variables === task.id}
                         size="lg"
-                        className="px-6"
+                        className="px-6 bg-emerald-600"
                       >
                         Start Task
                       </Button>
@@ -911,7 +911,7 @@ const PublicDispatchPage = () => {
                           onClick={() => handleOpenCompleteDialog(task)}
                           disabled={completeMutation.isPending}
                           size="lg"
-                          className="px-6 bg-green-600 hover:bg-green-700 text-white"
+                          className="px-6 bg-emerald-600 hover:bg-green-700 text-white"
                         >
                           <CheckCircle2 className="size-4 mr-2" />
                           Mark Complete

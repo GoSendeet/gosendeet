@@ -34,9 +34,18 @@ export interface PackageDescription {
   isHazardous: boolean;
 }
 
+export interface AddressBreakdown {
+  city: string;
+  state: string;
+}
+
 export interface QuoteRequestItem {
   pickupLocation: string;
+  pickupCity?: string;
+  pickupState?: string;
   dropOffLocation: string;
+  dropOffCity?: string;
+  dropOffState?: string;
   packageTypeId: string;
   weight: string;
   dimensions?: string;
@@ -55,7 +64,7 @@ export interface BaseModalProps {
 export interface AddressModalProps extends BaseModalProps {
   type: "pickup" | "destination";
   value: string;
-  onSelect: (location: string) => void;
+  onSelect: (location: string, breakdown?: AddressBreakdown) => void;
   otherAddress?: string;
 }
 

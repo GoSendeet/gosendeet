@@ -138,6 +138,7 @@ const Calculator = () => {
   const [debouncedMinPrice, setDebouncedMinPrice] = useState(minPrice);
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(maxPrice);
   const [showFilters, setShowFilters] = useState<boolean>(false);
+  const [selectedDirectQuoteIndex, setSelectedDirectQuoteIndex] = useState(0);
   const pageRef = useRef(1);
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isFetchingQuotes, setIsFetchingQuotes] = useState(false);
@@ -1358,11 +1359,12 @@ const Calculator = () => {
                                       <div className="flex lg:flex-row items-center justify-center gap-8">
                                         <div className="lg:text-left text-center">
                                           <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                            PICKUP
+                                            {item?.pudoMode === "STORE_DROPOFF"
+                                              ? "STORE DROP-OFF"
+                                              : "DOORSTEP PICKUP"}
                                           </p>
                                           <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
-                                            {item?.pickUpdateDate ||
-                                              "Not specified"}
+                                            {item?.pickUpdateDate || "Not specified"}
                                           </p>
                                         </div>
 
@@ -1377,22 +1379,20 @@ const Calculator = () => {
 
                                         <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
                                           <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                            DROPOFF
+                                            DELIVERY
                                           </p>
                                           <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                            {item?.estimatedDeliveryDate ||
-                                              "Not specified"}
+                                            {item?.estimatedDeliveryDate || "Not specified"}
                                           </p>
                                         </div>
                                       </div>
 
                                       <div className="block lg:hidden lg:text-left text-center mt-3">
                                         <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
-                                          DROPOFF
+                                          DELIVERY
                                         </p>
                                         <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                          {item?.estimatedDeliveryDate ||
-                                            "Not specified"}
+                                          {item?.estimatedDeliveryDate || "Not specified"}
                                         </p>
                                       </div>
                                     </div>
@@ -1400,6 +1400,11 @@ const Calculator = () => {
                                     {/* Right - Price & CTA */}
                                     <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
                                       <div className="mb-4">
+                                        {item?.discount > 0 && (
+                                          <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full mb-1 inline-block">
+                                            {item.discount}% off
+                                          </span>
+                                        )}
                                         <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
                                           ₦
                                           {parsePrice(item.price).toLocaleString()}
@@ -1460,6 +1465,38 @@ const Calculator = () => {
               {shareUrl ? "Copy Link" : "Share Quote"}
             </Button>
           </div>
+
+          {/* Service Level Options */}
+          {quoteContent.length > 1 && (
+            <div className="flex flex-wrap gap-3 mb-4">
+              {quoteContent.map((quote: any, idx: number) => {
+                const sla = quote?.serviceLevelAgreements?.[0] ?? `Option ${idx + 1}`;
+                const pudo = quote?.pudoMode === "STORE_DROPOFF" ? "Store Drop-off" : "Doorstep Pickup";
+                const isSelected = selectedDirectQuoteIndex === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedDirectQuoteIndex(idx)}
+                    className={cn(
+                      "flex-1 py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all duration-200",
+                      isSelected
+                        ? "border-brand bg-brand text-white shadow-md"
+                        : "border-gray-200 bg-white text-gray-600 hover:border-brand hover:text-brand",
+                    )}
+                  >
+                    <span>{sla}</span>
+                    <p className={cn("text-xs mt-0.5 font-normal", isSelected ? "text-white/80" : "text-gray-400")}>
+                      {pudo}
+                    </p>
+                    <p className={cn("text-xs mt-0.5 font-normal", isSelected ? "text-white/80" : "text-gray-400")}>
+                      ₦{CurrencyFormatter(parsePrice(quote?.price).toFixed(2))}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="bg-white rounded-3xl border border-gray-200 shadow-lg overflow-hidden">
             {/* Quote Details */}
             <div className="px-8 py-6 space-y-6">
@@ -1503,52 +1540,78 @@ const Calculator = () => {
                     Estimated Delivery Date
                   </p>
                   <p className="text-lg font-bold text-[#1a1a1a]">
-                    {quoteContent[0]?.estimatedDeliveryDate}
+                    {quoteContent[selectedDirectQuoteIndex]?.estimatedDeliveryDate}
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                  {quoteContent[0]?.pickupOptions?.[0]}
+                  {quoteContent[selectedDirectQuoteIndex]?.pickupOptions?.[0]}
                 </span>
               </div>
 
               {/* Cost Breakdown */}
               <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700 font-medium">
-                    Delivery Fee
-                  </span>
-                  <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.deliveryFee || CurrencyFormatter(
-                     parsePrice(quoteContent[0]?.price).toFixed(2),
-                    ) || "0"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700 font-medium">
-                    Service Charge
-                  </span>
-                  <span className="text-[#1a1a1a] font-bold">
-                    ₦{quoteContent[0]?.serviceCharge || CurrencyFormatter(
-                     parsePrice(quoteContent[0]?.price * 0.005).toFixed(2),
-                    ) || "0"}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-700 font-medium">Total Cost</span>
-                  <span className="text-brand font-bold">
-                    {/* removes NGN */}₦{" "}
-                    {CurrencyFormatter(
-                     parsePrice((quoteContent[0]?.price * 0.005) + quoteContent[0]?.price).toFixed(2),
-                    )}
-                   
-                  </span>
-                </div>
+                {(() => {
+                  const selectedQuote = quoteContent[selectedDirectQuoteIndex];
+                  const discountedPrice = parsePrice(selectedQuote?.price);
+                  const discountPct = selectedQuote?.discount ?? 0;
+                  const originalPrice = discountPct > 0 ? discountedPrice / (1 - discountPct / 100) : discountedPrice;
+                  const savings = originalPrice - discountedPrice;
+                  const serviceCharge = selectedQuote?.serviceCharge ?? discountedPrice * 0.005;
+                  const total = discountedPrice + serviceCharge;
+                  return (
+                    <>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-gray-700 font-medium">
+                          Delivery Fee{discountPct > 0 ? " (before discount)" : ""}
+                        </span>
+                        <span className={discountPct > 0 ? "text-gray-400 line-through font-medium" : "text-[#1a1a1a] font-bold"}>
+                          ₦{CurrencyFormatter(originalPrice.toFixed(2))}
+                        </span>
+                      </div>
+                      {discountPct > 0 && (
+                        <>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-emerald-600 font-medium">
+                              Discount ({discountPct}%)
+                              {selectedQuote?.discountDescription && (
+                                <span className="block text-xs text-gray-400 font-normal">{selectedQuote.discountDescription}</span>
+                              )}
+                            </span>
+                            <span className="text-emerald-600 font-bold">
+                              -₦{CurrencyFormatter(savings.toFixed(2))}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <span className="text-gray-700 font-medium">Delivery Fee (after discount)</span>
+                            <span className="text-[#1a1a1a] font-bold">
+                              ₦{CurrencyFormatter(discountedPrice.toFixed(2))}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-gray-700 font-medium">
+                          Service Charge
+                        </span>
+                        <span className="text-[#1a1a1a] font-bold">
+                          ₦{CurrencyFormatter(parsePrice(serviceCharge).toFixed(2))}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-gray-700 font-medium">Total Cost</span>
+                        <span className="text-brand font-bold">
+                          ₦{CurrencyFormatter(total.toFixed(2))}
+                        </span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Book Now Button */}
               <Button
                 onClick={() => {
-                  const quoteItem = quoteContent[0];
+                  const quoteItem = quoteContent[selectedDirectQuoteIndex];
                   handleClick(quoteItem);
                 }}
                 className={cn(
