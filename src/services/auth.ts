@@ -118,6 +118,11 @@ export const googleLogin = () => {
 };
 
 
+export const googleSignup = () => {
+  const redirectUrl = encodeURIComponent(FRONTEND_BASE_URL.replace(/\/$/, ""));
+  window.location.href = `${BASE_URL}/auth/google-signup?redirectUrl=${redirectUrl}`;
+}
+
 // export const googleLogin = async () => {
 //   try {
 //     const res = await fetch("/auth/google-login", {
