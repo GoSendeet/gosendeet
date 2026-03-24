@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "../../constants";
-import logo from "@/assets/images/gosendeet-black-logo.png";
+import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
 // import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
