@@ -223,6 +223,7 @@ export function AddressModal({
 }: AddressModalProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [showExtraFields, setShowExtraFields] = useState(false);
   const [manualAddress, setManualAddress] = useState<ManualAddressData>({
     street: "",
     apartment: "",
@@ -248,6 +249,7 @@ export function AddressModal({
   useEffect(() => {
     if (open && value) {
       setManualAddress(parseAddressFields(value));
+      setShowExtraFields(true);
     } else if (open && !value) {
       // Reset to blank when opening without a value
       setManualAddress({
@@ -256,6 +258,7 @@ export function AddressModal({
         city: "",
         state: "",
       });
+      setShowExtraFields(false);
     }
   }, [open, value]);
 
@@ -265,6 +268,7 @@ export function AddressModal({
    */
   const parseAddressComponents = (
     components: google.maps.GeocoderAddressComponent[],
+    placeName?: string,
   ): Partial<ManualAddressData> => {
     let premise = "";
     let streetNumber = "";
@@ -317,13 +321,25 @@ export function AddressModal({
 
     // Build full street address from all relevant components
     const streetParts = [];
-    if (premise) streetParts.push(premise);
-    if (streetNumber && route) {
-      streetParts.push(`${streetNumber} ${route}`);
-    } else if (route) {
-      streetParts.push(route);
-    } else if (streetNumber) {
-      streetParts.push(streetNumber);
+    // Use placeName (e.g. hospital/landmark name) if not already captured as premise
+    const effectivePremise = premise || (placeName && placeName !== route ? placeName : "");
+    if (effectivePremise) streetParts.push(effectivePremise);
+
+    // Skip streetNumber + route if placeName already contains the route (avoids duplication
+    // e.g. "23 Thompson Ave, opposite British Council" + "23 Thompson Avenue")
+    const placeNameContainsRoute =
+      route &&
+      effectivePremise &&
+      effectivePremise.toLowerCase().includes(route.substring(0, 6).toLowerCase());
+
+    if (!placeNameContainsRoute) {
+      if (streetNumber && route) {
+        streetParts.push(`${streetNumber} ${route}`);
+      } else if (route) {
+        streetParts.push(route);
+      } else if (streetNumber) {
+        streetParts.push(streetNumber);
+      }
     }
     if (sublocalityLevel2) streetParts.push(sublocalityLevel2);
     if (sublocalityLevel1) streetParts.push(sublocalityLevel1);
@@ -357,18 +373,20 @@ export function AddressModal({
     try {
       const parameter = {
         placeId: placeId,
-        fields: ["address_components", "formatted_address"],
+        fields: ["address_components", "formatted_address", "name"],
       };
 
       const details = await getDetails(parameter);
 
       if (typeof details !== "string" && details.address_components) {
-        const parsed = parseAddressComponents(details.address_components);
+        const placeName = (details as google.maps.places.PlaceResult).name;
+        const parsed = parseAddressComponents(details.address_components, placeName);
 
         if (!isDeliveryLocationAllowed(parsed.state, parsed.city)) {
           toast.error(DELIVERY_RESTRICTION_MESSAGE);
         } else {
           setManualAddress((prev) => ({ ...prev, ...parsed }));
+          setShowExtraFields(true);
         }
 
         setSearchValue("");
@@ -584,6 +602,7 @@ export function AddressModal({
                 const sanitized = sanitizeStreetInput(e.target.value);
                 setManualAddress({ ...manualAddress, street: sanitized });
               }}
+              onFocus={() => setShowExtraFields(true)}
               placeholder="e.g., 123 Main Street"
               maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
@@ -594,7 +613,7 @@ export function AddressModal({
             />
             {isStreetInvalid && (
               <p className="text-xs text-red-500 mt-1">
-                Only letters, numbers, and commas are allowed.
+                Only letters, numbers, commas, hyphens, periods, and slashes are allowed.
               </p>
             )}
             {isStreetTooLong && (
@@ -605,11 +624,18 @@ export function AddressModal({
             )}
           </div>
 
+          {/* Extra fields — revealed after street focus or Google selection */}
+          <div
+            className={`grid transition-all duration-500 ease-in-out ${showExtraFields ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          >
+          <div className="overflow-hidden">
+          <div className="space-y-3 pt-1">
+
           {/* Apartment/House Number */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-semibold text-gray-700">
-                Apartment/House Number
+                Apartment/House Number (Optional)
               </label>
               {manualAddress.apartment.length > 0 && (
                 <span
@@ -703,7 +729,9 @@ export function AddressModal({
             </Select>
           </div>
 
-      
+          </div>{/* end space-y-3 */}
+          </div>{/* end overflow-hidden */}
+          </div>{/* end grid transition wrapper */}
 
           {/* Submit Button */}
           <Button
