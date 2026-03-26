@@ -5,7 +5,6 @@ import google from "@/assets/icons/google.png";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-// import google from "@/assets/icons/google.png";
 import { signup } from "@/services/auth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,7 +21,7 @@ import {
 import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { googleLogin } from "@/services/auth";
+import { googleSignup } from "@/services/auth";
 
 const Signup = () => {
   const [userType, setUserType] = useState<"customer" | "franchise">(
@@ -148,7 +147,7 @@ const Signup = () => {
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    googleLogin();
+    googleSignup();
   };
 
   return (
@@ -461,6 +460,7 @@ const Signup = () => {
                 </Button>
                 <p className="text-center text-gray-600">OR</p>
                 <Button
+                  type="button"
                   variant={"outline"}
                   className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
                   onClick={handleGoogleLogin}
@@ -482,17 +482,6 @@ const Signup = () => {
                   </Link>
                 </p>
               </div>
-
-              {/* Google Button */}
-              {/* <button
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-2 border border-grey200 rounded-full py-3 mt-4 hover:bg-grey50 transition-colors"
-              >
-                <img src={google} alt="Google" className="w-5 h-5" />
-                <span className="text-grey400 font-semibold text-sm">
-                  Continue with Google
-                </span>
-              </button> */}
             </div>
           </div>
         </div>

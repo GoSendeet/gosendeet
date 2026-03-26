@@ -14,6 +14,7 @@ import { toast } from "sonner";
 const DashboardNavbar = () => {
   const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(false);
+  const [hasAvatarError, setHasAvatarError] = useState(false);
 
   const handleNavToggle = () => {
     setNavOpen(!navOpen);
@@ -22,16 +23,47 @@ const DashboardNavbar = () => {
   const location = useLocation(); // Get current location
 
   const userId = sessionStorage.getItem("userId") || "";
+  const storedProfileImage = sessionStorage.getItem("profileImage") || "";
   const { data: userData, refetchUserData } = useGetUserDetails(userId);
 
-  const username = userData?.data?.username;
+  const profile = userData?.data;
+  const username = profile?.username;
   const letter = username?.charAt(0).toUpperCase();
+  const profileImage =
+    profile?.profilePicture ||
+    profile?.profileImage ||
+    profile?.avatar ||
+    profile?.imageUrl ||
+    profile?.picture ||
+    profile?.photoUrl ||
+    profile?.photo ||
+    storedProfileImage;
+
+  const renderAvatar = () => {
+    if (profileImage && !hasAvatarError) {
+      return (
+        <img
+          src={profileImage}
+          alt={username ? `${username}'s profile picture` : "Profile picture"}
+          className="w-full h-full object-cover rounded-full"
+          referrerPolicy="no-referrer"
+          onError={() => setHasAvatarError(true)}
+        />
+      );
+    }
+
+    return <span>{letter || "U"}</span>;
+  };
 
   useEffect(() => {
     if (userId) {
       refetchUserData();
     }
   }, [userId]);
+
+  useEffect(() => {
+    setHasAvatarError(false);
+  }, [profileImage]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: logout,
@@ -58,7 +90,7 @@ const DashboardNavbar = () => {
         <div className="lg:hidden flex items-center gap-4">
           <div className="flex flex-row gap-4 items-center">
             <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
-              {letter}
+              {renderAvatar()}
             </div>
           </div>
           <button onClick={handleNavToggle}>
@@ -90,7 +122,7 @@ const DashboardNavbar = () => {
 
         <div className="hidden lg:flex lg:flex-row items-center flex-col">
           <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
-            {letter}
+            {renderAvatar()}
           </div>
           <Button
             variant={"ghost"}

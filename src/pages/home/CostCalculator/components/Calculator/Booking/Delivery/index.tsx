@@ -16,6 +16,7 @@ const Delivery = () => {
   const location = useLocation();
   const { bookingRequest, bookingDetails } = location?.state || {};
   const userId = sessionStorage.getItem("userId") || "";
+  const authToken = sessionStorage.getItem("authToken") || "";
   const [bookingData, setBookingData] = useState({});
 
   const currency = bookingDetails?.currency || "NGN";
@@ -23,13 +24,13 @@ const Delivery = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !authToken) {
       toast.error("Please sign in to continue");
       setTimeout(() => {
         navigate("/signin");
       }, 1000);
     }
-  }, [userId]);
+  }, [authToken, navigate, userId]);
 
   const { data: userData, refetchUserData } = useGetUserDetails(userId);
 
@@ -120,6 +121,12 @@ const Delivery = () => {
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    if (!userId || !authToken) {
+      toast.error("Please sign in to continue");
+      navigate("/signin");
+      return;
+    }
+
     const payload = {
       // senderId: userId,
       packageTypeId: bookingRequest?.packageTypeId,
@@ -269,6 +276,7 @@ const Delivery = () => {
             <Button
               type="submit"
               className=" rounded-full py-3 px-8 bg-green100 hover:bg-green800"
+              disabled={isPending || !userId || !authToken}
               loading={isPending}
             >
               {/* {isPending && <Loader2 className="h-6 w-6 animate-spin" />}  */}
