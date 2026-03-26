@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { FiCheck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import packageIcon from "@/assets/icons/size.png";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 // Step Indicator Component (brand color and number for complete)
 const StepIndicator = ({ stepNumber, isComplete, isActive }: { stepNumber: number; isComplete: boolean; isActive: boolean }) => {
@@ -71,7 +71,9 @@ export function PackageTypeModal({
     parseFloat(length) > 0 && parseFloat(width) > 0 && parseFloat(height) > 0;
   const step2Complete = step1Complete && weight && parseFloat(weight) > 0 &&
     !(selectedPackage?.maxWeight && parseFloat(weight) > selectedPackage.maxWeight);
-  const step3Complete = step2Complete && itemPrice && parseFloat(itemPrice) > 0;
+  // itemPrice is optional — step 3 is complete as long as steps 1 & 2 are done
+  // const step3Complete = step2Complete && itemPrice && parseFloat(itemPrice) > 0;
+  const step3Complete = step2Complete;
 
   // Initialize from current values when modal opens
   useEffect(() => {
@@ -142,7 +144,7 @@ export function PackageTypeModal({
 
     const currentWeight = parseFloat(weight) || 0;
     const maxWeight = selectedPackage.maxWeight;
-    const price = parseFloat(itemPrice) || 0;
+    //const price = parseFloat(itemPrice) || 0;
 
     // Validate weight
     if (currentWeight <= 0) return;
@@ -153,7 +155,7 @@ export function PackageTypeModal({
     if (parseFloat(length) <= 0 || parseFloat(width) <= 0 || parseFloat(height) <= 0) return;
 
     // Validate item price
-    if (price <= 0) return;
+    //if (price <= 0) return;
 
     const formattedDimensions = `${length} × ${width} × ${height} ${selectedPackage.dimensionUnit}`;
 
@@ -341,7 +343,7 @@ export function PackageTypeModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
                 {weightPresets.map((preset) => (
                   <button
                     key={preset.label}
@@ -371,7 +373,7 @@ export function PackageTypeModal({
             <StepIndicator stepNumber={3} isComplete={step3Complete} isActive={step2Complete && !step3Complete} />
 
             <div className="flex-1">
-              <h3 className={cn("font-semibold text-sm mb-3", step2Complete ? "text-gray-900" : "text-gray-400")}>How much is it worth?</h3>
+              <h3 className={cn("font-semibold text-sm mb-3", step2Complete ? "text-gray-900" : "text-gray-400")}>How much is it worth? (Optional)</h3>
 
               <label className={cn("block text-xs mb-3", step2Complete ? "text-gray-600" : "text-gray-400")}>
                 Item value for insurance coverage
