@@ -9,8 +9,8 @@ export const ADDRESS_LIMITS = {
   APARTMENT_MAX_LENGTH: 100,
 } as const;
 
-export const STREET_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9, ]+$");
-export const STREET_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9, ]", "g");
+export const STREET_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9,. \\-'/&]+$");
+export const STREET_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9,. \\-'/&]", "g");
 
 /**
  * Validates that a string contains only numbers and optional decimal point
@@ -130,7 +130,7 @@ export const validateManualAddress = (
   if (!STREET_ALLOWED_REGEX.test(street.trim())) {
     return {
       valid: false,
-      message: "Street address can only contain letters, numbers, and commas",
+      message: "Street address contains unsupported characters",
     };
   }
 

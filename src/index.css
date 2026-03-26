@@ -1,3 +1,17 @@
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-blink {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  background-color: currentColor;
+  margin-left: 2px;
+  vertical-align: middle;
+  animation: blink 1s step-start infinite;
+}
+
 /* Custom horizontal scrollbar for PackageTypeModal */
 .custom-scrollbar::-webkit-scrollbar {
   height: 8px;

@@ -169,6 +169,9 @@ const FormHorizontalBar = ({
   }, [activeMode, isDashboard]);
 
   // Modal states for Direct mode
+  const [activeCard, setActiveCard] = useState<"pickup" | "destination" | null>(
+    "pickup",
+  );
   const [pickupModalOpen, setPickupModalOpen] = useState(false);
   const [destinationModalOpen, setDestinationModalOpen] = useState(false);
   const [packageModalOpen, setPackageModalOpen] = useState(false);
@@ -235,9 +238,7 @@ const FormHorizontalBar = ({
       .string({ required_error: "Weight is required" })
       .min(1, { message: "Enter weight" }),
     dimensions: z.string().optional(),
-    itemPrice: z
-      .string({ required_error: "Item price is required" })
-      .min(1, { message: "Enter item price" }),
+    itemPrice: z.string().optional(),
     pickupDate: z.string().optional(),
   });
 
@@ -341,7 +342,7 @@ const FormHorizontalBar = ({
         {
           ...parsed,
           quantity: 1,
-          itemValue: Number(parsed.itemPrice),
+          itemValue: Number(parsed.itemPrice) || 0,
           packageDescription: {
             isFragile: false,
             isPerishable: false,
@@ -377,9 +378,7 @@ const FormHorizontalBar = ({
       ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
       : "w-full mx-auto max-w-[354px] lg:max-w-[1024px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
     !isDashboard && variant === "bold" && "bg-white border",
-    !isDashboard &&
-      variant === "minimal" &&
-      "bg-white border border-gray-200",
+    !isDashboard && variant === "minimal" && "bg-white border border-gray-200",
     !isDashboard && variant === "floating" && "bg-white",
   );
 
@@ -469,7 +468,8 @@ const FormHorizontalBar = ({
         aria-hidden="true"
         className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px] 
                   bg-[linear-gradient(90deg,#A4F4CF_0%,#DCFCE7_50%,#CBFBF1_100%)]
-                  blur-[40px] opacity-50 z-0 translate-y-5"></div>
+                  blur-[40px] opacity-50 z-0 translate-y-5"
+      ></div>
       <div className={cn(containerStyles, "relative z-10")}>
         {isDashboard && (
           <div className="absolute left-1/2 transform -translate-x-1/2 top-[-39px]">
@@ -546,8 +546,17 @@ const FormHorizontalBar = ({
             <div className={containerClass}>
               {/* Pickup Location - Modal Trigger */}
               <div
-                onClick={() => setPickupModalOpen(true)}
-                className={cn("direct-send", isDashboard && "mt-4 w-full!")}
+                onClick={() => {
+                  setActiveCard("pickup");
+                  setPickupModalOpen(true);
+                }}
+                className={cn(
+                  "direct-send",
+                  isDashboard && "mt-4 w-full!",
+                  activeCard === "pickup" &&
+                    !pickupLocation &&
+                    "ring-2 ring-brand/40",
+                )}
               >
                 <label
                   className={cn(
@@ -560,22 +569,27 @@ const FormHorizontalBar = ({
                   </p>
                   <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
                 </label>
-               
+
                 <div className="w-full flex items-center justify-between">
                   <span
                     className={cn(
-                      "text-base truncate",
+                      "text-base truncate flex items-center",
                       pickupLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
                     )}
                   >
-                    {pickupLocation || (
+                    {pickupLocation ? (
+                      pickupLocation
+                    ) : (
                       <>
                         <span className="lg:hidden font-arial font-bold text-sm">
                           Enter address
                         </span>
-                        <span className="hidden lg:block font-arial">
+                        <span className="hidden lg:inline font-arial">
                           Where from
                         </span>
+                        {activeCard === "pickup" && (
+                          <span className="caret-blink" />
+                        )}
                       </>
                     )}
                   </span>
@@ -590,7 +604,10 @@ const FormHorizontalBar = ({
               {/* Destination - Modal Trigger */}
               <div
                 className={cn("direct-send", isDashboard && "w-full!")}
-                onClick={() => setDestinationModalOpen(true)}
+                onClick={() => {
+                  setActiveCard("destination");
+                  setDestinationModalOpen(true);
+                }}
               >
                 <label
                   className={cn(
@@ -606,9 +623,7 @@ const FormHorizontalBar = ({
                   </p>
 
                   <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
-                  
                 </label>
-               
 
                 <div className="w-full flex items-center justify-between">
                   <span
@@ -655,9 +670,12 @@ const FormHorizontalBar = ({
                 </label>
                 <div className="w-full flex items-center justify-between -mt-1">
                   {packageName ? (
-                    <span className="text-base truncate text-[#1a1a1a]">
-                      {packageName}
-                    </span>
+                    <>
+                      <span className="text-base truncate text-[#1a1a1a]">
+                        {packageName}
+                      </span>
+                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
+                    </>
                   ) : (
                     <>
                       <span className="font-arial text-sm lg:text-base font-bold text-[#9ca3af]">
@@ -722,7 +740,9 @@ const FormHorizontalBar = ({
               </div>
 
               {/* Buttons */}
-              <div className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}>
+              <div
+                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
+              >
                 <Button
                   type="button"
                   size={"custom"}
@@ -761,7 +781,7 @@ const FormHorizontalBar = ({
                       data: [
                         {
                           ...data,
-                          itemValue: Number(data.itemPrice),
+                          itemValue: Number(data.itemPrice) || 0,
                           quantity: 1,
                           packageDescription: {
                             isFragile: false,
@@ -792,8 +812,17 @@ const FormHorizontalBar = ({
             <div className={compareContainerClass}>
               {/* Pickup Location - Modal Trigger */}
               <div
-                className={cn("compare-pickup-from cursor-pointer", isDashboard && "mt-4 w-full!")}
-                onClick={() => setPickupModalOpen(true)}
+                className={cn(
+                  "compare-pickup-from cursor-pointer",
+                  isDashboard && "mt-4 w-full!",
+                  activeCard === "pickup" &&
+                    !pickupLocation &&
+                    "ring-2 ring-brand/40",
+                )}
+                onClick={() => {
+                  setActiveCard("pickup");
+                  setPickupModalOpen(true);
+                }}
               >
                 <label
                   className={cn(
@@ -809,18 +838,23 @@ const FormHorizontalBar = ({
                 <div className="w-full flex items-center justify-between">
                   <span
                     className={cn(
-                      "text-base truncate",
+                      "text-base truncate flex items-center",
                       pickupLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
                     )}
                   >
-                    {pickupLocation || (
+                    {pickupLocation ? (
+                      pickupLocation
+                    ) : (
                       <>
                         <span className="lg:hidden font-arial font-bold text-sm">
                           Enter Address
                         </span>
-                        <span className="hidden lg:block text-[#CAD5E2] font-arial font-bold">
+                        <span className="hidden lg:inline text-[#CAD5E2] font-arial font-bold">
                           Enter Address
                         </span>
+                        {activeCard === "pickup" && (
+                          <span className="caret-blink" />
+                        )}
                       </>
                     )}
                   </span>
@@ -834,8 +868,14 @@ const FormHorizontalBar = ({
 
               {/* Destination - Modal Trigger */}
               <div
-                className={cn("compare-pickup-destination", isDashboard && "!w-full")}
-                onClick={() => setDestinationModalOpen(true)}
+                className={cn(
+                  "compare-pickup-destination",
+                  isDashboard && "!w-full",
+                )}
+                onClick={() => {
+                  setActiveCard("destination");
+                  setDestinationModalOpen(true);
+                }}
               >
                 <label
                   className={cn(
@@ -895,24 +935,27 @@ const FormHorizontalBar = ({
 
                   <FiPackage size={18} className="text-[#CAD5E2]" />
                 </label>
-                <div className="w-full flex flex-col items-start justify-between">
+                <div className="w-full flex flex-col items-start  justify-between">
                   {packageName && weight && dimensions ? (
-                    <div className="flex flex-col items-start space-y-0.5">
-                      <span className="text-xs truncate text-[#1a1a1a] font-semibold">
-                        {packageName}
-                      </span>
-                      <span className="text-xs text-gray-600 truncate">
-                        {dimensions} • {weight}
-                        {selectedPackageData?.weightUnit || "kg"}
-                      </span>
+                    <div className="w-full flex items-center justify-between ">
+                      <div className="flex flex-col items-start space-y-0.5">
+                        <span className="text-xs truncate text-[#1a1a1a] font-semibold">
+                          {packageName}
+                        </span>
+                        <span className="text-xs text-gray-600 truncate">
+                          {dimensions} • {weight}
+                          {selectedPackageData?.weightUnit || "kg"}
+                        </span>
+                      </div>
+                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
                     </div>
                   ) : (
-                    <>
+                    <div className="w-full flex items-center justify-between">
                       <span className="font-arial text-sm lg:text-base text-[#9ca3af] font-bold">
                         Select
                       </span>
                       <FaAngleDown size={18} className="text-[#CAD5E2]" />
-                    </>
+                    </div>
                   )}
                 </div>
 
@@ -924,7 +967,9 @@ const FormHorizontalBar = ({
               </div>
 
               {/* Compare Button */}
-              <div className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}>
+              <div
+                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
+              >
                 <Button
                   type="button"
                   size={"custom"}
@@ -942,7 +987,7 @@ const FormHorizontalBar = ({
                       data: [
                         {
                           ...data,
-                          itemValue: Number(data.itemPrice),
+                          itemValue: Number(data.itemPrice) || 0,
                           quantity: 1,
                           packageDescription: {
                             isFragile: false,
