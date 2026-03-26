@@ -17,6 +17,7 @@ import {
   Share2,
   Shield,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { shareQuotes, getQuotes } from "@/services/user";
@@ -25,7 +26,6 @@ import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/gosendeet-black-logo.png";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
-import { useVirtualizer } from "@tanstack/react-virtual";
 
 const parsePrice = (price: string | number | undefined | null): number => {
   if (!price) return 0;
@@ -115,15 +115,21 @@ const Calculator = () => {
   const quoteContent = useMemo(() => {
     return normalizeQuotesResponse(data);
   }, [data]);
-  
-  const hasQuotes = quoteContent.length > 0;
-  const PRICE_MAX = useMemo(() => {
-    if (!hasQuotes) return 0;
 
-    return Math.ceil(
+  const hasQuotes = quoteContent.length > 0;
+  const stablePriceMaxRef = useRef(0);
+  const PRICE_MAX = useMemo(() => {
+    if (!hasQuotes) return stablePriceMaxRef.current;
+
+    const computed = Math.ceil(
       Math.max(...quoteContent.map((item: any) => parsePrice(item.price))) *
         1.1,
     );
+    // Only lock in once — pagination may load higher prices later, we don't want the range to grow
+    if (stablePriceMaxRef.current === 0) {
+      stablePriceMaxRef.current = computed;
+    }
+    return stablePriceMaxRef.current;
   }, [hasQuotes, quoteContent]);
   const [sortBy, setSortBy] = useState("price-asc");
   const [filterPickupDate, setFilterPickupDate] = useState("");
@@ -143,13 +149,15 @@ const Calculator = () => {
   const [hasNextPage, setHasNextPage] = useState(true);
   const [isFetchingQuotes, setIsFetchingQuotes] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
+
   const minPriceRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  const maxPriceInitializedRef = useRef(false);
   useEffect(() => {
-    if (PRICE_MAX > 0) {
+    if (PRICE_MAX > 0 && !maxPriceInitializedRef.current) {
       setMaxPrice(PRICE_MAX);
+      maxPriceInitializedRef.current = true;
     }
   }, [PRICE_MAX]);
 
@@ -168,9 +176,7 @@ const Calculator = () => {
       return;
     }
     const num = Number(value);
-    if (num >= PRICE_MIN && num <= (maxPrice || PRICE_MAX)) {
-      setMinPrice(num);
-    }
+    if (!isNaN(num)) setMinPrice(num);
   };
 
   const handleMaxInput = (value: string) => {
@@ -179,9 +185,7 @@ const Calculator = () => {
       return;
     }
     const num = Number(value);
-    if (num <= PRICE_MAX && num >= (minPrice || PRICE_MIN)) {
-      setMaxPrice(num);
-    }
+    if (!isNaN(num)) setMaxPrice(Math.min(num, PRICE_MAX));
   };
 
   const getPercent = (value: number) => {
@@ -200,23 +204,29 @@ const Calculator = () => {
     }
   }, [results, sharedQuote, shareId]);
 
-  //Debounce min price
+  //Debounce min price — clamp here so free typing doesn't break filtering
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedMinPrice(minPrice);
-    }, 200);
-
+      const clamped = Math.min(
+        Math.max(minPrice || PRICE_MIN, PRICE_MIN),
+        (maxPrice || PRICE_MAX) - PRICE_STEP,
+      );
+      setDebouncedMinPrice(clamped);
+    }, 400);
     return () => clearTimeout(timer);
-  }, [minPrice]);
+  }, [minPrice, maxPrice, PRICE_MIN, PRICE_MAX, PRICE_STEP]);
 
-  //Debounce max price
+  //Debounce max price — clamp here so free typing doesn't break filtering
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedMaxPrice(maxPrice);
-    }, 200);
-
+      const clamped = Math.max(
+        Math.min(maxPrice || PRICE_MAX, PRICE_MAX),
+        (minPrice || PRICE_MIN) + PRICE_STEP,
+      );
+      setDebouncedMaxPrice(clamped);
+    }, 400);
     return () => clearTimeout(timer);
-  }, [maxPrice]);
+  }, [maxPrice, minPrice, PRICE_MIN, PRICE_MAX, PRICE_STEP]);
 
   const isSharedView = Boolean(shareId);
 
@@ -276,15 +286,11 @@ const Calculator = () => {
       replace ? setIsFetchingQuotes(true) : setIsLoadingMore(true);
 
       try {
-        const response = await getQuotes(
-          quotePayload,
-          mode === "gosendeet",
-          {
-            ...filterParams,
-            page: pageToLoad,
-            size: PAGE_SIZE,
-          },
-        );
+        const response = await getQuotes(quotePayload, mode === "gosendeet", {
+          ...filterParams,
+          page: pageToLoad,
+          size: PAGE_SIZE,
+        });
 
         const newQuotes = normalizeQuotesResponse(response);
         setHasNextPage(newQuotes.length === PAGE_SIZE);
@@ -370,7 +376,8 @@ const Calculator = () => {
 
   const deliverySpeedOptions = useMemo(() => {
     const fallback = ["Any Speed", "Same Day", "Next Day"];
-    const base = uniqueDeliverySpeeds.length > 0 ? uniqueDeliverySpeeds : fallback;
+    const base =
+      uniqueDeliverySpeeds.length > 0 ? uniqueDeliverySpeeds : fallback;
     const withSelected = [
       ...selectedDeliverySpeed,
       ...base.filter((s) => !selectedDeliverySpeed.includes(s)),
@@ -502,14 +509,6 @@ const Calculator = () => {
     PRICE_MAX,
   ]);
 
-  const totalRows = filteredAndSortedData.length + (hasNextPage ? 1 : 0);
-  const rowVirtualizer = useVirtualizer({
-    count: totalRows,
-    getScrollElement: () => listRef.current,
-    estimateSize: () => 260,
-    overscan: 6,
-  });
-
   // Get unique pickup dates for filter
   // const uniquePickupDates = useMemo(() => {
   //   if (!data?.data) return [];
@@ -529,8 +528,8 @@ const Calculator = () => {
   const clearFilters = () => {
     setFilterPickupDate("");
     setFilterDeliveryDate("");
-    setMinPrice("");
-    setMaxPrice("");
+    setMinPrice(PRICE_MIN);
+    setMaxPrice(PRICE_MAX);
     setSelectedProviders([]);
     setSelectedDeliverySpeed([]);
     setSortBy("price-asc");
@@ -546,8 +545,7 @@ const Calculator = () => {
   const activeFiltersCount = [
     filterPickupDate,
     filterDeliveryDate,
-    (minPrice || PRICE_MIN) > PRICE_MIN ||
-    (maxPrice || PRICE_MAX) < PRICE_MAX,
+    (minPrice || PRICE_MIN) > PRICE_MIN || (maxPrice || PRICE_MAX) < PRICE_MAX,
     selectedProviders.length > 0,
     selectedDeliverySpeed.length > 0,
   ].filter(Boolean).length;
@@ -647,521 +645,462 @@ const Calculator = () => {
         />
       </div>
 
-
       {/* Results Section Header */}
 
       {mode === "compare" && (
         <>
-          {/* Make this clickable so when clicked user the Left Sidebar - Filters is visible for small screen  */}
-          {/* <div
-                className="md:hidden bg-white flex items-center justify-center gap-2 p-2.5 rounded-2xl mb-6 cursor-pointer shadow-md"
-                onClick={() => toggleMobileFilterBtn(true)}
-              >
-                <TrendingUp />
-                <h3 className="font-semibold text-base text-gray-900">
-                  Filter & Sort
-                </h3>
-              </div> */}
+          {/* Filter & Sort button — only show when quotes were ever loaded */}
+          {stablePriceMaxRef.current > 0 && (
+            <div
+              className="md:hidden bg-white flex items-center justify-center gap-2 p-2.5 rounded-2xl mb-6 cursor-pointer shadow-md"
+              onClick={() => toggleMobileFilterBtn(true)}
+            >
+              <TrendingUp />
+              <h3 className="font-semibold text-base text-gray-900">
+                Filter & Sort
+              </h3>
+            </div>
+          )}
 
-              {/* Mobile Filter Overlay/Drawer */}
-              <div
-                className={cn(
-                  "fixed inset-0 z-40 md:hidden transition-all duration-500 ease-in-out",
-                  showFilters
-                    ? "opacity-100 pointer-events-auto"
-                    : "opacity-0 pointer-events-none",
-                )}
-                style={{ touchAction: "pan-y" }}
-                onClick={() => toggleMobileFilterBtn(false)}
-              >
-                {/* Animated Backdrop */}
-                <div
-                  className={cn(
-                    "absolute inset-0 bg-black transition-opacity duration-500 ease-in-out",
-                    showFilters ? "opacity-50" : "opacity-0",
-                  )}
-                />
-                <div
-                  className={cn(
-                    "fixed right-0 top-0 h-full w-full max-w-xs bg-white shadow-xl z-50 overflow-y-auto transform transition-transform duration-500 ease-in-out",
-                    showFilters ? "translate-x-0" : "translate-x-full",
-                  )}
-                  onClick={(e) => e.stopPropagation()}
+          {/* Mobile Filter Overlay/Drawer */}
+          <div
+            className={cn(
+              "fixed inset-0 z-40 md:hidden transition-all duration-500 ease-in-out",
+              showFilters
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none",
+            )}
+            style={{ touchAction: "pan-y" }}
+            onClick={() => toggleMobileFilterBtn(false)}
+          >
+            {/* Animated Backdrop — transparent blur */}
+            <div
+              className={cn(
+                "absolute inset-0 bg-white/10 backdrop-blur-sm transition-opacity duration-500 ease-in-out",
+                showFilters ? "opacity-100" : "opacity-0",
+              )}
+            />
+            <div
+              className={cn(
+                "fixed right-0 top-0 h-full w-full max-w-xs bg-white shadow-xl z-50 overflow-y-auto transform transition-transform duration-500 ease-in-out",
+                showFilters ? "translate-x-0" : "translate-x-full",
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <div className="flex items-center justify-between p-4 border-b border-[#E2E8F0]">
+                <h3 className="font-semibold text-lg text-gray-900">Filters</h3>
+                <button
+                  onClick={() => toggleMobileFilterBtn(false)}
+                  className="text-2xl text-gray-500 hover:text-gray-900"
                 >
-                  {/* Close Button */}
-                  <div className="flex items-center justify-between p-4 border-b border-[#E2E8F0]">
-                    <h3 className="font-semibold text-lg text-gray-900">
-                      Filters
-                    </h3>
-                    <button
-                      onClick={() => toggleMobileFilterBtn(false)}
-                      className="text-2xl text-gray-500 hover:text-gray-900"
-                    >
-                      ✕
-                    </button>
+                  ✕
+                </button>
+              </div>
+
+              {/* Filter Content */}
+              <div className="p-6">
+                {/* Price Range Slider */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-semibold text-sm text-gray150 uppercase tracking-wider">
+                      Price Range
+                    </h4>
+                    {activeFiltersCount > 0 && (
+                      <button
+                        onClick={clearFilters}
+                        className="w-fit text-sm font-semibold text-brand cursor-pointer  bg-brand-light py-2 px-3 rounded"
+                      >
+                        Reset Filters
+                      </button>
+                    )}
                   </div>
 
-                  {/* Filter Content */}
-                  <div className="p-6">
-                    {/* Price Range Slider */}
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <h4 className="font-semibold text-sm text-gray150 uppercase tracking-wider">
-                          Price Range
-                        </h4>
-                        {activeFiltersCount > 0 && (
-                          <button
-                            onClick={clearFilters}
-                            className="w-fit text-sm font-semibold text-brand cursor-pointer  bg-brand-light py-2 px-3 rounded"
-                          >
-                            Reset Filters
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="space-y-4">
-                        {/* <div className="relative w-full h-6">
-                          <div className="absolute -top-0.1 w-full h-2.5 bg-gray-200 rounded-lg" />
-                          <div
-                            className="absolute -top-0.1 h-2.5 bg-brand rounded-lg"
-                            style={{
-                              left: `${getPercent(minPrice || PRICE_MIN)}%`,
-                              width: `${getPercent(maxPrice || PRICE_MAX) - getPercent(minPrice || PRICE_MIN)}%`,
-                            }}
-                          />
-                          <input
-                            type="range"
-                            min={PRICE_MIN}
-                            max={PRICE_MAX}
-                            step={PRICE_STEP}
-                            value={minPrice}
-                            onChange={(e) => {
-                              const value = Math.min(Number(e.target.value), maxPrice || PRICE_MAX - PRICE_STEP);
-                              setMinPrice(value);
-                            }}
-                            className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-auto slider-thumb"
-                          />
-                          <input
-                            type="range"
-                            min={PRICE_MIN}
-                            max={PRICE_MAX}
-                            step={PRICE_STEP}
-                            value={maxPrice}
-                            onChange={(e) => {
-                              const value = Math.max(Number(e.target.value), minPrice || PRICE_MIN + PRICE_STEP);
-                              setMaxPrice(value);
-                            }}
-                            className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-auto slider-thumb"
-                          />
-                        </div> */}
-
-                        {/* Price Display */}
-                        <div className="flex items-center justify-between ">
-                          <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                            <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-                              MIN
-                            </p>
-                            <div className="flex item-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => setMinPrice(Math.max(PRICE_MIN, (minPrice || PRICE_MIN) - PRICE_STEP))}
-                                  className="font-semibold pr-1"
-                                  >
-                                  −
-                                </button>
-                                <input
-                                  ref={minPriceRef}
-                                  type="number"
-                                  value={minPrice ?? ""}
-                                  onChange={(e) => handleMinInput(e.target.value)}
-                                  className="price-input w-full text-sm font-bold text-brand text-center bg-transparent outline-none cursor-text"
-                                  min={PRICE_MIN}
-                                  max={maxPrice}
-                                  step={PRICE_STEP}
-                                />
-
-                                <button
-                                  onClick={() => setMinPrice(Math.min((maxPrice || PRICE_MAX), (minPrice || PRICE_MIN) + PRICE_STEP))}
-                                  className="font-semibold "
-                                  >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-gray-400">→</div>
-                          <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                            <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-                              MAX
-                            </p>
-                            <div className="flex items-center gap-1">
-                            <input
-                              type="number"
-                              value={maxPrice ?? ""}
-                              onChange={(e) => handleMaxInput(e.target.value)}
-                              className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-center cursor-text"
-                              min={minPrice}
-                              max={PRICE_MAX}
-                              step={PRICE_STEP}
-                            />
-                           <button
+                  <div className="space-y-4">
+                    {/* Price Display */}
+                    <div className="flex items-center justify-between ">
+                      <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+                          MIN
+                        </p>
+                        <div className="flex item-center gap-2">
+                          <div className="flex items-center gap-2">
+                            <button
                               onClick={() =>
-                                setMaxPrice(
+                                setMinPrice(
                                   Math.max(
-                                    (minPrice || PRICE_MIN) + PRICE_STEP,
-                                    (maxPrice || PRICE_MAX) - PRICE_STEP
-                                  )
+                                    PRICE_MIN,
+                                    (minPrice || PRICE_MIN) - PRICE_STEP,
+                                  ),
                                 )
                               }
                               className="font-semibold pr-1"
                             >
                               −
                             </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Providers */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-                        Providers
-                      </h4>
-                       <div className="w-full h-[160px] overflow-y-auto">
-                        <div className="flex flex-col items-start gap-3">
-                          {providerOptions.map((provider) => (
-                            <button
-                              key={provider}
-                              onClick={() => {
-                                setSelectedProviders((prev) =>
-                                  prev.includes(provider)
-                                    ? prev.filter((p) => p !== provider)
-                                    : [...prev, provider],
-                                );
-                              }}
-                              className={cn(
-                                "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
-                                selectedProviders.includes(provider)
-                                  ? "bg-brand text-white"
-                                  : "bg-brand-light text-brand hover:bg-opacity-80",
-                              )}
-                            >
-                              {provider}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Delivery Speed */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-                        Delivery Speed
-                      </h4>
-                      <div className="flex flex-wrap gap-4">
-                        {deliverySpeedOptions.map((speed) => (
-                          <button
-                            key={speed}
-                            onClick={() => {
-                              setSelectedDeliverySpeed((prev) =>
-                                prev.includes(speed)
-                                  ? prev.filter((s) => s !== speed)
-                                  : [...prev, speed],
-                              );
-                            }}
-                            className={cn(
-                              "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
-                              selectedDeliverySpeed.includes(speed)
-                                ? "bg-brand text-white"
-                                : "bg-brand-light text-brand hover:bg-opacity-80",
-                            )}
-                          >
-                            {speed}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Reset Button */}
-                    {activeFiltersCount > 0 && (
-                      <button
-                        onClick={() => toggleMobileFilterBtn(false)}
-                        className="w-full text-sm font-semibold text-white cursor-pointer bg-brand py-2 px-3 rounded transition-colors"
-                      >
-                        Apply Filters
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col xl:flex-row md:flex-col gap-6 mb-6 font-arial">
-                {/* Left Sidebar - Filters */}
-                <div className="hidden md:block xl:w-64 w-full flex-shrink-0">
-                  <div className="bg-white rounded-xl shadow-md p-6 border border-[#E2E8F0] sticky top-4">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="font-semibold text-lg text-gray-900">
-                        Filters
-                      </h3>
-                      {(
-                        <button
-                          onClick={clearFilters}
-                          className="text-xs font-semibold text-brand cursor-pointer hover:text-green-800 bg-brand-light py-1 px-2 rounded transition-colors"
-                        >
-                          Reset
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Price Range Slider */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-sm text-gray150 mb-6 uppercase tracking-wider">
-                        Price Range
-                      </h4>
-                      <div className="space-y-4">
-                        {/* Range Slider Container */}
-                        {/* <div className="space-y-3">
-                          <div className="flex flex-col gap-1">
                             <input
-                              type="range"
-                              min={PRICE_MIN}
-                              max={PRICE_MAX}
-                              step={PRICE_STEP}
-                              value={minPrice}
-                              onChange={(e) => {
-                                const newMin = parseInt(e.target.value);
-                                if (newMin <= maxPrice) {
-                                  setMinPrice(newMin);
-                                }
-                              }}
-                              className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand"
-                            />
-                            <span className="text-xs text-gray-500 text-arial font-semibold">Min</span>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <input
-                              type="range"
-                              min={PRICE_MIN}
-                              max={PRICE_MAX}
-                              step={PRICE_STEP}
-                              value={maxPrice}
-                              onChange={(e) => {
-                                const newMax = parseInt(e.target.value);
-                                if (newMax >= minPrice) {
-                                  setMaxPrice(newMax);
-                                }
-                              }}
-                              className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-brand"
-                            />
-                            <span className="text-xs text-gray-500 text-arial font-semibold">Max</span>
-                          </div>
-                        </div> */}
-                        <div className="relative w-full h-6">
-                          {/* Track */}
-                          <div className="absolute -top-0.1 w-full h-2.5 bg-gray-200 rounded-lg" />
-
-                          {/* Selected Range */}
-                          <div
-                            className="absolute -top-0.1 h-2.5 bg-brand rounded-lg"
-                            style={{
-                              left: `${getPercent(minPrice || PRICE_MIN)}%`,
-                              width: `${getPercent(maxPrice || PRICE_MAX) - getPercent(minPrice || PRICE_MIN)}%`,
-                            }}
-                          />
-
-                          {/* MIN THUMB */}
-                          <input
-                            type="range"
-                            min={PRICE_MIN}
-                            max={PRICE_MAX}
-                            step={PRICE_STEP}
-                            value={minPrice || PRICE_MIN}
-                            onChange={(e) => {
-                              const value = Math.min(
-                                Number(e.target.value),
-                                (maxPrice || PRICE_MAX) - PRICE_STEP,
-                              );
-                              setMinPrice(value);
-                            }}
-                            className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-none slider-thumb"
-                          />
-
-                          {/* MAX THUMB */}
-                          <input
-                            type="range"
-                            min={PRICE_MIN}
-                            max={PRICE_MAX}
-                            step={PRICE_STEP}
-                            value={maxPrice || PRICE_MAX}
-                            onChange={(e) => {
-                              const value = Math.max(
-                                Number(e.target.value),
-                                (minPrice || PRICE_MIN) + PRICE_STEP,
-                              );
-                              setMaxPrice(value);
-                            }}
-                            className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-none slider-thumb"
-                          />
-                        </div>
-
-                        {/* Price Display */}
-                        <div className="flex items-center justify-between ">
-                          <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                            <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-                              MIN
-                            </p>
-                            <input
+                              ref={minPriceRef}
                               type="number"
-                              value={minPrice}
+                              value={minPrice ?? ""}
                               onChange={(e) => handleMinInput(e.target.value)}
-                              className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none cursor-text"
+                              className="price-input w-full text-sm font-bold text-brand text-center bg-transparent outline-none cursor-text"
                               min={PRICE_MIN}
                               max={maxPrice}
                               step={PRICE_STEP}
                             />
-                          </div>
-                          <div className="text-gray-400">→</div>
-                          <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                            <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-                              MAX
-                            </p>
-                            <input
-                              type="number"
-                              value={maxPrice}
-                              onChange={(e) => handleMaxInput(e.target.value)}
-                              className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-right cursor-text"
-                              min={minPrice}
-                              max={PRICE_MAX}
-                              step={PRICE_STEP}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Providers */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-                        Providers
-                      </h4>
-                      <div className="w-full overflow-y-auto">
-                        <div className="flex flex-col items-start gap-3">
-                          {providerOptions.map((provider) => (
                             <button
-                              key={provider}
-                              onClick={() => {
-                                setSelectedProviders((prev) =>
-                                  prev.includes(provider)
-                                    ? prev.filter((p) => p !== provider)
-                                    : [...prev, provider],
-                                );
-                              }}
-                              className={cn(
-                                "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
-                                selectedProviders.includes(provider)
-                                  ? "bg-brand text-white"
-                                  : "bg-brand-light text-brand hover:bg-opacity-80",
-                              )}
+                              onClick={() =>
+                                setMinPrice(
+                                  Math.min(
+                                    maxPrice || PRICE_MAX,
+                                    (minPrice || PRICE_MIN) + PRICE_STEP,
+                                  ),
+                                )
+                              }
+                              className="font-semibold "
                             >
-                              {provider}
+                              +
                             </button>
-                          ))}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-gray-400">→</div>
+                      <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+                          MAX
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            value={maxPrice ?? ""}
+                            onChange={(e) => handleMaxInput(e.target.value)}
+                            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-center cursor-text"
+                            min={minPrice}
+                            max={PRICE_MAX}
+                            step={PRICE_STEP}
+                          />
+                          <button
+                            onClick={() =>
+                              setMaxPrice(
+                                Math.max(
+                                  (minPrice || PRICE_MIN) + PRICE_STEP,
+                                  (maxPrice || PRICE_MAX) - PRICE_STEP,
+                                ),
+                              )
+                            }
+                            className="font-semibold pr-1"
+                          >
+                            −
+                          </button>
                         </div>
                       </div>
                     </div>
-
-                    {/* Delivery Speed */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-                        Delivery Speed
-                      </h4>
-                      <div className="flex flex-wrap gap-4">
-                        {deliverySpeedOptions.map((speed) => (
-                          <button
-                            key={speed}
-                            onClick={() => {
-                              setSelectedDeliverySpeed((prev) =>
-                                prev.includes(speed)
-                                  ? prev.filter((s) => s !== speed)
-                                  : [...prev, speed],
-                              );
-                            }}
-                            className={cn(
-                              "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
-                              selectedDeliverySpeed.includes(speed)
-                                ? "bg-brand text-white"
-                                : "bg-brand-light text-brand hover:bg-opacity-80",
-                            )}
-                          >
-                            {speed}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Sort By */}
-                    {/* <div className="mb-6">
-                    <h4 className="font-semibold text-sm text-gray-900 mb-3 uppercase tracking-wider">
-                      Sort By
-                    </h4>
-                    <div className="space-y-2">
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
-                      >
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="delivery-fastest">
-                          Fastest Delivery
-                        </option>
-                      </select>
-                    </div>
-                  </div> */}
                   </div>
                 </div>
 
-                {/* Right Content Area */}
-                <div className="flex-1">
-                  {/* Route Summary */}
+                {/* Providers */}
+                <div className="mb-6">
+                  <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
+                    Providers
+                  </h4>
+                  <div className="w-full h-[160px] overflow-y-auto">
+                    <div className="flex flex-col items-start gap-3">
+                      {providerOptions.map((provider) => (
+                        <button
+                          key={provider}
+                          onClick={() => {
+                            setSelectedProviders((prev) =>
+                              prev.includes(provider)
+                                ? prev.filter((p) => p !== provider)
+                                : [...prev, provider],
+                            );
+                          }}
+                          className={cn(
+                            "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                            selectedProviders.includes(provider)
+                              ? "bg-brand text-white"
+                              : "bg-brand-light text-brand hover:bg-opacity-80",
+                          )}
+                        >
+                          {provider}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
 
-                  {/* Header Section */}
-                  <div className="mb-1 lg:mb-6">
-                    <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
-                      <div>
-                        {(bookingRequest?.pickupLocation ||
-                          bookingRequest?.dropOffLocation) && (
-                          <div className="flex items-center gap-4 mb-1 ">
-                            <div className="text-xs font-semibold text-brand bg-brabd-light2 rounded px-2 py-1">
-                              ROUTE
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-gray-900 text-lg">
-                                {extractStateFromAddress(
-                                  bookingRequest?.pickupLocation,
-                                )}
-                              </span>
-                              <span className="mx-3 text-gray150">→</span>
-                              <span className="font-semibold text-gray-900 text-lg">
-                                {extractStateFromAddress(
-                                  bookingRequest?.dropOffLocation,
-                                )}
-                              </span>
-                            </div>
-                          </div>
+                {/* Delivery Speed */}
+                <div className="mb-6">
+                  <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
+                    Delivery Speed
+                  </h4>
+                  <div className="flex flex-wrap gap-4">
+                    {deliverySpeedOptions.map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() =>
+                          setSelectedDeliverySpeed((prev) =>
+                            prev.includes(speed) ? [] : [speed],
+                          )
+                        }
+                        className={cn(
+                          "px-3 py-2 shadow-sm rounded-lg text-xs font-semibold transition-all",
+                          selectedDeliverySpeed.includes(speed)
+                            ? "bg-brand text-white"
+                            : "bg-brand-light text-brand hover:bg-opacity-80",
                         )}
-                        <p className="text-sm text-gray-600">
-                          Showing{" "}
-                          <span className="font-semibold text-gray-900">
-                            {filteredAndSortedData.length}
-                          </span>{" "}
-                          option{filteredAndSortedData.length !== 1 ? "s" : ""}
+                      >
+                        {speed}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reset Button */}
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={() => toggleMobileFilterBtn(false)}
+                    className="w-full text-sm font-semibold text-white cursor-pointer bg-brand py-2 px-3 rounded transition-colors"
+                  >
+                    Apply Filters
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col xl:flex-row md:flex-col gap-6 mb-6 font-arial">
+            {/* Large Screen Left Sidebar - Filters (only when quotes were ever loaded) */}
+            <div
+              className={cn(
+                "hidden xl:w-64 w-full shrink-0",
+                stablePriceMaxRef.current > 0 ? "md:block" : "",
+              )}
+            >
+              <div className="bg-white rounded-xl shadow-md p-6 border border-[#E2E8F0] sticky top-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-semibold text-lg text-gray-900">
+                    Filters
+                  </h3>
+                  {
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs font-semibold text-brand cursor-pointer hover:text-green-800 bg-brand-light py-1 px-2 rounded transition-colors"
+                    >
+                      Reset
+                    </button>
+                  }
+                </div>
+
+                {/* Price Range Slider */}
+                <div className="mb-6">
+                  <h4 className="font-semibold text-sm text-gray150 mb-6 uppercase tracking-wider">
+                    Price Range
+                  </h4>
+                  <div className="space-y-4">
+                    <div className="relative w-full h-6">
+                      {/* Track */}
+                      <div className="absolute -top-0.1 w-full h-2.5 bg-gray-200 rounded-lg" />
+
+                      {/* Selected Range */}
+                      <div
+                        className="absolute -top-0.1 h-2.5 bg-brand rounded-lg"
+                        style={{
+                          left: `${getPercent(minPrice === "" ? PRICE_MIN : minPrice)}%`,
+                          width: `${Math.max(0, getPercent(maxPrice === "" ? PRICE_MAX : maxPrice) - getPercent(minPrice === "" ? PRICE_MIN : minPrice))}%`,
+                        }}
+                      />
+
+                      {/* MIN THUMB */}
+                      <input
+                        type="range"
+                        min={PRICE_MIN}
+                        max={PRICE_MAX}
+                        step={PRICE_STEP}
+                        value={
+                          minPrice === ""
+                            ? PRICE_MIN
+                            : Math.min(minPrice, PRICE_MAX)
+                        }
+                        onChange={(e) => {
+                          const value = Math.min(
+                            Number(e.target.value),
+                            (maxPrice === "" ? PRICE_MAX : maxPrice) -
+                              PRICE_STEP,
+                          );
+                          setMinPrice(value);
+                        }}
+                        style={{
+                          zIndex:
+                            (minPrice === "" ? PRICE_MIN : minPrice) >=
+                            PRICE_MAX - PRICE_STEP
+                              ? 5
+                              : 3,
+                        }}
+                        className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-none slider-thumb"
+                      />
+
+                      {/* MAX THUMB */}
+                      <input
+                        type="range"
+                        min={PRICE_MIN}
+                        max={PRICE_MAX}
+                        step={PRICE_STEP}
+                        value={
+                          maxPrice === ""
+                            ? PRICE_MAX
+                            : Math.max(
+                                PRICE_MIN + PRICE_STEP,
+                                Math.min(maxPrice, PRICE_MAX),
+                              )
+                        }
+                        onChange={(e) => {
+                          const value = Math.max(
+                            Number(e.target.value),
+                            (minPrice === "" ? PRICE_MIN : minPrice) +
+                              PRICE_STEP,
+                          );
+                          setMaxPrice(value);
+                        }}
+                        style={{ zIndex: 4 }}
+                        className="absolute w-full h-3.5 -top-0.5 appearance-none bg-transparent pointer-events-none slider-thumb"
+                      />
+                    </div>
+
+                    {/* Price Display */}
+                    <div className="flex items-center justify-between ">
+                      <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+                          MIN
                         </p>
+                        <input
+                          type="number"
+                          value={minPrice}
+                          onChange={(e) => handleMinInput(e.target.value)}
+                          className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none cursor-text"
+                          step={PRICE_STEP}
+                        />
                       </div>
-                      <div className="w-full lg:w-fit">
-                        {/* <Button
+                      <div className="text-gray-400">→</div>
+                      <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+                          MAX
+                        </p>
+                        <input
+                          type="number"
+                          value={maxPrice}
+                          onChange={(e) => handleMaxInput(e.target.value)}
+                          className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-right cursor-text"
+                          step={PRICE_STEP}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Providers */}
+                <div className="mb-6">
+                  <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
+                    Providers
+                  </h4>
+                  <div className="w-full overflow-y-auto">
+                    <div className="flex flex-col items-start gap-3">
+                      {providerOptions.map((provider) => (
+                        <button
+                          key={provider}
+                          onClick={() => {
+                            setSelectedProviders((prev) =>
+                              prev.includes(provider)
+                                ? prev.filter((p) => p !== provider)
+                                : [...prev, provider],
+                            );
+                          }}
+                          className={cn(
+                            "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+                            selectedProviders.includes(provider)
+                              ? "bg-brand text-white"
+                              : "bg-brand-light text-brand hover:bg-opacity-80",
+                          )}
+                        >
+                          {provider}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Delivery Speed */}
+                <div className="mb-6">
+                  <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
+                    Delivery Speed
+                  </h4>
+                  <div className="flex flex-wrap gap-4">
+                    {deliverySpeedOptions.map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() =>
+                          setSelectedDeliverySpeed((prev) =>
+                            prev.includes(speed) ? [] : [speed],
+                          )
+                        }
+                        className={cn(
+                          "px-3 py-2 cursor-pointer shadow-sm rounded-lg text-xs font-semibold transition-all",
+                          selectedDeliverySpeed.includes(speed)
+                            ? "bg-brand text-white"
+                            : "bg-brand-light text-brand hover:bg-opacity-80",
+                        )}
+                      >
+                        {speed}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                
+              </div>
+            </div>
+
+            {/* Right Content Area */}
+            <div className="flex-1">
+              {/* Route Summary */}
+
+              {/* Header Section */}
+              <div className="mb-1 lg:mb-6">
+                <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
+                  <div>
+                    {(bookingRequest?.pickupLocation ||
+                      bookingRequest?.dropOffLocation) && (
+                      <div className="flex items-center gap-4 mb-1 ">
+                        <div className="text-xs font-semibold text-brand bg-brabd-light2 rounded px-2 py-1">
+                          ROUTE
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-gray-900 text-lg">
+                            {extractStateFromAddress(
+                              bookingRequest?.pickupLocation,
+                            )}
+                          </span>
+                          <span className="mx-3 text-gray150">→</span>
+                          <span className="font-semibold text-gray-900 text-lg">
+                            {extractStateFromAddress(
+                              bookingRequest?.dropOffLocation,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-600">
+                      Showing{" "}
+                      <span className="font-semibold text-gray-900">
+                        {filteredAndSortedData.length}
+                      </span>{" "}
+                      option{filteredAndSortedData.length !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="w-full lg:w-fit">
+                    {/* <Button
                         className="w-fit bg-green800 hover:bg-green-800"
                         loading={shareLoading}
                         onClick={shareUrl ? copyUrl : handleShare}
@@ -1172,274 +1111,228 @@ const Calculator = () => {
                         </span>
                       </Button> */}
 
-                        <div className="flex items-center justify-between mb-6 bg-[#F3F4F6CC] px-2 py-1 rounded-md mt-2 lg:mt-0">
-                          <button
-                            onClick={() => {
-                              setActiveTab("recommended");
-                              setSortBy("price-asc");
-                            }}
-                            className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
-                              activeTab === "recommended"
-                                ? "bg-white border border-gray-200 text-green100 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            Recommended
-                          </button>
-                          <button
-                            onClick={() => {
-                              setActiveTab("cheapest");
-                              setSortBy("price-asc");
-                            }}
-                            className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
-                              activeTab === "cheapest"
-                                ? "bg-white border border-gray-200 text-green100 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            Cheapest
-                          </button>
-                          <button
-                            onClick={() => {
-                              setActiveTab("fastest");
-                              setSortBy("delivery-fastest");
-                            }}
-                            className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
-                              activeTab === "fastest"
-                                ? "bg-white border border-gray-200 text-green100 shadow-sm"
-                                : "text-gray-500 hover:text-gray-700"
-                            }`}
-                          >
-                            Fastest
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tabs */}
-                  </div>
-
-                  {/* Results Cards */}
-                  <div className="flex flex-col gap-4">
-                          {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
-                        <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
-                          <img src={empty} alt="empty quotes" className="h-50" />
-
-                          <p className="text-center font-bold text-green-600 text-lg mb-1">
-                            No courier services available
-                          </p>
-                          <p className="text-center text-gray-600 text-sm">
-                            Use the form above to search for courier services by entering your
-                            pickup location, destination, and package details.
-                          </p>
-                        </div>
-                      )}
-
-                    {filteredAndSortedData.length === 0 && (
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <p className="text-center font-bold text-gray-600 text-lg mb-2">
-                          No results match your filters
-                        </p>
-                        <button
-                          onClick={clearFilters}
-                          className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
-                        >
-                          Clear all filters
-                        </button>
-                      </div>
-                    )}
-
-                    {filteredAndSortedData.length > 0 && (
-                      <div
-                        ref={listRef}
-                        className="relative max-h-[70vh] lg:max-h-[75vh] overflow-y-auto pr-1"
+                    <div className="flex items-center justify-between mb-6 bg-[#F3F4F6CC] px-2 py-1 rounded-md mt-2 lg:mt-0">
+                      <button
+                        onClick={() => {
+                          setActiveTab("recommended");
+                          setSortBy("price-asc");
+                        }}
+                        className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
+                          activeTab === "recommended"
+                            ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
                       >
-                        <div
-                          className="relative w-full"
-                          style={{ height: rowVirtualizer.getTotalSize() }}
-                        >
-                          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                            const isLoaderRow =
-                              virtualRow.index > filteredAndSortedData.length - 1;
+                        Recommended
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveTab("cheapest");
+                          setSortBy("price-asc");
+                        }}
+                        className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
+                          activeTab === "cheapest"
+                            ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        Cheapest
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveTab("fastest");
+                          setSortBy("delivery-fastest");
+                        }}
+                        className={`md:px-6 px-3 py-2.5 md:font-bold font-medium text-sm rounded-md transition-all ${
+                          activeTab === "fastest"
+                            ? "bg-white border border-gray-200 text-green100 shadow-sm"
+                            : "text-gray-500 hover:text-gray-700"
+                        }`}
+                      >
+                        Fastest
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-                            if (isLoaderRow) {
-                              return (
-                                <div
-                                  key={virtualRow.key}
-                                  className="absolute left-0 top-0 w-full"
-                                  style={{
-                                    transform: `translateY(${virtualRow.start}px)`,
-                                  }}
-                                >
-                                  <button
-                                    onClick={handleLoadMore}
-                                    disabled={isLoadingMore || isFetchingQuotes}
-                                    className={cn(
-                                      "w-full flex items-center justify-center gap-3",
-                                      "rounded-2xl border border-[#D1D5DB] bg-white",
-                                      "py-4 text-sm font-semibold text-green100",
-                                      "shadow-sm transition-colors",
-                                      (isLoadingMore || isFetchingQuotes) &&
-                                        "opacity-70 cursor-not-allowed",
-                                    )}
-                                  >
-                                    {isLoadingMore || isFetchingQuotes
-                                      ? "Loading more options..."
-                                      : `Show ${PAGE_SIZE} more options`}
-                                    <ChevronDown size={18} />
-                                  </button>
+                {/* Tabs */}
+              </div>
+
+              {/* Results Cards */}
+              <div className="flex flex-col gap-4">
+                {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
+                  <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
+                    <img src={empty} alt="empty quotes" className="h-50" />
+
+                    <p className="text-center font-bold text-green-600 text-lg mb-1">
+                      No courier services available
+                    </p>
+                    <p className="text-center text-gray-600 text-sm">
+                      Use the form above to search for courier services by
+                      entering your pickup location, destination, and package
+                      details.
+                    </p>
+                  </div>
+                )}
+
+                {filteredAndSortedData.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <p className="text-center font-bold text-gray-600 text-lg mb-2">
+                      No results match your filters
+                    </p>
+                    <button
+                      onClick={clearFilters}
+                      className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
+
+                {filteredAndSortedData.length > 0 && (
+                  <div className="flex flex-col gap-4 max-h-[70vh] pt-8 overflow-y-auto pr-1">
+                    {filteredAndSortedData.map((item, globalIndex) => (
+                      <div
+                        key={item?.id ?? globalIndex}
+                        className=" bg-white rounded-xl overflow-hidden border-2 border-gray-300 shadow-md
+                          transition-all duration-300 shrink-0
+                          hover:shadow-lg hover:-translate-y-1 hover:border-green800"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
+                          {/* Left - Courier Logo & Info */}
+                          <div className="xl:w-1/4">
+                            <div className="flex-1 flex items-center gap-1">
+                              {item?.courier?.logo ? (
+                                <img
+                                  src={item?.courier?.logo}
+                                  alt=""
+                                  className="w-[47px] lg:w-[57px] rounded-lg"
+                                />
+                              ) : (
+                                <div className="shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
+                                  <Box className="w-8 h-8 text-gray-700" />
                                 </div>
-                              );
-                            }
-
-                            const item =
-                              filteredAndSortedData[virtualRow.index];
-                            const globalIndex = virtualRow.index;
-
-                            return (
-                              <div
-                                key={virtualRow.key}
-                                className="absolute left-0 top-0 w-full"
-                                style={{
-                                  transform: `translateY(${virtualRow.start}px)`,
-                                }}
-                              >
-                                <div
-                                  className={cn(
-                                    "bg-white rounded-xl overflow-hidden",
-                                    "border-2 border-gray-300",
-                                    "shadow-md",
-                                    "transition-all duration-300",
-                                    "hover:shadow-lg hover:-translate-y-1 hover:border-green800",
-                                    "relative",
-                                  )}
-                                >
-                                  <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
-                                    {/* Left - Courier Logo & Info */}
-                                    <div className="xl:w-1/4">
-                                      <div className="flex-1 flex items-center gap-1">
-                                        {item?.courier?.logo ? (
-                                          <img
-                                            src={item?.courier?.logo}
-                                            alt=""
-                                            className="w-[47px] lg:w-[57px] rounded-lg"
-                                          />
-                                        ) : (
-                                          <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
-                                            <Box className="w-8 h-8 text-gray-700" />
-                                          </div>
-                                        )}
-                                        <div className="flex flex-col gap-2">
-                                          <h3 className="text-xs lg:text-lg font-bold text-gray-900">
-                                            {item?.courier?.name}
-                                          </h3>
-                                          <div className="flex items-center gap-1">
-                                            <Rating
-                                              value={
-                                                item?.courier
-                                                  ?.averageRatingScore
-                                              }
-                                              readOnly
-                                            />
-                                            <div className="text-xs text-gray-600 space-y-1">
-                                              <p>
-                                                ({item?.courier?.totalRatings})
-                                              </p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
-                                        <ShieldCheck size={14} /> Verified
-                                      </div>
-                                    </div>
-
-                                    {/* Center - Pickup/Delivery Timeline */}
-                                    <div className="xl:w-1/2 ">
-                                      <div className="flex lg:flex-row items-center justify-center gap-8">
-                                        <div className="lg:text-left text-center">
-                                          <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                            {item?.pudoMode === "STORE_DROPOFF"
-                                              ? "STORE DROP-OFF"
-                                              : "DOORSTEP PICKUP"}
-                                          </p>
-                                          <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
-                                            {item?.pickUpdateDate || "Not specified"}
-                                          </p>
-                                        </div>
-
-                                        <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
-                                          <p className="text-xs text-gray-600 font-semibold pt-2">
-                                            {item?.serviceLevelAgreements?.[0] ||
-                                              "Standard Delivery"}
-                                          </p>
-                                          <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
-                                          <p>{``}</p>
-                                        </div>
-
-                                        <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
-                                          <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-                                            DELIVERY
-                                          </p>
-                                          <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                            {item?.estimatedDeliveryDate || "Not specified"}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <div className="block lg:hidden lg:text-left text-center mt-3">
-                                        <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
-                                          DELIVERY
-                                        </p>
-                                        <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-                                          {item?.estimatedDeliveryDate || "Not specified"}
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    {/* Right - Price & CTA */}
-                                    <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
-                                      <div className="mb-4">
-                                        {item?.discount > 0 && (
-                                          <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full mb-1 inline-block">
-                                            {item.discount}% off
-                                          </span>
-                                        )}
-                                        <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
-                                          ₦
-                                          {parsePrice(item.price).toLocaleString()}
-                                        </p>
-                                      </div>
-
-                                      <Button
-                                        onClick={() => handleClick(item)}
-                                        className={cn(
-                                          globalIndex === 0
-                                            ? "bg-green100 hover:bg-green800 submit-btn-shadow"
-                                            : "bg-white text-green100 border-2",
-                                          "rounded-2xl md:w-[170px] w-full",
-                                        )}
-                                      >
-                                        {globalIndex === 0 ? (
-                                          <span className="flex items-center gap-2">
-                                            Select Option <ArrowRight />
-                                          </span>
-                                        ) : (
-                                          "Select"
-                                        )}
-                                      </Button>
-                                    </div>
+                              )}
+                              <div className="flex flex-col gap-2">
+                                <h3 className="text-xs lg:text-lg font-bold text-gray-900">
+                                  {item?.courier?.name}
+                                </h3>
+                                <div className="flex items-center gap-1">
+                                  <Rating
+                                    value={item?.courier?.averageRatingScore}
+                                    readOnly
+                                  />
+                                  <div className="text-xs text-gray-600 space-y-1">
+                                    <p>({item?.courier?.totalRatings})</p>
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })}
+                            </div>
+                            <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
+                              <ShieldCheck size={14} /> Verified
+                            </div>
+                          </div>
+
+                          {/* Center - Pickup/Delivery Timeline */}
+                          <div className="xl:w-1/2 ">
+                            <div className="flex lg:flex-row items-center justify-center gap-8">
+                              <div className="lg:text-left text-center">
+                                <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
+                                  {item?.pudoMode === "STORE_DROPOFF"
+                                    ? "STORE DROP-OFF"
+                                    : "DOORSTEP PICKUP"}
+                                </p>
+                                <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
+                                  {item?.pickUpdateDate || "Not specified"}
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
+                                <p className="text-xs text-gray-600 font-semibold pt-2">
+                                  {item?.serviceLevelAgreements?.[0] ||
+                                    "Standard Delivery"}
+                                </p>
+                                <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full"></div>
+                                <p>{``}</p>
+                              </div>
+
+                              <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
+                                <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
+                                  DELIVERY
+                                </p>
+                                <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
+                                  {item?.estimatedDeliveryDate ||
+                                    "Not specified"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="block lg:hidden lg:text-left text-center mt-3">
+                              <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
+                                DELIVERY
+                              </p>
+                              <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
+                                {item?.estimatedDeliveryDate || "Not specified"}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Right - Price & CTA */}
+                          <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
+                            <div className="mb-4">
+                              {item?.discount > 0 && (
+                                <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full mb-1 inline-block">
+                                  {item.discount}% off
+                                </span>
+                              )}
+                              <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
+                                ₦{parsePrice(item.price).toLocaleString()}
+                              </p>
+                            </div>
+
+                            <Button
+                              onClick={() => handleClick(item)}
+                              className={cn(
+                                globalIndex === 0
+                                  ? "bg-green100 hover:bg-green800 submit-btn-shadow"
+                                  : "bg-white text-green100 border-2",
+                                "rounded-2xl md:w-[170px] w-full",
+                              )}
+                            >
+                              {globalIndex === 0 ? (
+                                <span className="flex items-center gap-2">
+                                  Select Option <ArrowRight />
+                                </span>
+                              ) : (
+                                "Select"
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
+                    ))}
+
+                    {hasNextPage && (
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={isLoadingMore || isFetchingQuotes}
+                        className="shrink-0 w-full flex items-center justify-center gap-3
+                          rounded-2xl border border-[#D1D5DB] bg-white
+                          py-4 text-sm font-semibold text-green100
+                          shadow-sm transition-colors
+                          disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {isLoadingMore || isFetchingQuotes
+                          ? "Loading more options..."
+                          : `Show ${PAGE_SIZE} more options`}
+                        <ChevronDown size={18} />
+                      </button>
                     )}
                   </div>
-                </div>
+                )}
               </div>
+            </div>
+          </div>
         </>
       )}
 
@@ -1470,8 +1363,12 @@ const Calculator = () => {
           {quoteContent.length > 1 && (
             <div className="flex flex-wrap gap-3 mb-4">
               {quoteContent.map((quote: any, idx: number) => {
-                const sla = quote?.serviceLevelAgreements?.[0] ?? `Option ${idx + 1}`;
-                const pudo = quote?.pudoMode === "STORE_DROPOFF" ? "Store Drop-off" : "Doorstep Pickup";
+                const sla =
+                  quote?.serviceLevelAgreements?.[0] ?? `Option ${idx + 1}`;
+                const pudo =
+                  quote?.pudoMode === "STORE_DROPOFF"
+                    ? "Store Drop-off"
+                    : "Doorstep Pickup";
                 const isSelected = selectedDirectQuoteIndex === idx;
                 return (
                   <button
@@ -1485,10 +1382,20 @@ const Calculator = () => {
                     )}
                   >
                     <span>{sla}</span>
-                    <p className={cn("text-xs mt-0.5 font-normal", isSelected ? "text-white/80" : "text-gray-400")}>
+                    <p
+                      className={cn(
+                        "text-xs mt-0.5 font-normal",
+                        isSelected ? "text-white/80" : "text-gray-400",
+                      )}
+                    >
                       {pudo}
                     </p>
-                    <p className={cn("text-xs mt-0.5 font-normal", isSelected ? "text-white/80" : "text-gray-400")}>
+                    <p
+                      className={cn(
+                        "text-xs mt-0.5 font-normal",
+                        isSelected ? "text-white/80" : "text-gray-400",
+                      )}
+                    >
                       ₦{CurrencyFormatter(parsePrice(quote?.price).toFixed(2))}
                     </p>
                   </button>
@@ -1503,7 +1410,7 @@ const Calculator = () => {
               {/* Route Info */}
               <div className="">
                 <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-brand-light flex items-center justify-center">
+                  <div className="shrink-0 w-10 h-10 rounded-lg bg-brand-light flex items-center justify-center">
                     <FiPackage className="w-5 h-5 text-brand" />
                   </div>
                   <div className="flex-1">
@@ -1540,7 +1447,10 @@ const Calculator = () => {
                     Estimated Delivery Date
                   </p>
                   <p className="text-lg font-bold text-[#1a1a1a]">
-                    {quoteContent[selectedDirectQuoteIndex]?.estimatedDeliveryDate}
+                    {
+                      quoteContent[selectedDirectQuoteIndex]
+                        ?.estimatedDeliveryDate
+                    }
                   </p>
                 </div>
                 <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
@@ -1554,17 +1464,28 @@ const Calculator = () => {
                   const selectedQuote = quoteContent[selectedDirectQuoteIndex];
                   const discountedPrice = parsePrice(selectedQuote?.price);
                   const discountPct = selectedQuote?.discount ?? 0;
-                  const originalPrice = discountPct > 0 ? discountedPrice / (1 - discountPct / 100) : discountedPrice;
+                  const originalPrice =
+                    discountPct > 0
+                      ? discountedPrice / (1 - discountPct / 100)
+                      : discountedPrice;
                   const savings = originalPrice - discountedPrice;
-                  const serviceCharge = selectedQuote?.serviceCharge ?? discountedPrice * 0.005;
+                  const serviceCharge =
+                    selectedQuote?.serviceCharge ?? discountedPrice * 0.005;
                   const total = discountedPrice + serviceCharge;
                   return (
                     <>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
                         <span className="text-gray-700 font-medium">
-                          Delivery Fee{discountPct > 0 ? " (before discount)" : ""}
+                          Delivery Fee
+                          {discountPct > 0 ? " (before discount)" : ""}
                         </span>
-                        <span className={discountPct > 0 ? "text-gray-400 line-through font-medium" : "text-[#1a1a1a] font-bold"}>
+                        <span
+                          className={
+                            discountPct > 0
+                              ? "text-gray-400 line-through font-medium"
+                              : "text-[#1a1a1a] font-bold"
+                          }
+                        >
                           ₦{CurrencyFormatter(originalPrice.toFixed(2))}
                         </span>
                       </div>
@@ -1574,7 +1495,9 @@ const Calculator = () => {
                             <span className="text-emerald-600 font-medium">
                               Discount ({discountPct}%)
                               {selectedQuote?.discountDescription && (
-                                <span className="block text-xs text-gray-400 font-normal">{selectedQuote.discountDescription}</span>
+                                <span className="block text-xs text-gray-400 font-normal">
+                                  {selectedQuote.discountDescription}
+                                </span>
                               )}
                             </span>
                             <span className="text-emerald-600 font-bold">
@@ -1582,7 +1505,9 @@ const Calculator = () => {
                             </span>
                           </div>
                           <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                            <span className="text-gray-700 font-medium">Delivery Fee (after discount)</span>
+                            <span className="text-gray-700 font-medium">
+                              Delivery Fee (after discount)
+                            </span>
                             <span className="text-[#1a1a1a] font-bold">
                               ₦{CurrencyFormatter(discountedPrice.toFixed(2))}
                             </span>
@@ -1594,11 +1519,16 @@ const Calculator = () => {
                           Service Charge
                         </span>
                         <span className="text-[#1a1a1a] font-bold">
-                          ₦{CurrencyFormatter(parsePrice(serviceCharge).toFixed(2))}
+                          ₦
+                          {CurrencyFormatter(
+                            parsePrice(serviceCharge).toFixed(2),
+                          )}
                         </span>
                       </div>
                       <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-700 font-medium">Total Cost</span>
+                        <span className="text-gray-700 font-medium">
+                          Total Cost
+                        </span>
                         <span className="text-brand font-bold">
                           ₦{CurrencyFormatter(total.toFixed(2))}
                         </span>
