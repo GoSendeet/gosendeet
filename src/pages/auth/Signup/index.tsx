@@ -35,10 +35,6 @@ const Signup = () => {
 
   const customerSchema = z
     .object({
-      username: z
-        .string({ required_error: "Full name is required" })
-        .trim()
-        .min(1, { message: "Full name cannot be empty" }),
       firstName: z
         .string({ required_error: "First Name is required" })
         .trim()
@@ -73,10 +69,6 @@ const Signup = () => {
 
   const franchiseSchema = z
     .object({
-      username: z
-        .string({ required_error: "Full name is required" })
-        .trim()
-        .min(1, { message: "Full name cannot be empty" }),
       firstName: z
         .string({ required_error: "First Name is required" })
         .trim()
@@ -141,9 +133,11 @@ const Signup = () => {
 
   const onSubmit = (data: any) => {
     setEmail(data.email);
-    mutate(data);
+    mutate({
+      ...data,
+      username: `${data.firstName} ${data.lastName}`.trim(),
+    });
   };
-
 
   const handleGoogleLogin = () => {
     setLoading(true);

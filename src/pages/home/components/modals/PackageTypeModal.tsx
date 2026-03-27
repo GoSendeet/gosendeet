@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { FiCheck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import packageIcon from "@/assets/icons/size.png";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 // Step Indicator Component (brand color and number for complete)
 const StepIndicator = ({ stepNumber, isComplete, isActive }: { stepNumber: number; isComplete: boolean; isActive: boolean }) => {
