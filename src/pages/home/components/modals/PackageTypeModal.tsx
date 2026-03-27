@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { FiCheck } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import packageIcon from "@/assets/icons/size.png";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 
 // Step Indicator Component (brand color and number for complete)
 const StepIndicator = ({ stepNumber, isComplete, isActive }: { stepNumber: number; isComplete: boolean; isActive: boolean }) => {
@@ -50,8 +50,14 @@ export function PackageTypeModal({
   currentItemPrice,
   onConfirm,
 }: PackageTypeModalProps) {
-  const { data: packageTypes } = useGetPackageType({ minimize: true });
-  const packages = useMemo(() => packageTypes?.data || [], [packageTypes?.data]);
+  const {
+    data: packageTypes,
+    isLoading: isPackageTypesLoading,
+    isError: isPackageTypesError,
+  } = useGetPackageType({ minimize: true });
+  const packages = Array.isArray(packageTypes?.data)
+    ? packageTypes.data
+    : packageTypes?.data?.content || [];
 
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [weight, setWeight] = useState("");
@@ -195,50 +201,66 @@ export function PackageTypeModal({
                 style={{ WebkitOverflowScrolling: 'touch' }}
               >
                 <div className="flex gap-4 py-2 min-w-max">
-                {packages.map((pkg: any) => {
-                  const isSelected = selectedPackage?.id === pkg.id;
-                  return (
-                    <button
-                      key={pkg.id}
-                      type="button"
-                      onClick={() => handlePackageSelect(pkg)}
-                      className={cn(
-                        "relative shrink-0 w-[108px] h-[94px] p-2 rounded-lg border flex flex-col items-center",
-                        isSelected
-                          ? "border-brand bg-[#F0FDF480]"
-                          : "border-gray-300 hover:border-brand bg-white"
-                      )}
-                    >
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
-                          <FiCheck className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
+                  {isPackageTypesLoading && (
+                    <div className="text-sm text-gray-500 px-1 py-2">
+                      Loading package types...
+                    </div>
+                  )}
 
-                      <div className=
-                        "w-8 h-8 mt-3 rounded mb-1 flex justify-center items-center "
-                        
-                      >
-                        <img
-                          src={pkg.imageUrl || packageIcon}
-                          alt={pkg.name}
-                          className="w-5 h-5 object-center"
-                          onError={(e) => {
-                            // Fallback to default icon if custom image fails to load
-                            (e.target as HTMLImageElement).src = packageIcon;
-                          }}
-                        />
-                      </div>
+                  {!isPackageTypesLoading && isPackageTypesError && (
+                    <div className="text-sm text-red-500 px-1 py-2">
+                      Unable to load package types right now.
+                    </div>
+                  )}
 
-                      <h4 className={cn(
-                        "font-medium py-3 text-xs text-center truncate line-clamp-1 w-full",
-                        isSelected ? "text-brand" : "text-gray-900"
-                      )}>
-                        {pkg.name}
-                      </h4>
-                    </button>
-                  );
-                })}
+                  {!isPackageTypesLoading && !isPackageTypesError && packages.length === 0 && (
+                    <div className="text-sm text-gray-500 px-1 py-2">
+                      No package types available yet.
+                    </div>
+                  )}
+
+                  {!isPackageTypesLoading &&
+                    !isPackageTypesError &&
+                    packages.map((pkg: any) => {
+                      const isSelected = selectedPackage?.id === pkg.id;
+                      return (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={() => handlePackageSelect(pkg)}
+                          className={cn(
+                            "relative shrink-0 w-[108px] h-[94px] p-2 rounded-lg border flex flex-col items-center",
+                            isSelected
+                              ? "border-brand bg-[#F0FDF480]"
+                              : "border-gray-300 hover:border-brand bg-white"
+                          )}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
+                              <FiCheck className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          )}
+
+                          <div className="w-8 h-8 mt-3 rounded mb-1 flex justify-center items-center">
+                            <img
+                              src={pkg.imageUrl || packageIcon}
+                              alt={pkg.name}
+                              className="w-5 h-5 object-center"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = packageIcon;
+                              }}
+                            />
+                          </div>
+
+                          <h4 className={cn(
+                            "font-medium py-3 text-xs text-center truncate line-clamp-1 w-full",
+                            isSelected ? "text-brand" : "text-gray-900"
+                          )}>
+                            {pkg.name}
+                          </h4>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
 

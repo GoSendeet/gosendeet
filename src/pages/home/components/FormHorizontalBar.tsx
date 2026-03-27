@@ -222,7 +222,9 @@ const FormHorizontalBar = ({
   });
 
   const { data: packageTypes } = useGetPackageType({ minimize: true });
-  const packages = packageTypes?.data;
+  const packages = Array.isArray(packageTypes?.data)
+    ? packageTypes.data
+    : packageTypes?.data?.content || [];
 
   const schema = z.object({
     pickupLocation: z
