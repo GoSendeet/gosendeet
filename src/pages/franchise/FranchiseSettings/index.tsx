@@ -16,7 +16,18 @@ const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 type SettingsPageProps = {
-  profile?: ProfileData;
+  profile?: ProfileData | {
+    id?: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    partnerId?: string;
+    franchiseId?: string;
+    status?: string;
+  };
 };
 
 const FranchiseSettings = ({ profile = MOCK_PROFILE }: SettingsPageProps) => {

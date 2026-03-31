@@ -7,6 +7,7 @@ import { GoX } from "react-icons/go";
 // import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 import { ArrowUpRight, Home } from "lucide-react";
 import { Button } from "../ui/button";
+import { getDefaultRouteForRole } from "@/lib/roles";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -65,10 +66,7 @@ const Navbar = () => {
               <Home
                 className="text-green500"
                 size={24}
-                onClick={() => {
-                  role === "user" && navigate("/dashboard");
-                  ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
-                }}
+                onClick={() => navigate(getDefaultRouteForRole(role))}
               />
             </>
           )}
@@ -118,10 +116,7 @@ const Navbar = () => {
           <>
             <div
               className="hidden lg:flex items-center gap-2 text-green500 cursor-pointer"
-              onClick={() => {
-                role === "user" && navigate("/dashboard");
-                ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
-              }}
+              onClick={() => navigate(getDefaultRouteForRole(role))}
             >
               <Home className="text-green500" size={24} />
               <span>Dashboard</span>

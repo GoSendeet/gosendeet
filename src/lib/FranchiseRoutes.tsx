@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
-import { getDefaultRouteForRole, isAdminRole } from "./roles";
+import { getDefaultRouteForRole, isFranchiseRole } from "./roles";
 
-const AdminRoutes = () => {
+const FranchiseRoutes = () => {
   const navigate = useNavigate();
   const authToken = sessionStorage.getItem("authToken");
   const role = sessionStorage.getItem("role");
@@ -14,15 +14,16 @@ const AdminRoutes = () => {
       return;
     }
 
-    if (authToken && !isAdminRole(role)) {
+    if (!isFranchiseRole(role)) {
       navigate(getDefaultRouteForRole(role), { replace: true });
     }
   }, [authToken, role, navigate]);
 
-  if (authToken && isAdminRole(role)) {
+  if (authToken && isFranchiseRole(role)) {
     return <Outlet />;
   }
 
   return null;
 };
-export default AdminRoutes;
+
+export default FranchiseRoutes;

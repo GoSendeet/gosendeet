@@ -9,6 +9,9 @@ export const signup = async (data: {
   username: string;
   password: string;
   confirmPassword: string;
+  companyName?: string;
+  companyEmail?: string;
+  role?: string;
 }) => {
   try {
     const res = await authApi.post("/auth/create-account", data);

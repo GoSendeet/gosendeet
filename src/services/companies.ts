@@ -110,6 +110,15 @@ export const getCompanyStats = async () => {
   }
 };
 
+export const getMyCompanyTransactions = async () => {
+  try {
+    const res = await api.get(`/companies/me/transactions`);
+    return res.data;
+  } catch (error: any) {
+    throw error?.response?.data || { message: error.message };
+  }
+};
+
 export const getCompanyRatings = async (id: string, page: number) => {
   try {
     const res = await api.get(`/ratings?companyId=${id}&page=${page}`);

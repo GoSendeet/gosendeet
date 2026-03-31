@@ -10,6 +10,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
+import { getDefaultRouteForRole } from "@/lib/roles";
 import { login } from "@/services/auth";
 
 const schema = z.object({
@@ -70,18 +71,7 @@ const Login = () => {
       }
 
       toast.success("Login Successful");
-
-      if (user.role === "user") {
-        navigate("/dashboard");
-        return;
-      }
-
-      if (["admin", "super_admin"].includes(user.role)) {
-        navigate("/admin-dashboard");
-        return;
-      }
-
-      navigate("/signin");
+      navigate(getDefaultRouteForRole(user.role));
     },
     onError: (error: { message?: string }) => {
       toast.error(error?.message || "Login failed");
