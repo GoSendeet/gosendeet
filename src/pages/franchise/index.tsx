@@ -6,6 +6,7 @@ import Earnings from "./Earnings";
 import Performance from "./Performance";
 import FranchiseNotifications from "./FranchiseNotifications";
 import FranchiseSettings from "./FranchiseSettings";
+import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 import {
   LayoutDashboard,
   Truck,
@@ -31,6 +32,8 @@ const Franchise = () => {
   const [underlineLeft, setUnderlineLeft] = useState(0);
   const [underlineWidth, setUnderlineWidth] = useState(0);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const userId = sessionStorage.getItem("userId") || "";
+  const { data: userData, refetchUserData } = useGetUserDetails(userId);
 
   const updateUnderline = (index: number) => {
     const tab = tabRefs.current[index];
@@ -44,6 +47,12 @@ const Franchise = () => {
     const currentIndex = franchiseDashboardTab.findIndex((tab) => tab.key === activeTab);
     updateUnderline(currentIndex);
   }, [activeTab]);
+
+  useEffect(() => {
+    if (userId) {
+      refetchUserData();
+    }
+  }, [userId, refetchUserData]);
 
   const handleTabChange = (key: string, index: number) => {
     updateUnderline(index);
@@ -101,7 +110,7 @@ const Franchise = () => {
         {activeTab === "earnings" && <Earnings />}
         {activeTab === "performance" && <Performance />}
         {activeTab === "notifications" && <FranchiseNotifications />}
-        {activeTab === "settings" && <FranchiseSettings />}
+        {activeTab === "settings" && <FranchiseSettings profile={userData?.data} />}
       </div>
 
       {/* Mobile bottom nav — visible on small screens only */}

@@ -2,6 +2,8 @@ import React from "react";
 import { FranchiseCardEarning } from "@/components/ui/FranchiseCard";
 import { TrendingUp, CalendarDays, DollarSign } from "lucide-react";
 import SettlementsEarningTable from "./SettlementsEarningTable";
+import { useGetFranchiseCompanyTransactions } from "@/queries/franchise/useGetFranchiseCompanyTransactions";
+import type { Transaction } from "./TransactionsTable";
 
 // Card types the backend will return
 type EarningCardType = "total_month" | "pending_account" | "next_payout";
@@ -46,7 +48,42 @@ const earningCardsData: EarningCardData[] = [
   { type: "next_payout", title: "Next Payout", value: "Mar 4", subvalue: "~₦103,800" },
 ];
 
+const formatCurrency = (value: number | string) =>
+  new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    maximumFractionDigits: 2,
+  }).format(Number(value ?? 0));
+
+const formatTransactionDate = (value: string) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
+
 const Earnings = () => {
+  const { data: transactionsResponse, isLoading: isTransactionsLoading } =
+    useGetFranchiseCompanyTransactions();
+
+  const transactions: Transaction[] = (transactionsResponse?.data ?? []).map(
+    (transaction: {
+      id: string;
+      trackingId: string;
+      amountPaid: number;
+      feePaid: number;
+      commission: number;
+      dateCreated: string;
+    }) => ({
+      id: transaction.id,
+      trackingId: transaction.trackingId,
+      customerPaid: formatCurrency(transaction.amountPaid),
+      yourFee: formatCurrency(transaction.feePaid),
+      commission: `-${formatCurrency(transaction.commission)}`,
+      date: formatTransactionDate(transaction.dateCreated),
+    }),
+  );
+
   return (
     <>
       <div
@@ -77,7 +114,10 @@ const Earnings = () => {
 
         {/* settlements and transactions table with toggle switch */}
       <div className="mt-6">
-        <SettlementsEarningTable />
+        <SettlementsEarningTable
+          transactions={transactions}
+          transactionsLoading={isTransactionsLoading}
+        />
       </div>
     </>
   );

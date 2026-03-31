@@ -8,11 +8,13 @@ type Props = {
   // TODO: I will Pass real data from backend here — tables fall back to mock data if undefined
   settlements?: Settlement[];
   transactions?: Transaction[];
+  transactionsLoading?: boolean;
 };
 
 export default function SettlementsEarningTable({
   settlements,
   transactions,
+  transactionsLoading = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("settlements");
 
@@ -41,7 +43,7 @@ export default function SettlementsEarningTable({
         {activeTab === "settlements" ? (
           <SettlementsTable data={settlements} />
         ) : (
-          <TransactionsTable data={transactions} />
+          <TransactionsTable data={transactions} isLoading={transactionsLoading} />
         )}
       </div>
     </>

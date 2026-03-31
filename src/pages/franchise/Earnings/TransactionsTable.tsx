@@ -1,3 +1,5 @@
+import { ReceiptText } from "lucide-react";
+
 export type Transaction = {
   id: string;
   trackingId: string;
@@ -7,20 +9,29 @@ export type Transaction = {
   date: string;
 };
 
-// TODO: i will remove once backend is connected
-const MOCK_TRANSACTIONS: Transaction[] = [
-  { id: "t1", trackingId: "GS-JKL012", customerPaid: "₦6,500",  yourFee: "₦3,200", commission: "-₦650",   date: "Feb 27, 2026" },
-  { id: "t2", trackingId: "GS-MNO345", customerPaid: "₦11,000", yourFee: "₦5,500", commission: "-₦1,100", date: "Feb 27, 2026" },
-  { id: "t3", trackingId: "GS-PQR678", customerPaid: "₦8,400",  yourFee: "₦4,200", commission: "-₦840",   date: "Feb 26, 2026" },
-  { id: "t4", trackingId: "GS-ABC999", customerPaid: "₦7,200",  yourFee: "₦3,600", commission: "-₦720",   date: "Feb 25, 2026" },
-  { id: "t5", trackingId: "GS-XYZ111", customerPaid: "₦9,600",  yourFee: "₦4,800", commission: "-₦960",   date: "Feb 25, 2026" },
-];
-
 type Props = {
   data?: Transaction[];
+  isLoading?: boolean;
 };
 
-const TransactionsTable = ({ data = MOCK_TRANSACTIONS }: Props) => {
+const TransactionsTable = ({ data = [], isLoading = false }: Props) => {
+  if (isLoading) {
+    return (
+      <div className="px-4 py-12 text-sm text-gray-400 text-center">
+        Loading transactions...
+      </div>
+    );
+  }
+
+  if (!data.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 gap-2">
+        <ReceiptText size={28} className="text-gray-200" />
+        <p className="text-sm text-gray-400">No transactions yet</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">

@@ -1,6 +1,9 @@
 import { CheckCircle, Save } from "lucide-react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { updateUserProfile } from "@/services/user";
 
 export type ProfileData = {
   fullName: string;
@@ -27,26 +30,102 @@ export const MOCK_PROFILE: ProfileData = {
 type FormFields = Pick<ProfileData, "fullName" | "phoneNumber" | "email">;
 
 type Prop = {
-  data?: ProfileData;
+  data?: ProfileData | UserProfileResponse;
 };
 
-const ProfileTab = ({ data = MOCK_PROFILE }: Prop) => {
+type UserProfileResponse = {
+  id?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  partnerId?: string;
+  franchiseId?: string;
+  status?: string;
+};
+
+const getInitials = (value: string) => {
+  const words = value.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "U";
+  return words
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
+};
+
+const normalizeStatus = (status?: string): ProfileData["status"] => {
+  return status?.toLowerCase() === "active" ? "Active" : "Inactive";
+};
+
+const mapUserToProfileData = (data?: ProfileData | UserProfileResponse): ProfileData => {
+  if (!data) return MOCK_PROFILE;
+
+  if ("avatarInitials" in data) {
+    return data;
+  }
+
+  const fullName =
+    [data.firstName, data.lastName].filter(Boolean).join(" ").trim() ||
+    data.username ||
+    "User";
+
+  return {
+    fullName,
+    phoneNumber: data.phone || "",
+    email: data.email || "",
+    address: data.address || "",
+    partnerId: data.partnerId || data.franchiseId || data.id || "--",
+    status: normalizeStatus(data.status),
+    avatarInitials: getInitials(fullName),
+    avatarBg: "bg-orange-400",
+  };
+};
+
+const ProfileTab = ({ data }: Prop) => {
+  const profileData = useMemo(() => mapUserToProfileData(data), [data]);
+  const userId = "id" in (data || {}) ? (data as UserProfileResponse).id ?? "" : "";
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormFields>({
     defaultValues: {
-      fullName: data.fullName,
-      phoneNumber: data.phoneNumber,
-      email: data.email,
+      fullName: profileData.fullName,
+      phoneNumber: profileData.phoneNumber,
+      email: profileData.email,
     },
   });
 
+  useEffect(() => {
+    reset({
+      fullName: profileData.fullName,
+      phoneNumber: profileData.phoneNumber,
+      email: profileData.email,
+    });
+  }, [profileData, reset]);
+
   const { mutate: updateProfile, isSuccess, isPending } = useMutation({
     mutationFn: async (formData: FormFields) => {
-      // TODO: replace with actual API call e.g. return api.patch("/profile", formData)
-      console.log("Profile update payload:", formData);
+      if (!userId) {
+        throw new Error("Unable to update profile");
+      }
+
+      return updateUserProfile(userId, {
+        username: formData.fullName,
+        phone: formData.phoneNumber,
+        email: formData.email,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Profile updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Something went wrong");
     },
   });
 
@@ -62,10 +141,10 @@ const ProfileTab = ({ data = MOCK_PROFILE }: Prop) => {
       <div className="flex items-center gap-4">
         <div className="relative">
           <div
-            className={`w-14 h-14 rounded-2xl ${data.avatarBg} flex items-center justify-center`}
+            className={`w-14 h-14 rounded-2xl ${profileData.avatarBg} flex items-center justify-center`}
           >
             <span className="text-white font-bold text-lg tracking-wide">
-              {data.avatarInitials}
+              {profileData.avatarInitials}
             </span>
           </div>
           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -74,10 +153,10 @@ const ProfileTab = ({ data = MOCK_PROFILE }: Prop) => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <p className="font-bold text-gray-800 text-base">{data.fullName}</p>
-          <p className="text-xs text-gray-400">Partner ID: {data.partnerId}</p>
+          <p className="font-bold text-gray-800 text-base">{profileData.fullName}</p>
+          <p className="text-xs text-gray-400">Partner ID: {profileData.partnerId}</p>
           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 w-fit">
-            {data.status}
+            {profileData.status}
           </span>
         </div>
       </div>
@@ -110,7 +189,7 @@ const ProfileTab = ({ data = MOCK_PROFILE }: Prop) => {
             <label className="text-xs font-medium text-gray-500">Address</label>
             <input
               type="text"
-              value={data.address}
+              value={profileData.address}
               readOnly
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-400 bg-gray-50 outline-none cursor-not-allowed"
             />

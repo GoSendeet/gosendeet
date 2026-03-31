@@ -9,6 +9,8 @@ export const signup = async (data: {
   username: string;
   password: string;
   confirmPassword: string;
+  companyName?: string;
+  companyEmail?: string;
   role?: string;
 }) => {
   try {
