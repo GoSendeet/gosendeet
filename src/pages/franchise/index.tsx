@@ -110,7 +110,14 @@ const Franchise = () => {
         {activeTab === "earnings" && <Earnings />}
         {activeTab === "performance" && <Performance />}
         {activeTab === "notifications" && <FranchiseNotifications />}
-        {activeTab === "settings" && <FranchiseSettings profile={userData?.data} />}
+        {activeTab === "settings" &&
+          (userData?.data ? (
+            <FranchiseSettings profile={userData.data} />
+          ) : (
+            <div className="p-4 border border-neutral200 rounded-lg text-sm text-neutral500">
+              Loading settings…
+            </div>
+          ))}
       </div>
 
       {/* Mobile bottom nav — visible on small screens only */}
