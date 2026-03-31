@@ -147,6 +147,10 @@ const Delivery = () => {
       estimatedDeliveryDate: parseDateInput(
         bookingDetails?.estimatedDeliveryDate,
       ),
+      pudoMode: bookingDetails?.pudoMode,
+      routeConfigId:
+        bookingDetails?.routeConfigId ?? bookingDetails?.routeConfig?.id,
+      slaConfigId: bookingDetails?.slaConfigId ?? bookingDetails?.slaConfig?.id,
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
