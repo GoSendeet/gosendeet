@@ -22,8 +22,10 @@ import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
+import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 
 const Signup = () => {
+  const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [userType, setUserType] = useState<"customer" | "franchise">(
     "customer",
   );
@@ -32,6 +34,24 @@ const Signup = () => {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const emailSchema = skipEmailValidation
+    ? z.string({ required_error: "Email address is required" }).trim().min(1, {
+        message: "Email address is required",
+      })
+    : z
+        .string({ required_error: "Email address is required" })
+        .trim()
+        .email({ message: "Invalid email address" });
+
+  const companyEmailSchema = skipEmailValidation
+    ? z.string({ required_error: "Company email is required" }).trim().min(1, {
+        message: "Company email is required",
+      })
+    : z
+        .string({ required_error: "Company email is required" })
+        .trim()
+        .email({ message: "Invalid company email" });
 
   const customerSchema = z
     .object({
@@ -43,9 +63,7 @@ const Signup = () => {
         .string({ required_error: "Last Name is required" })
         .trim()
         .min(1, { message: "Last Name cannot be empty" }),
-      email: z
-        .string({ required_error: "Email address is required" })
-        .email({ message: "Invalid email address" }),
+      email: emailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
@@ -81,12 +99,8 @@ const Signup = () => {
         .string({ required_error: "Company name is required" })
         .trim()
         .min(1, { message: "Company name cannot be empty" }),
-      email: z
-        .string({ required_error: "Email address is required" })
-        .email({ message: "Invalid email address" }),
-      companyEmail: z
-        .string({ required_error: "Company email is required" })
-        .email({ message: "Invalid company email" }),
+      email: emailSchema,
+      companyEmail: companyEmailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
@@ -136,6 +150,7 @@ const Signup = () => {
     mutate({
       ...data,
       username: `${data.firstName} ${data.lastName}`.trim(),
+      role: userType === "franchise" ? "FRANCHISE" : "USER",
     });
   };
 

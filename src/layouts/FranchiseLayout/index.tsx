@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar";
+import DashboardNavbar from "@/components/DashboardNavbar";
 import DashboardFooter from "@/components/DashboardFooter";
 
 import { Outlet } from "react-router-dom";
@@ -7,7 +7,7 @@ const FranchiseLayout = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <header>
-        <Navbar />
+        <DashboardNavbar />
       </header>
       <main className="flex-grow bg-neutral100">
         <Outlet />

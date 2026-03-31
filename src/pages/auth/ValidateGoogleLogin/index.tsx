@@ -2,6 +2,7 @@ import { Spinner } from "@/components/Spinner";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDefaultRouteForRole } from "@/lib/roles";
 import { decryptAES256 } from "@/lib/utils";
 
 const ValidateGoogleLogin = () => {
@@ -58,8 +59,7 @@ const ValidateGoogleLogin = () => {
         if (isUnauthenticated) {
           navigate("/cost-calculator");
         } else {
-          user.role === "user" && navigate("/dashboard");
-          ["admin", "super_admin"].includes(user.role) && navigate("/admin-dashboard");
+          navigate(getDefaultRouteForRole(user.role));
         }
       } catch (err) {
         console.error("Google login validation failed:", err);
