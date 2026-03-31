@@ -5,7 +5,7 @@ import TransactionsTable, { type Transaction } from "./TransactionsTable";
 type Tab = "settlements" | "transactions";
 
 type Props = {
-  // TODO: I will Pass real data from backend here — tables fall back to mock data if undefined
+  // TODO: Pass real data from backend here — SettlementsTable falls back to mock data if undefined; TransactionsTable shows a loading/empty state
   settlements?: Settlement[];
   transactions?: Transaction[];
   transactionsLoading?: boolean;
