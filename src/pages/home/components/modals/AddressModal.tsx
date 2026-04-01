@@ -578,12 +578,18 @@ export function AddressModal({
           <div className="flex items-start gap-2 text-xs text-gray-500 bg-brand-light p-2.5 rounded-lg border border-light">
             <FiSearch className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-brand" />
             <p className="text-brand">
-              Start typing to see suggestions, or enter your address manually
-              below.
+              Start typing to see address suggestions to auto-fill the fields below.
             </p>
           </div>
 
-          {/* Street Address - Manual Entry */}
+          {/* All address fields — revealed after Google selection */}
+          <div
+            className={`grid transition-all duration-500 ease-in-out ${showExtraFields ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          >
+          <div className="overflow-hidden">
+          <div className="space-y-3 pt-1">
+
+          {/* Street Address */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <label className="block text-xs font-semibold text-gray-700">
@@ -602,7 +608,6 @@ export function AddressModal({
                 const sanitized = sanitizeStreetInput(e.target.value);
                 setManualAddress({ ...manualAddress, street: sanitized });
               }}
-              onFocus={() => setShowExtraFields(true)}
               placeholder="e.g., 123 Main Street"
               maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
@@ -623,13 +628,6 @@ export function AddressModal({
               </p>
             )}
           </div>
-
-          {/* Extra fields — revealed after street focus or Google selection */}
-          <div
-            className={`grid transition-all duration-500 ease-in-out ${showExtraFields ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-          >
-          <div className="overflow-hidden">
-          <div className="space-y-3 pt-1">
 
           {/* Apartment/House Number */}
           <div>

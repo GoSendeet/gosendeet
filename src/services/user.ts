@@ -80,9 +80,13 @@ export const updateUserProfile = async (id: string, data: any) => {
 export const createBooking = async (data: any) => {
   try {
     ensureAuthenticated();
+    console.log("[createBooking] payload →", JSON.stringify(data, null, 2));
     const res = await api.post(`/bookings`, data);
+    console.log("[createBooking] success →", res.data);
     return res.data;
   } catch (error: any) {
+    console.error("[createBooking] error status →", error?.response?.status);
+    console.error("[createBooking] error body →", JSON.stringify(error?.response?.data, null, 2));
     throw error?.response?.data || { message: error.message };
   }
 };
