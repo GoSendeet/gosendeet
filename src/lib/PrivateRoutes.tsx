@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import {  Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+
+import { getDefaultRouteForRole } from "./roles";
 
 const PrivateRoutes = () => {
   const navigate = useNavigate();
@@ -7,23 +9,21 @@ const PrivateRoutes = () => {
 
   const role = sessionStorage.getItem("role");
 
-  // Redirect non-user roles (e.g., admins) back to previous page
   useEffect(() => {
-    // Redirect unauthenticated users
     if (!authToken) {
-      navigate("signin");
+      navigate("/signin", { replace: true });
+      return;
     }
+
     if (authToken && role !== "user") {
-      navigate(-1); // Go back to the previous page
+      navigate(getDefaultRouteForRole(role), { replace: true });
     }
   }, [authToken, role, navigate]);
 
-  // Authenticated 'user' role can access
   if (authToken && role === "user") {
     return <Outlet />;
   }
 
-  // Render nothing while navigating away
   return null;
 };
 export default PrivateRoutes;
