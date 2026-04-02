@@ -20,7 +20,9 @@ const Delivery = () => {
   const [bookingData, setBookingData] = useState({});
 
   const currency = bookingDetails?.currency || "NGN";
-  const amount = String(bookingDetails?.price || "0").replace(/[^\d.]/g, "");
+  const basePrice = parseFloat(String(bookingDetails?.price || "0").replace(/[^\d.]/g, "")) || 0;
+  const serviceCharge = bookingDetails?.serviceCharge ?? basePrice * 0.005;
+  const amount = (basePrice + serviceCharge).toFixed(2);
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -154,17 +156,17 @@ const Delivery = () => {
       estimatedDeliveryDate: parseDateInput(bookingDetails?.estimatedDeliveryDate),
       // Required fields from the quote response
       pudoMode: bookingDetails?.pudoMode,
-      serviceLevelAgreementId: bookingDetails?.serviceLevelAgreementId,
-      crossAreaRouteId: bookingDetails?.crossAreaRouteId,
+      routeConfigId: bookingDetails?.routeConfigId,
+      slaConfigId: bookingDetails?.slaConfigId,
       itemValue: Number(bookingRequest?.itemPrice) || 0,
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
       ...payload,
     });
-    console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
-    console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
-    console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
+    // console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
+    // console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
+    // console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
     mutate(payload);
   };
   return (
