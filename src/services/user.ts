@@ -85,8 +85,8 @@ export const createBooking = async (data: any) => {
     console.log("[createBooking] success →", res.data);
     return res.data;
   } catch (error: any) {
-    console.error("[createBooking] error status :", error?.response?.status);
-    console.error("[createBooking] error body :", JSON.stringify(error?.response?.data, null, 2));
+    // console.error("[createBooking] error status :", error?.response?.status);
+    // console.error("[createBooking] error body :", JSON.stringify(error?.response?.data, null, 2));
     throw error?.response?.data || { message: error.message };
   }
 };
