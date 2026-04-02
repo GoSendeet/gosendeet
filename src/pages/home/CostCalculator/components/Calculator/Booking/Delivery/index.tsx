@@ -162,9 +162,9 @@ const Delivery = () => {
       courierName: bookingDetails?.courier?.name,
       ...payload,
     });
-    console.log("[onSubmit] bookingDetails (full) →", JSON.stringify(bookingDetails, null, 2));
-    console.log("[onSubmit] bookingRequest (full) →", JSON.stringify(bookingRequest, null, 2));
-    console.log("[onSubmit] booking payload →", JSON.stringify(payload, null, 2));
+    console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
+    console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
+    console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
     mutate(payload);
   };
   return (
