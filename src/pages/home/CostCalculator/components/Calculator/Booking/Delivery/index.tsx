@@ -72,9 +72,10 @@ const Delivery = () => {
     receiver_email: z
       .string()
       .min(1, { message: "Receiver’s email is required" })
-       .email({ message: "Invalid Receiver's email address" })
+       .email({ message: "Invalid Receiver’s email address" }),
     // .or(z.literal("")) // allow empty string
     // .optional(),
+   
   });
 
   const {
@@ -116,7 +117,13 @@ const Delivery = () => {
       });
     },
     onError: (data: any) => {
-      toast.error(data?.message);
+      console.error("[Booking onError] full error →", data);
+      const message =
+        data?.message ||
+        data?.error ||
+        (Array.isArray(data?.errors) ? data.errors[0] : null) ||
+        "Booking failed. Please try again.";
+      toast.error(message);
     },
   });
 
@@ -133,7 +140,7 @@ const Delivery = () => {
       weight: bookingRequest?.weight,
       receiverName: data.receiver_name,
       receiverPhone: data.receiver_phone,
-      receiverEmail: data.receiver_email, // NUllable
+      receiverEmail: data.receiver_email, // Nullable
       pickupLocation: bookingRequest?.pickupLocation,
       senderName: data.sender_name,
       senderPhoneNumber: data.sender_phone,
@@ -144,18 +151,20 @@ const Delivery = () => {
       currency: currency,
       pickupDate: parseDateInput(bookingDetails?.pickUpdateDate),
       companyId: bookingDetails?.courier?.id,
-      estimatedDeliveryDate: parseDateInput(
-        bookingDetails?.estimatedDeliveryDate,
-      ),
+      estimatedDeliveryDate: parseDateInput(bookingDetails?.estimatedDeliveryDate),
+      // Required fields from the quote response
       pudoMode: bookingDetails?.pudoMode,
-      routeConfigId:
-        bookingDetails?.routeConfigId ?? bookingDetails?.routeConfig?.id,
-      slaConfigId: bookingDetails?.slaConfigId ?? bookingDetails?.slaConfig?.id,
+      serviceLevelAgreementId: bookingDetails?.serviceLevelAgreementId,
+      crossAreaRouteId: bookingDetails?.crossAreaRouteId,
+      itemValue: Number(bookingRequest?.itemPrice) || 0,
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
       ...payload,
     });
+    console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
+    console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
+    console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
     mutate(payload);
   };
   return (
@@ -274,6 +283,8 @@ const Delivery = () => {
               </p>
             )}
           </div>
+
+
 
           {/* Submit Button */}
           <div className="">
