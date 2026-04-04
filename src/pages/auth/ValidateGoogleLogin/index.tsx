@@ -2,6 +2,7 @@ import { Spinner } from "@/components/Spinner";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDefaultRouteForRole } from "@/lib/roles";
 import { decryptAES256 } from "@/lib/utils";
 
 const ValidateGoogleLogin = () => {
@@ -18,10 +19,8 @@ const ValidateGoogleLogin = () => {
   useEffect(() => {
     const validate = () => {
       try {
-        // ⏳ decrypt token
         const token = decryptAES256(encryptedToken, secretKey);
         const decryptedUser = decryptAES256(encryptedUser, secretKey);
-
         if (!token || !decryptedUser) {
           throw new Error("Invalid encrypted data");
         }
@@ -39,23 +38,33 @@ const ValidateGoogleLogin = () => {
 
         const isUnauthenticated =
           sessionStorage.getItem("unauthenticated") === "true";
+        const profileImage =
+          user.profilePicture ||
+          user.profileImage ||
+          user.avatar ||
+          user.imageUrl ||
+          user.picture ||
+          user.photoUrl ||
+          user.photo ||
+          "";
 
         sessionStorage.setItem("authToken", token);
         sessionStorage.setItem("userId", user.id);
         sessionStorage.setItem("role", user.role);
         sessionStorage.setItem("sessionExpired", "false");
+        if (profileImage) {
+          sessionStorage.setItem("profileImage", profileImage);
+        }
         toast.success("Login Successful");
         if (isUnauthenticated) {
           navigate("/cost-calculator");
         } else {
-          user.role === "user" && navigate("/dashboard");
-          ["admin", "super_admin"].includes(user.role) && navigate("/admin-dashboard");
+          navigate(getDefaultRouteForRole(user.role));
         }
       } catch (err) {
         console.error("Google login validation failed:", err);
         setIsError(true);
         toast.error("There was an error validating your login");
-
         // redirect after 2s
         setTimeout(() => navigate("/signin", { replace: true }), 2000);
       } finally {

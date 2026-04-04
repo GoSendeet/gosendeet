@@ -1,68 +1,84 @@
-import { Button } from "@/components/ui/button";
-import AuthLayout from "@/layouts/AuthLayout";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MdOutlineMailOutline } from "react-icons/md";
-import { TbLockPassword } from "react-icons/tb";
-import { FaRegEye } from "react-icons/fa";
-import { FaRegEyeSlash } from "react-icons/fa";
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { login } from "@/services/auth";
 import { toast } from "sonner";
+import { MdOutlineMailOutline } from "react-icons/md";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+
+import { Button } from "@/components/ui/button";
+import AuthLayout from "@/layouts/AuthLayout";
+import { getDefaultRouteForRole } from "@/lib/roles";
+import { login } from "@/services/auth";
+
+const schema = z.object({
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(1, { message: "Password cannot be empty" }),
+});
+
+type LoginFormValues = z.infer<typeof schema>;
+
+type LoginState = {
+  email?: string;
+  username?: string;
+};
 
 const Login = () => {
-  const [toggle, setToggle] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { username, email } = location.state || {};
+  const state = (location.state ?? {}) as LoginState;
 
-  const schema = z.object({
-    email: z
-      .string({ required_error: "Email address is required" })
-      .min(1, { message: "Email address cannot be empty" })
-      .email({ message: "Invalid email address" }),
+  const email = useMemo(() => state.email ?? "", [state.email]);
+  const username = useMemo(() => state.username ?? "", [state.username]);
 
-    password: z
-      .string({ required_error: "Password is required" })
-      .min(8, { message: "Password must be at least 8 characters" }),
-  });
+  useEffect(() => {
+    if (!email) {
+      navigate("/signin", { replace: true });
+    }
+  }, [email, navigate]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof schema>>({
+  } = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: login,
-    onSuccess: (data) => {
-      const isUnauthenticated =
-        sessionStorage.getItem("unauthenticated") === "true";
+    mutationFn: (data: LoginFormValues) => login({ email, password: data.password }),
+    onSuccess: (response) => {
+      const user = response?.data?.user;
+      const token = response?.data?.token;
 
-      sessionStorage.setItem("authToken", data.data.token);
-      sessionStorage.setItem("userId", data.data.user.id);
-      sessionStorage.setItem("role", data.data.user.role);
-      sessionStorage.setItem("sessionExpired", "false");
-      toast.success("Login Successful");
-      if (isUnauthenticated) {
-        navigate("/cost-calculator");
-      } else {
-        data.data.user.role === "user" && navigate("/dashboard");
-        ["admin", "super_admin"].includes(data.data.user.role) && navigate("/admin-dashboard");
+      if (!token || !user) {
+        toast.error("Invalid login response");
+        return;
       }
+
+      sessionStorage.setItem("authToken", token);
+      sessionStorage.setItem("userId", user.id);
+      sessionStorage.setItem("role", user.role);
+      sessionStorage.setItem("sessionExpired", "false");
+
+      if (user.profilePicture) {
+        sessionStorage.setItem("profileImage", user.profilePicture);
+      }
+
+      toast.success("Login Successful");
+      navigate(getDefaultRouteForRole(user.role));
     },
-    onError: (data) => {
-      toast.error(data?.message);
+    onError: (error: { message?: string }) => {
+      toast.error(error?.message || "Login failed");
     },
   });
 
-  const onSubmit = (data: z.infer<typeof schema>) => {
+  const onSubmit = (data: LoginFormValues) => {
     mutate(data);
   };
 
@@ -71,106 +87,69 @@ const Login = () => {
       <div className="md:px-20 px-6 md:py-20 py-8">
         <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4 rounded-3xl">
           <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter mb-1 tracking-tight">
-            Welcome {username}
+            Welcome back
           </h1>
-          <Link
-            to={"/signin"}
-            className="text-green500 border-b border-b-green500 text-base"
-          >
-            Not you?
-          </Link>
+          <p className="font-medium text-neutral800">
+            Enter your password to continue
+          </p>
 
-          <div className="py-4 text-sm mt-8">
+          <div className="py-8 text-sm">
+            <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
+              <MdOutlineMailOutline className="text-green500 text-xl" />
+              <div className="flex flex-col gap-1 w-full">
+                <label htmlFor="email" className="font-inter font-semibold">
+                  Email Address
+                </label>
+                <p className="text-neutral800 break-all">{email}</p>
+                {username ? (
+                  <p className="text-xs text-neutral800">Signing in as {username}</p>
+                ) : null}
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                <MdOutlineMailOutline className="text-green500 text-2xl" />
                 <div className="flex flex-col gap-2 w-full">
-                  <label htmlFor="email" className="font-inter font-semibold">
-                    Email Address
+                  <label htmlFor="password" className="font-inter font-semibold">
+                    Password
                   </label>
-                  <input
-                    type="text"
-                    {...register("email")}
-                    value={email}
-                    disabled={true}
-                    placeholder="Enter your email address"
-                    className="w-full outline-0 cursor-not-allowed text-gray-600"
-                  />
-                  {errors.email && (
-                    <p className="error text-xs text-[#FF0000]">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
-                <TbLockPassword className="text-green500 text-2xl" />
-                <div className="flex flex-col gap-2 w-full">
-                  <label
-                    htmlFor="password"
-                    className="font-inter font-semibold"
-                  >
-                    Your Password
-                  </label>
-                  <div className="flex justify-between gap-2">
+                  <div className="flex items-center gap-2">
                     <input
-                      type={toggle ? "text" : "password"}
+                      id="password"
+                      type={showPassword ? "text" : "password"}
                       {...register("password")}
-                      placeholder="********"
-                      className="w-full outline-0 border-b-0"
+                      placeholder="Enter your password"
+                      className="w-full outline-0 bg-transparent"
                     />
-
-                    <span
-                      className="cursor-pointer text-green500 text-xl"
-                      onClick={() => setToggle(!toggle)}
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((value) => !value)}
+                      className="text-green500"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {toggle ? <FaRegEye /> : <FaRegEyeSlash />}
-                    </span>
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
                   </div>
-                  {errors.password && (
+                  {errors.password ? (
                     <p className="error text-xs text-[#FF0000]">
                       {errors.password.message}
                     </p>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between lg:text-base text-xs">
-                {/* <div className="flex items-center md:gap-2 gap-1">
-                  <input type="checkbox" name="" id="" className="mt-[1px]" />
-                  <span>Remember me</span>
-                </div> */}
-
-                <Link
-                  to={"/forgot-password"}
-                  className="text-green500 border-b border-b-green500"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
-
-              <Button
-                // variant={"secondary"}
-                loading={isPending}
-                className=" w-full my-5 bg-green100 hover:bg-green800"
+              <Link
+                to="/forgot-password"
+                className="text-green500 border-b border-b-green500 text-base"
               >
-                Continue
+                Forgot Password?
+              </Link>
+
+              <Button loading={isPending} className="w-full my-5 bg-green100 hover:bg-green800">
+                Login
               </Button>
             </form>
           </div>
-          <p className="font-medium text-neutral800 text-center lg:text-base text-sm">
-            By continuing, you accept our{" "}
-            <Link to="/terms">
-              <span className="border-b border-b-neutral800">Terms of Use</span>{" "}
-            </Link>
-            and{" "}
-            <Link to="/privacy">
-              <span className="border-b border-b-neutral800">
-                Privacy Policy
-              </span>
-            </Link>
-          </p>
         </div>
       </div>
     </AuthLayout>

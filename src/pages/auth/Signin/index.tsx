@@ -43,7 +43,7 @@ const Signin = () => {
     onError: (data) => {
       toast.error(data?.message);
       if (data?.message.endsWith(`not found`)) {
-        navigate("/signup");
+        navigate("/login");
       }
     },
   });

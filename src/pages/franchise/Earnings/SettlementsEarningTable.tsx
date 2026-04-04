@@ -5,14 +5,16 @@ import TransactionsTable, { type Transaction } from "./TransactionsTable";
 type Tab = "settlements" | "transactions";
 
 type Props = {
-  // TODO: I will Pass real data from backend here — tables fall back to mock data if undefined
+  // TODO: Pass real data from backend here — SettlementsTable falls back to mock data if undefined; TransactionsTable shows a loading/empty state
   settlements?: Settlement[];
   transactions?: Transaction[];
+  transactionsLoading?: boolean;
 };
 
 export default function SettlementsEarningTable({
   settlements,
   transactions,
+  transactionsLoading = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("settlements");
 
@@ -41,7 +43,7 @@ export default function SettlementsEarningTable({
         {activeTab === "settlements" ? (
           <SettlementsTable data={settlements} />
         ) : (
-          <TransactionsTable data={transactions} />
+          <TransactionsTable data={transactions} isLoading={transactionsLoading} />
         )}
       </div>
     </>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface PaginationResult {
@@ -30,11 +30,11 @@ const usePaginationSync = (lastPage: number): PaginationResult => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, lastPage]);
 
-  const updatePage = (newPage: number): void => {
+  const updatePage = useCallback((newPage: number): void => {
     if (newPage > 0 && newPage <= lastPage) {
       navigate(`?page=${newPage}`, { replace: false });
     }
-  };
+  }, [lastPage, navigate]);
 
   return { currentPage, updatePage, setCurrentPage };
 };

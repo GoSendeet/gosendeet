@@ -27,6 +27,7 @@ import CompanyDetails from "./pages/admin/Companies/CompanyDetails";
 import PrivateRoutes from "./lib/PrivateRoutes";
 import PublicRoutes from "./lib/PublicRoutes";
 import AdminRoutes from "./lib/AdminRoutes";
+import FranchiseRoutes from "./lib/FranchiseRoutes";
 import ErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking/ErrorPage";
 import PublicDispatchPage from "./pages/dispatch/PublicDispatchPage";
 import FranchiseLayout from "./layouts/FranchiseLayout";
@@ -54,10 +55,6 @@ function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/dispatch/:trackingId/:token" element={<PublicDispatchPage />} />
 
-          <Route path="franchise" element={<FranchiseLayout />}>
-            <Route index element={<Franchise />} />
-          </Route>
-
         <Route element={<PublicRoutes />}>
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
@@ -71,6 +68,12 @@ function App() {
         <Route element={<PrivateRoutes />}>
           <Route path="dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+          </Route>
+        </Route>
+
+        <Route element={<FranchiseRoutes />}>
+          <Route path="franchise" element={<FranchiseLayout />}>
+            <Route index element={<Franchise />} />
           </Route>
         </Route>
 

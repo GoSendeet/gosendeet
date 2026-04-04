@@ -50,8 +50,14 @@ export function PackageTypeModal({
   currentItemPrice,
   onConfirm,
 }: PackageTypeModalProps) {
-  const { data: packageTypes } = useGetPackageType({ minimize: true });
-  const packages = packageTypes?.data || [];
+  const {
+    data: packageTypes,
+    isLoading: isPackageTypesLoading,
+    isError: isPackageTypesError,
+  } = useGetPackageType({ minimize: true });
+  const packages = Array.isArray(packageTypes?.data)
+    ? packageTypes.data
+    : packageTypes?.data?.content || [];
 
   const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [weight, setWeight] = useState("");
@@ -65,7 +71,9 @@ export function PackageTypeModal({
     parseFloat(length) > 0 && parseFloat(width) > 0 && parseFloat(height) > 0;
   const step2Complete = step1Complete && weight && parseFloat(weight) > 0 &&
     !(selectedPackage?.maxWeight && parseFloat(weight) > selectedPackage.maxWeight);
-  const step3Complete = step2Complete && itemPrice && parseFloat(itemPrice) > 0;
+  // itemPrice is optional — step 3 is complete as long as steps 1 & 2 are done
+  // const step3Complete = step2Complete && itemPrice && parseFloat(itemPrice) > 0;
+  const step3Complete = step2Complete;
 
   // Initialize from current values when modal opens
   useEffect(() => {
@@ -136,7 +144,7 @@ export function PackageTypeModal({
 
     const currentWeight = parseFloat(weight) || 0;
     const maxWeight = selectedPackage.maxWeight;
-    const price = parseFloat(itemPrice) || 0;
+    //const price = parseFloat(itemPrice) || 0;
 
     // Validate weight
     if (currentWeight <= 0) return;
@@ -147,7 +155,7 @@ export function PackageTypeModal({
     if (parseFloat(length) <= 0 || parseFloat(width) <= 0 || parseFloat(height) <= 0) return;
 
     // Validate item price
-    if (price <= 0) return;
+    //if (price <= 0) return;
 
     const formattedDimensions = `${length} × ${width} × ${height} ${selectedPackage.dimensionUnit}`;
 
@@ -193,50 +201,66 @@ export function PackageTypeModal({
                 style={{ WebkitOverflowScrolling: 'touch' }}
               >
                 <div className="flex gap-4 py-2 min-w-max">
-                {packages.map((pkg: any) => {
-                  const isSelected = selectedPackage?.id === pkg.id;
-                  return (
-                    <button
-                      key={pkg.id}
-                      type="button"
-                      onClick={() => handlePackageSelect(pkg)}
-                      className={cn(
-                        "relative shrink-0 w-[108px] h-[94px] p-2 rounded-lg border flex flex-col items-center",
-                        isSelected
-                          ? "border-brand bg-[#F0FDF480]"
-                          : "border-gray-300 hover:border-brand bg-white"
-                      )}
-                    >
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
-                          <FiCheck className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
+                  {isPackageTypesLoading && (
+                    <div className="text-sm text-gray-500 px-1 py-2">
+                      Loading package types...
+                    </div>
+                  )}
 
-                      <div className=
-                        "w-8 h-8 mt-3 rounded mb-1 flex justify-center items-center "
-                        
-                      >
-                        <img
-                          src={pkg.imageUrl || packageIcon}
-                          alt={pkg.name}
-                          className="w-5 h-5 object-center"
-                          onError={(e) => {
-                            // Fallback to default icon if custom image fails to load
-                            (e.target as HTMLImageElement).src = packageIcon;
-                          }}
-                        />
-                      </div>
+                  {!isPackageTypesLoading && isPackageTypesError && (
+                    <div className="text-sm text-red-500 px-1 py-2">
+                      Unable to load package types right now.
+                    </div>
+                  )}
 
-                      <h4 className={cn(
-                        "font-medium py-3 text-xs text-center truncate line-clamp-1 w-full",
-                        isSelected ? "text-brand" : "text-gray-900"
-                      )}>
-                        {pkg.name}
-                      </h4>
-                    </button>
-                  );
-                })}
+                  {!isPackageTypesLoading && !isPackageTypesError && packages.length === 0 && (
+                    <div className="text-sm text-gray-500 px-1 py-2">
+                      No package types available yet.
+                    </div>
+                  )}
+
+                  {!isPackageTypesLoading &&
+                    !isPackageTypesError &&
+                    packages.map((pkg: any) => {
+                      const isSelected = selectedPackage?.id === pkg.id;
+                      return (
+                        <button
+                          key={pkg.id}
+                          type="button"
+                          onClick={() => handlePackageSelect(pkg)}
+                          className={cn(
+                            "relative shrink-0 w-[108px] h-[94px] p-2 rounded-lg border flex flex-col items-center",
+                            isSelected
+                              ? "border-brand bg-[#F0FDF480]"
+                              : "border-gray-300 hover:border-brand bg-white"
+                          )}
+                        >
+                          {isSelected && (
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-brand rounded-full flex items-center justify-center">
+                              <FiCheck className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          )}
+
+                          <div className="w-8 h-8 mt-3 rounded mb-1 flex justify-center items-center">
+                            <img
+                              src={pkg.imageUrl || packageIcon}
+                              alt={pkg.name}
+                              className="w-5 h-5 object-center"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = packageIcon;
+                              }}
+                            />
+                          </div>
+
+                          <h4 className={cn(
+                            "font-medium py-3 text-xs text-center truncate line-clamp-1 w-full",
+                            isSelected ? "text-brand" : "text-gray-900"
+                          )}>
+                            {pkg.name}
+                          </h4>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
 
@@ -319,7 +343,7 @@ export function PackageTypeModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 lg:grid-cols-4 gap-2">
                 {weightPresets.map((preset) => (
                   <button
                     key={preset.label}
@@ -349,7 +373,7 @@ export function PackageTypeModal({
             <StepIndicator stepNumber={3} isComplete={step3Complete} isActive={step2Complete && !step3Complete} />
 
             <div className="flex-1">
-              <h3 className={cn("font-semibold text-sm mb-3", step2Complete ? "text-gray-900" : "text-gray-400")}>How much is it worth?</h3>
+              <h3 className={cn("font-semibold text-sm mb-3", step2Complete ? "text-gray-900" : "text-gray-400")}>How much is it worth? (Optional)</h3>
 
               <label className={cn("block text-xs mb-3", step2Complete ? "text-gray-600" : "text-gray-400")}>
                 Item value for insurance coverage

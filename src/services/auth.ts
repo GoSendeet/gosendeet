@@ -1,11 +1,17 @@
 import { api, BASE_URL } from "./axios";
 import { authApi } from "./axios";
 
+const FRONTEND_BASE_URL =
+  import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin;
+
 export const signup = async (data: {
   email: string;
   username: string;
   password: string;
   confirmPassword: string;
+  companyName?: string;
+  companyEmail?: string;
+  role?: string;
 }) => {
   try {
     const res = await authApi.post("/auth/create-account", data);
@@ -110,9 +116,15 @@ export const activateAccount = async (status: string) => {
 
 export const googleLogin = () => {
   // OAuth requires full page redirect, not XHR
-  window.location.href = `${BASE_URL}/auth/google-login`;
+  const redirectUrl = encodeURIComponent(FRONTEND_BASE_URL.replace(/\/$/, ""));
+  window.location.href = `${BASE_URL}/auth/google-login?redirectUrl=${redirectUrl}`;
 };
 
+
+export const googleSignup = () => {
+  const redirectUrl = encodeURIComponent(FRONTEND_BASE_URL.replace(/\/$/, ""));
+  window.location.href = `${BASE_URL}/auth/google-signup?redirectUrl=${redirectUrl}`;
+}
 
 // export const googleLogin = async () => {
 //   try {

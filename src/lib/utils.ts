@@ -120,13 +120,6 @@ export function parseDateInput(input: string) {
   }
 }
 
-// Example usage:
-// console.log(parseDateInput("Tue, 19 Aug"));
-//"2025-08-19"
-
-// console.log(parseDateInput("Tue, 19 Aug - Fri, 23 Aug"));
-//"2025-08-19"
-
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const day = date.getDate().toString().padStart(2, "0");
@@ -242,18 +235,48 @@ export const formatToDatetimeLocal = (date: Date): string => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-export function decryptAES256(encryptedText: string, key: string) {
-    if (key.length !== 32) {
-        throw new Error("AES-256 key must be exactly 32 characters long");
-    }
-    const decrypted = CryptoJS.AES.decrypt(
-        encryptedText,
-        CryptoJS.enc.Utf8.parse(key),
-        {
-            mode: CryptoJS.mode.ECB,
-            padding: CryptoJS.pad.Pkcs7
-        }
-    );
-    return decrypted.toString(CryptoJS.enc.Utf8);
+function normalizeBase64Ciphertext(value: string) {
+  const normalized = value.trim().replace(/ /g, "+").replace(/-/g, "+").replace(/_/g, "/");
+  const padding = normalized.length % 4;
+
+  if (padding === 0) return normalized;
+
+  return normalized.padEnd(normalized.length + (4 - padding), "=");
 }
 
+export function decryptAES256(encryptedText: string, key: string) {
+  const normalizedKey = key.trim();
+
+  if (normalizedKey.length !== 32) {
+    throw new Error("AES-256 key must be exactly 32 characters long");
+  }
+
+  if (!encryptedText?.trim()) {
+    throw new Error("Encrypted value is missing");
+  }
+
+  try {
+    const normalizedCiphertext = normalizeBase64Ciphertext(encryptedText);
+    const ciphertext = CryptoJS.enc.Base64.parse(normalizedCiphertext);
+    const cipherParams = CryptoJS.lib.CipherParams.create({ ciphertext });
+    const decrypted = CryptoJS.AES.decrypt(
+      cipherParams,
+      CryptoJS.enc.Utf8.parse(normalizedKey),
+      {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7,
+      }
+    );
+    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+
+    if (!decryptedText) {
+      throw new Error("Unable to decrypt payload");
+    }
+
+    return decryptedText;
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? `Unable to decrypt payload: ${error.message}` : "Unable to decrypt payload"
+    );
+  }
+}

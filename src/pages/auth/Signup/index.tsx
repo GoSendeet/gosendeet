@@ -5,7 +5,6 @@ import google from "@/assets/icons/google.png";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-// import google from "@/assets/icons/google.png";
 import { signup } from "@/services/auth";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,9 +21,11 @@ import {
 import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { googleLogin } from "@/services/auth";
+import { googleSignup } from "@/services/auth";
+import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 
 const Signup = () => {
+  const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [userType, setUserType] = useState<"customer" | "franchise">(
     "customer",
   );
@@ -34,12 +35,26 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const emailSchema = skipEmailValidation
+    ? z.string({ required_error: "Email address is required" }).trim().min(1, {
+        message: "Email address is required",
+      })
+    : z
+        .string({ required_error: "Email address is required" })
+        .trim()
+        .email({ message: "Invalid email address" });
+
+  const companyEmailSchema = skipEmailValidation
+    ? z.string({ required_error: "Company email is required" }).trim().min(1, {
+        message: "Company email is required",
+      })
+    : z
+        .string({ required_error: "Company email is required" })
+        .trim()
+        .email({ message: "Invalid company email" });
+
   const customerSchema = z
     .object({
-      username: z
-        .string({ required_error: "Full name is required" })
-        .trim()
-        .min(1, { message: "Full name cannot be empty" }),
       firstName: z
         .string({ required_error: "First Name is required" })
         .trim()
@@ -48,9 +63,7 @@ const Signup = () => {
         .string({ required_error: "Last Name is required" })
         .trim()
         .min(1, { message: "Last Name cannot be empty" }),
-      email: z
-        .string({ required_error: "Email address is required" })
-        .email({ message: "Invalid email address" }),
+      email: emailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
@@ -74,10 +87,6 @@ const Signup = () => {
 
   const franchiseSchema = z
     .object({
-      username: z
-        .string({ required_error: "Full name is required" })
-        .trim()
-        .min(1, { message: "Full name cannot be empty" }),
       firstName: z
         .string({ required_error: "First Name is required" })
         .trim()
@@ -90,12 +99,8 @@ const Signup = () => {
         .string({ required_error: "Company name is required" })
         .trim()
         .min(1, { message: "Company name cannot be empty" }),
-      email: z
-        .string({ required_error: "Email address is required" })
-        .email({ message: "Invalid email address" }),
-      companyEmail: z
-        .string({ required_error: "Company email is required" })
-        .email({ message: "Invalid company email" }),
+      email: emailSchema,
+      companyEmail: companyEmailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
@@ -142,13 +147,16 @@ const Signup = () => {
 
   const onSubmit = (data: any) => {
     setEmail(data.email);
-    mutate(data);
+    mutate({
+      ...data,
+      username: `${data.firstName} ${data.lastName}`.trim(),
+      role: userType === "franchise" ? "FRANCHISE" : "USER",
+    });
   };
-
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    googleLogin();
+    googleSignup();
   };
 
   return (
@@ -461,6 +469,7 @@ const Signup = () => {
                 </Button>
                 <p className="text-center text-gray-600">OR</p>
                 <Button
+                  type="button"
                   variant={"outline"}
                   className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
                   onClick={handleGoogleLogin}
@@ -482,17 +491,6 @@ const Signup = () => {
                   </Link>
                 </p>
               </div>
-
-              {/* Google Button */}
-              {/* <button
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center gap-2 border border-grey200 rounded-full py-3 mt-4 hover:bg-grey50 transition-colors"
-              >
-                <img src={google} alt="Google" className="w-5 h-5" />
-                <span className="text-grey400 font-semibold text-sm">
-                  Continue with Google
-                </span>
-              </button> */}
             </div>
           </div>
         </div>

@@ -16,20 +16,23 @@ const Delivery = () => {
   const location = useLocation();
   const { bookingRequest, bookingDetails } = location?.state || {};
   const userId = sessionStorage.getItem("userId") || "";
+  const authToken = sessionStorage.getItem("authToken") || "";
   const [bookingData, setBookingData] = useState({});
 
   const currency = bookingDetails?.currency || "NGN";
-  const amount = String(bookingDetails?.price || "0").replace(/[^\d.]/g, "");
+  const basePrice = parseFloat(String(bookingDetails?.price || "0").replace(/[^\d.]/g, "")) || 0;
+  const serviceCharge = bookingDetails?.serviceCharge ?? basePrice * 0.005;
+  const amount = (basePrice + serviceCharge).toFixed(2);
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (!userId) {
+    if (!userId || !authToken) {
       toast.error("Please sign in to continue");
       setTimeout(() => {
         navigate("/signin");
       }, 1000);
     }
-  }, [userId]);
+  }, [authToken, navigate, userId]);
 
   const { data: userData, refetchUserData } = useGetUserDetails(userId);
 
@@ -71,9 +74,10 @@ const Delivery = () => {
     receiver_email: z
       .string()
       .min(1, { message: "Receiver’s email is required" })
-       .email({ message: "Invalid Receiver's email address" })
+       .email({ message: "Invalid Receiver’s email address" }),
     // .or(z.literal("")) // allow empty string
     // .optional(),
+   
   });
 
   const {
@@ -115,18 +119,30 @@ const Delivery = () => {
       });
     },
     onError: (data: any) => {
-      toast.error(data?.message);
+      console.error("[Booking onError] full error →", data);
+      const message =
+        data?.message ||
+        data?.error ||
+        (Array.isArray(data?.errors) ? data.errors[0] : null) ||
+        "Booking failed. Please try again.";
+      toast.error(message);
     },
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    if (!userId || !authToken) {
+      toast.error("Please sign in to continue");
+      navigate("/signin");
+      return;
+    }
+
     const payload = {
       // senderId: userId,
       packageTypeId: bookingRequest?.packageTypeId,
       weight: bookingRequest?.weight,
       receiverName: data.receiver_name,
       receiverPhone: data.receiver_phone,
-      receiverEmail: data.receiver_email, // NUllable
+      receiverEmail: data.receiver_email, // Nullable
       pickupLocation: bookingRequest?.pickupLocation,
       senderName: data.sender_name,
       senderPhoneNumber: data.sender_phone,
@@ -137,14 +153,20 @@ const Delivery = () => {
       currency: currency,
       pickupDate: parseDateInput(bookingDetails?.pickUpdateDate),
       companyId: bookingDetails?.courier?.id,
-      estimatedDeliveryDate: parseDateInput(
-        bookingDetails?.estimatedDeliveryDate,
-      ),
+      estimatedDeliveryDate: parseDateInput(bookingDetails?.estimatedDeliveryDate),
+      // Required fields from the quote response
+      pudoMode: bookingDetails?.pudoMode,
+      routeConfigId: bookingDetails?.routeConfigId,
+      slaConfigId: bookingDetails?.slaConfigId,
+      itemValue: Number(bookingRequest?.itemPrice) || 0,
     };
     setBookingData({
       courierName: bookingDetails?.courier?.name,
       ...payload,
     });
+    // console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
+    // console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
+    // console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
     mutate(payload);
   };
   return (
@@ -264,11 +286,14 @@ const Delivery = () => {
             )}
           </div>
 
+
+
           {/* Submit Button */}
           <div className="">
             <Button
               type="submit"
               className=" rounded-full py-3 px-8 bg-green100 hover:bg-green800"
+              disabled={isPending || !userId || !authToken}
               loading={isPending}
             >
               {/* {isPending && <Loader2 className="h-6 w-6 animate-spin" />}  */}
