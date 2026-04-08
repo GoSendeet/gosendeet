@@ -89,7 +89,7 @@ const DashboardNavbar = () => {
         {/* Hamburger Icon (mobile view) */}
         <div className="lg:hidden flex items-center gap-4">
           <div className="flex flex-row gap-4 items-center">
-            <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
+            <div className="w-10 h-10 flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
               {renderAvatar()}
             </div>
           </div>
