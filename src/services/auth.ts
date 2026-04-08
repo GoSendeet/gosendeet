@@ -1,7 +1,6 @@
 import { api, BASE_URL, authApi } from "./axios";
 
-const FRONTEND_BASE_URL =
-  import.meta.env.VITE_FRONTEND_BASE_URL || 'https://gosendeet-beta.vercel.app';
+const FRONTEND_BASE_URL = 'https://gosendeet-beta.vercel.app';
 
 export const signup = async (data: {
   email: string;
