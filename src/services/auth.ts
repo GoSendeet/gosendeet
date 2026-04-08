@@ -1,5 +1,7 @@
 import { api, BASE_URL, authApi } from "./axios";
-export const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
+
+const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
+
 export const signup = async (data: {
   email: string;
   username: string;
