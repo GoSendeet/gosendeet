@@ -19,6 +19,14 @@ const ValidateGoogleLogin = () => {
   useEffect(() => {
     const validate = () => {
       try {
+        if (!secretKey?.trim()) {
+          throw new Error("Google login is not configured correctly");
+        }
+
+        if (!encryptedToken.trim() || !encryptedUser.trim()) {
+          throw new Error("Google login callback is missing required data");
+        }
+
         const token = decryptAES256(encryptedToken, secretKey);
         const decryptedUser = decryptAES256(encryptedUser, secretKey);
         if (!token || !decryptedUser) {
@@ -49,8 +57,8 @@ const ValidateGoogleLogin = () => {
           "";
 
         sessionStorage.setItem("authToken", token);
-        sessionStorage.setItem("userId", user.id);
-        sessionStorage.setItem("role", user.role);
+        sessionStorage.setItem("userId", String(user.id ?? ""));
+        sessionStorage.setItem("role", String(user.role ?? ""));
         sessionStorage.setItem("sessionExpired", "false");
         if (profileImage) {
           sessionStorage.setItem("profileImage", profileImage);

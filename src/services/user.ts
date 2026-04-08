@@ -1,4 +1,10 @@
+import { AxiosError } from "axios";
 import { api, authApi } from "./axios";
+
+const throwApiError = (error: unknown): never => {
+  const axiosError = error as AxiosError<{ message: string }>;
+  throw axiosError?.response?.data || { message: (error as Error).message };
+};
 
 const ensureAuthenticated = () => {
   const authToken = sessionStorage.getItem("authToken");
@@ -13,13 +19,13 @@ export const userDetails = async (id: string) => {
   try {
     const res = await api.get(`/users/${id}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
 export const getQuotes = async (
-  data: any,
+  data: unknown,
   direct: boolean = false,
   params?: {
     search?: string;
@@ -32,62 +38,55 @@ export const getQuotes = async (
   },
 ) => {
   try {
-    const res = await authApi.post(`/quotes?direct=${direct}`, data, {
-      params,
-    });
+    //console.log("[getQuotes] payload →", JSON.stringify(data, null, 2));
+    const res = await authApi.post(`/quotes?direct=${direct}`, data, { params });
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
-export const shareQuotes = async (data: any) => {
+export const shareQuotes = async (data: unknown) => {
   try {
     const res = await authApi.post(`/quotes/share`, data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
 export const fetchSharedQuotes = async (id: string) => {
   try {
     const res = await authApi.get(`/quotes/share/${id}`);
-
     const quotes = res.data?.data?.quotes || [];
-
     return {
       ...res.data,
-      data: quotes,                     // <- overwrite data with quotes
-      quoteRequests: res.data?.data?.quoteRequests || [] // keep extra field if needed
+      data: quotes,
+      quoteRequests: res.data?.data?.quoteRequests || [],
     };
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
-
-
-export const updateUserProfile = async (id: string, data: any) => {
+export const updateUserProfile = async (id: string, data: unknown) => {
   try {
     const res = await api.put(`users/${id}`, data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
-export const createBooking = async (data: any) => {
+export const createBooking = async (data: unknown) => {
   try {
     ensureAuthenticated();
-    console.log("[createBooking] payload →", JSON.stringify(data, null, 2));
+    //console.log("[createBooking] payload →", JSON.stringify(data, null, 2));
     const res = await api.post(`/bookings`, data);
-    console.log("[createBooking] success →", res.data);
+    //console.log("[createBooking] success →", res.data);
     return res.data;
-  } catch (error: any) {
-    // console.error("[createBooking] error status :", error?.response?.status);
-    // console.error("[createBooking] error body :", JSON.stringify(error?.response?.data, null, 2));
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -96,7 +95,7 @@ export const payForBooking = async (bookingId: string, successUrl: string, error
     ensureAuthenticated();
     const res = await api.post(`/booking/payments/initialize?bookingId=${bookingId}&successUrl=${successUrl}&errorUrl=${errorUrl}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };

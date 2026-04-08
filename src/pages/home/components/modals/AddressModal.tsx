@@ -533,7 +533,7 @@ export function AddressModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[95vh] overflow-visible flex flex-col">
         <DialogTitle className="text-lg font-clash font-bold text-gray-900">
           {title}
         </DialogTitle>
@@ -557,9 +557,22 @@ export function AddressModal({
               />
             </div>
 
+            {!showExtraFields && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExtraFields(true);
+                  setShowSuggestions(false);
+                }}
+                className="mt-2 cursor-pointer text-xs font-medium text-[#0A4F32] underline underline-offset-2 hover:text-[#083d27] transition-colors"
+              >
+                Can&apos;t find your address? Enter it manually
+              </button>
+            )}
+
             {/* Suggestions List */}
             {status === "OK" && showSuggestions && suggestions.length > 0 && (
-              <div className="absolute z-50 w-full mt-1.5 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
+              <div className="mt-1.5 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[200px] overflow-y-auto">
                 {suggestions.map(({ place_id, description }) => (
                   <button
                     key={place_id}
@@ -581,7 +594,9 @@ export function AddressModal({
               Start typing to see address suggestions to auto-fill the fields below.
             </p>
           </div>
+        </div>
 
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1">
           {/* All address fields — revealed after Google selection */}
           <div
             className={`grid transition-all duration-500 ease-in-out ${showExtraFields ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}

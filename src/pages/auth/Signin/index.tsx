@@ -10,9 +10,11 @@ import { useMutation } from "@tanstack/react-query";
 import { googleLogin, validateEmail } from "@/services/auth";
 import { toast } from "sonner";
 import { useState } from "react";
+import { isGoogleAuthEnabled } from "@/utils/environment";
 
 const Signin = () => {
   const navigate = useNavigate();
+  const showGoogleAuth = isGoogleAuthEnabled();
 
   const schema = z.object({
     email: z
@@ -70,17 +72,21 @@ const Signin = () => {
             Enter your details to access your account
           </p>
 
-          <Button
-            variant={"outline"}
-            className="border-neutral500 bg-transparent w-full mt-8 mb-4 hover:bg-white hover:border-0"
-            onClick={handleGoogleLogin}
-            loading={loading}
-          >
-            <img src={google} alt="google" className="w-[20px]" />
-            <span>Continue with Google</span>
-          </Button>
+          {showGoogleAuth && (
+            <>
+              <Button
+                variant={"outline"}
+                className="border-neutral500 bg-transparent w-full mt-8 mb-4 hover:bg-white hover:border-0"
+                onClick={handleGoogleLogin}
+                loading={loading}
+              >
+                <img src={google} alt="google" className="w-[20px]" />
+                <span>Continue with Google</span>
+              </Button>
 
-          <p className="text-center font-medium text-neutral800">OR</p>
+              <p className="text-center font-medium text-neutral800">OR</p>
+            </>
+          )}
 
           <div className="py-4 text-sm">
             <form onSubmit={handleSubmit(onSubmit)}>
