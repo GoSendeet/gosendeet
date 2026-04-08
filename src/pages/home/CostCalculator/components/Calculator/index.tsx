@@ -1056,8 +1056,6 @@ const Calculator = () => {
                     ))}
                   </div>
                 </div>
-
-                
               </div>
             </div>
 
@@ -1067,6 +1065,18 @@ const Calculator = () => {
 
               {/* Header Section */}
               <div className="mb-1 lg:mb-6">
+                <div className="flex items-center justify-end gap-2 mb-2">
+                  <Button
+                    className="w-fit bg-brand hover:bg-green-800"
+                    loading={shareLoading}
+                    onClick={shareUrl ? copyUrl : handleShare}
+                  >
+                    {shareUrl ? <Copy size={16} /> : <Share2 size={16} />}
+                    <span className="ml-2">
+                      {shareUrl ? "Copy Link" : "Share Quote"}
+                    </span>
+                  </Button>
+                </div>
                 <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
                   <div>
                     {(bookingRequest?.pickupLocation ||
@@ -1100,17 +1110,6 @@ const Calculator = () => {
                     </p>
                   </div>
                   <div className="w-full lg:w-fit">
-                    {/* <Button
-                        className="w-fit bg-green800 hover:bg-green-800"
-                        loading={shareLoading}
-                        onClick={shareUrl ? copyUrl : handleShare}
-                      >
-                        {shareUrl ? <Copy size={16} /> : <Share2 size={16} />}
-                        <span className="ml-2">
-                          {shareUrl ? "Copy Link" : "Share Quote"}
-                        </span>
-                      </Button> */}
-
                     <div className="flex items-center justify-between mb-6 bg-[#F3F4F6CC] px-2 py-1 rounded-md mt-2 lg:mt-0">
                       <button
                         onClick={() => {

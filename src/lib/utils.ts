@@ -112,12 +112,19 @@ function formatDateWithYear(dateStr: string): string {
 
 // Universal parser
 export function parseDateInput(input: string) {
+  if (!input) return "";
+
+  // Already in yyyy-MM-dd format (possibly with time appended e.g. "2026-04-06 10am-2pm")
+  const isoMatch = input.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) return isoMatch[1];
+
+  // Display format with range e.g. "Wed, 01 Apr - Thu, 02 Apr"
   if (input.includes(" - ")) {
     const startStr = input.split(" - ")[0];
     return formatDateWithYear(startStr);
-  } else {
-    return formatDateWithYear(input);
   }
+
+  return formatDateWithYear(input);
 }
 
 export function formatDate(dateString: string): string {

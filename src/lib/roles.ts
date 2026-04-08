@@ -1,5 +1,5 @@
 export const isAdminRole = (role: string | null) =>
-  ["admin", "super_admin"].includes(role || "");
+  ["admin", "super_admin"].includes((role || "").toLowerCase());
 
 export const isFranchiseRole = (role: string | null) =>
   ["partner", "franchise"].includes((role || "").toLowerCase());

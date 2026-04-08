@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_MAPS_KEY: string;
   readonly VITE_SECRET_KEY: string;
   readonly VITE_APP_ENV?: string;
+  readonly VITE_ENABLE_GOOGLE_AUTH?: string;
 }
 
 interface ImportMeta {
