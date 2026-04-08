@@ -244,8 +244,12 @@ function normalizeBase64Ciphertext(value: string) {
   return normalized.padEnd(normalized.length + (4 - padding), "=");
 }
 
-export function decryptAES256(encryptedText: string, key: string) {
-  const normalizedKey = key.trim();
+export function decryptAES256(encryptedText: string, key?: string | null) {
+  const normalizedKey = key?.trim();
+
+  if (!normalizedKey) {
+    throw new Error("AES-256 key is missing");
+  }
 
   if (normalizedKey.length !== 32) {
     throw new Error("AES-256 key must be exactly 32 characters long");
