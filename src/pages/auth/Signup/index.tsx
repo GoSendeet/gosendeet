@@ -22,9 +22,13 @@ import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
-import { isNonProductionEmailValidationEnv } from "@/utils/environment";
+import {
+  isGoogleAuthEnabled,
+  isNonProductionEmailValidationEnv,
+} from "@/utils/environment";
 
 const Signup = () => {
+  const showGoogleAuth = isGoogleAuthEnabled();
   const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [userType, setUserType] = useState<"customer" | "franchise">(
     "customer",
@@ -467,17 +471,21 @@ const Signup = () => {
                   Get Started
                   <ArrowRight size={20} />
                 </Button>
-                <p className="text-center text-gray-600">OR</p>
-                <Button
-                  type="button"
-                  variant={"outline"}
-                  className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
-                  onClick={handleGoogleLogin}
-                  loading={loading}
-                >
-                  <img src={google} alt="google" className="w-[20px]" />
-                  <span>Continue with Google</span>
-                </Button>
+                {showGoogleAuth && (
+                  <>
+                    <p className="text-center text-gray-600">OR</p>
+                    <Button
+                      type="button"
+                      variant={"outline"}
+                      className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
+                      onClick={handleGoogleLogin}
+                      loading={loading}
+                    >
+                      <img src={google} alt="google" className="w-[20px]" />
+                      <span>Continue with Google</span>
+                    </Button>
+                  </>
+                )}
               </form>
 
               {/* Login Link */}
