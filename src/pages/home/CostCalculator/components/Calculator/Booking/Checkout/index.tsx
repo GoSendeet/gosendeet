@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { payForBooking } from "@/services/user";
 import { APP_BASE_URL } from "@/services/axios";
+
 const Checkout = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const location = useLocation();

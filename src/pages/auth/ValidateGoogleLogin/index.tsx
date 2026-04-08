@@ -26,9 +26,10 @@ const ValidateGoogleLogin = () => {
         if (!encryptedToken.trim() || !encryptedUser.trim()) {
           throw new Error("Google login callback is missing required data");
         }
-
+        console.log("secret ket", secretKey);
         const token = decryptAES256(encryptedToken, secretKey);
         const decryptedUser = decryptAES256(encryptedUser, secretKey);
+        console.log("Decrypted token:", token);
         if (!token || !decryptedUser) {
           throw new Error("Invalid encrypted data");
         }
