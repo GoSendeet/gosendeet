@@ -1,8 +1,6 @@
-import { api, BASE_URL } from "./axios";
-import { authApi } from "./axios";
+import { api, BASE_URL, authApi } from "./axios";
 
-const FRONTEND_BASE_URL =
-  import.meta.env.VITE_FRONTEND_BASE_URL || window.location.origin;
+const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
 export const signup = async (data: {
   email: string;
@@ -116,13 +114,13 @@ export const activateAccount = async (status: string) => {
 
 export const googleLogin = () => {
   // OAuth requires full page redirect, not XHR
-  const redirectUrl = encodeURIComponent(FRONTEND_BASE_URL.replace(/\/$/, ""));
+  const redirectUrl = encodeURIComponent(APP_BASE_URL.replace(/\/$/, ""));
   window.location.href = `${BASE_URL}/auth/google-login?redirectUrl=${redirectUrl}`;
 };
 
 
 export const googleSignup = () => {
-  const redirectUrl = encodeURIComponent(FRONTEND_BASE_URL.replace(/\/$/, ""));
+  const redirectUrl = encodeURIComponent(APP_BASE_URL.replace(/\/$/, ""));
   window.location.href = `${BASE_URL}/auth/google-signup?redirectUrl=${redirectUrl}`;
 }
 

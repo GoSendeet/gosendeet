@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { payForBooking } from "@/services/user";
-import { APP_BASE_URL } from "@/services/axios";
+
+const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 const Checkout = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const location = useLocation();
