@@ -25,8 +25,8 @@ export const getProfiles = async (
     const res = await api.get(`/users?${queryString}`);
     return res.data;
   } catch (error: unknown) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    console.error("[getProfiles] error:", axiosError?.response?.status, JSON.stringify(axiosError?.response?.data));
+    //const axiosError = error as AxiosError<{ message: string }>;
+    //console.error("[getProfiles] error:", axiosError?.response?.status, JSON.stringify(axiosError?.response?.data));
     throwApiError(error);
   }
 };

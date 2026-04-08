@@ -38,12 +38,10 @@ export const getQuotes = async (
   },
 ) => {
   try {
-    console.log("[getQuotes] payload →", JSON.stringify(data, null, 2));
+    //console.log("[getQuotes] payload →", JSON.stringify(data, null, 2));
     const res = await authApi.post(`/quotes?direct=${direct}`, data, { params });
     return res.data;
   } catch (error: unknown) {
-    const axiosError = error as AxiosError<{ message: string }>;
-    console.error("[getQuotes] error:", axiosError?.response?.status, JSON.stringify(axiosError?.response?.data));
     throwApiError(error);
   }
 };
@@ -83,9 +81,9 @@ export const updateUserProfile = async (id: string, data: unknown) => {
 export const createBooking = async (data: unknown) => {
   try {
     ensureAuthenticated();
-    console.log("[createBooking] payload →", JSON.stringify(data, null, 2));
+    //console.log("[createBooking] payload →", JSON.stringify(data, null, 2));
     const res = await api.post(`/bookings`, data);
-    console.log("[createBooking] success →", res.data);
+    //console.log("[createBooking] success →", res.data);
     return res.data;
   } catch (error: unknown) {
     throwApiError(error);
