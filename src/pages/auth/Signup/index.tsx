@@ -22,13 +22,12 @@ import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
-import {
-  isGoogleAuthEnabled,
-  isNonProductionEmailValidationEnv,
-} from "@/utils/environment";
+import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 
 const Signup = () => {
-  const showGoogleAuth = isGoogleAuthEnabled();
+  const showGoogleAuth =
+    import.meta.env.DEV ||
+    window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
   const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [userType, setUserType] = useState<"customer" | "franchise">(
     "customer",

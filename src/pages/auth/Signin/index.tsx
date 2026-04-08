@@ -10,11 +10,12 @@ import { useMutation } from "@tanstack/react-query";
 import { googleLogin, validateEmail } from "@/services/auth";
 import { toast } from "sonner";
 import { useState } from "react";
-import { isGoogleAuthEnabled } from "@/utils/environment";
 
 const Signin = () => {
   const navigate = useNavigate();
-  const showGoogleAuth = isGoogleAuthEnabled();
+  const showGoogleAuth =
+    import.meta.env.DEV ||
+    window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
 
   const schema = z.object({
     email: z
