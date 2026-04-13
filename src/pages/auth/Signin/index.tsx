@@ -13,9 +13,9 @@ import { useState } from "react";
 
 const Signin = () => {
   const navigate = useNavigate();
-  const showGoogleAuth =
-    import.meta.env.DEV ||
-    window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
+  // const showGoogleAuth =
+  //   import.meta.env.DEV ||
+  //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
 
   const schema = z.object({
     email: z
@@ -73,21 +73,19 @@ const Signin = () => {
             Enter your details to access your account
           </p>
 
-          {showGoogleAuth && (
-            <>
-              <Button
-                variant={"outline"}
-                className="border-neutral500 bg-transparent w-full mt-8 mb-4 hover:bg-white hover:border-0"
-                onClick={handleGoogleLogin}
-                loading={loading}
-              >
-                <img src={google} alt="google" className="w-[20px]" />
-                <span>Continue with Google</span>
-              </Button>
+         
+          <Button
+            variant={"outline"}
+            className="border-neutral500 bg-transparent w-full mt-8 mb-4 hover:bg-white hover:border-0"
+            onClick={handleGoogleLogin}
+            loading={loading}
+          >
+            <img src={google} alt="google" className="w-[20px]" />
+            <span>Continue with Google</span>
+          </Button>
 
-              <p className="text-center font-medium text-neutral800">OR</p>
-            </>
-          )}
+          <p className="text-center font-medium text-neutral800">OR</p>
+           
 
           <div className="py-4 text-sm">
             <form onSubmit={handleSubmit(onSubmit)}>

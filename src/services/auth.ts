@@ -1,4 +1,10 @@
 import { api, BASE_URL, authApi } from "./axios";
+import { AxiosError } from "axios";
+
+const throwApiError = (error: unknown): never => {
+  const axiosError = error as AxiosError<{ message: string }>;
+  throw axiosError?.response?.data || { message: (error as Error).message };
+};
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
@@ -50,8 +56,8 @@ export const resendVerification = async (email: string) => {
   try {
     const res = await authApi.post(`/auth/resend-verification?email=${email}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -59,10 +65,11 @@ export const forgotPassword = async (email: string) => {
   try {
     const res = await authApi.post(`/auth/forgot-password?email=${email}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
+
 
 export const resetPassword = async ({
   resetToken,
