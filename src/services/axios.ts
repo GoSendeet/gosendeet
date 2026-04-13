@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
+
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-export const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
 export const authApi = axios.create({
   baseURL: BASE_URL,

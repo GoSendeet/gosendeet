@@ -21,11 +21,12 @@ import {
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { shareQuotes, getQuotes } from "@/services/user";
-import { APP_BASE_URL } from "@/services/axios";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/gosendeet-black-logo.png";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
+
+const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
 const parsePrice = (price: string | number | undefined | null): number => {
   if (!price) return 0;
