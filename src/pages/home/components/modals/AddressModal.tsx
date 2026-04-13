@@ -34,6 +34,26 @@ const normalizeStateKey = (value: string) =>
 const normalizeCityKey = (value: string) =>
   value.toLowerCase().replace(/\s+/g, " ").trim();
 
+const getCanonicalCityMatch = (city?: string) => {
+  if (!city) return "";
+
+  const normalizedCity = normalizeCityKey(city);
+  const exactMatch = NORMALIZED_CITY_LOOKUP[normalizedCity];
+
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  return (
+    Object.keys(NORMALIZED_CITY_LOOKUP).find(
+      (canonicalCity) =>
+        normalizedCity.startsWith(`${canonicalCity} -`) ||
+        normalizedCity.startsWith(`${canonicalCity},`) ||
+        normalizedCity.startsWith(`${canonicalCity} `),
+    ) || ""
+  );
+};
+
 const STATE_CITY_MAP = NIGERIAN_STATES_AND_CITIES.reduce<
   Record<string, string[]>
 >((acc, { state, cities }) => {
@@ -84,11 +104,69 @@ const isOyoState = (state?: string) => normalizeStateKey(state || "") === "oyo";
 const isIbadanCity = (city?: string) =>
   normalizeCityKey(city || "").startsWith("ibadan");
 
+const inferAllowedLocationFromText = (value?: string) => {
+  const normalizedValue = normalizeCityKey(value || "");
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  if (
+    normalizedValue.startsWith("ibadan -") ||
+    normalizedValue.startsWith("ibadan,") ||
+    normalizedValue.includes(" ibadan -") ||
+    normalizedValue.includes(", ibadan")
+  ) {
+    return {
+      city: "Ibadan",
+      state: "Oyo State",
+    };
+  }
+
+  if (
+    normalizedValue.includes("lagos - ibadan expressway") ||
+    normalizedValue.includes("lagos ibadan expressway") ||
+    normalizedValue.includes("ibadan expressway, lagos")
+  ) {
+    return {
+      city: "Lagos",
+      state: "Lagos State",
+    };
+  }
+
+  if (
+    normalizedValue.includes("lagos") ||
+    normalizedValue.includes("ikeja") ||
+    normalizedValue.includes("ikorodu") ||
+    normalizedValue.includes("mushin") ||
+    normalizedValue.includes("shomolu") ||
+    normalizedValue.includes("somolu") ||
+    normalizedValue.includes("epe") ||
+    normalizedValue.includes("badagry")
+  ) {
+    return {
+      city: normalizedValue.includes("lagos") ? "Lagos" : "",
+      state: "Lagos State",
+    };
+  }
+
+  if (
+    normalizedValue.includes("ibadan") &&
+    normalizedValue.includes("oyo")
+  ) {
+    return {
+      city: "Ibadan",
+      state: "Oyo State",
+    };
+  }
+
+  return null;
+};
+
 const resolveStateForValidation = (state?: string, city?: string) => {
   if (state) return state;
   if (!city) return "";
-  const normalizedCity = normalizeCityKey(city);
-  const canonicalCity = NORMALIZED_CITY_LOOKUP[normalizedCity];
+  const canonicalCity = getCanonicalCityMatch(city);
   return canonicalCity ? CITY_STATE_MAP[canonicalCity] : "";
 };
 
@@ -114,7 +192,7 @@ const resolveStateValue = (value?: string) => {
 const resolveCityValue = (city?: string, state?: string) => {
   if (!city) return "";
   const normalizedCity = normalizeCityKey(city);
-  const canonical = NORMALIZED_CITY_LOOKUP[normalizedCity];
+  const canonical = getCanonicalCityMatch(city);
 
   if (canonical) {
     return canonical;
@@ -369,7 +447,10 @@ export function AddressModal({
     setShowSuggestions(true);
   };
 
-  const handleSelectLocation = async (placeId: string) => {
+  const handleSelectLocation = async (
+    placeId: string,
+    suggestionDescription?: string,
+  ) => {
     try {
       const parameter = {
         placeId: placeId,
@@ -380,12 +461,35 @@ export function AddressModal({
 
       if (typeof details !== "string" && details.address_components) {
         const placeName = (details as google.maps.places.PlaceResult).name;
+        const formattedAddress =
+          (details as google.maps.places.PlaceResult).formatted_address || "";
         const parsed = parseAddressComponents(details.address_components, placeName);
+        const inferredLocation =
+          inferAllowedLocationFromText(suggestionDescription) ||
+          inferAllowedLocationFromText(formattedAddress) ||
+          inferAllowedLocationFromText(placeName);
+        const parsedLocationIsAllowed = isDeliveryLocationAllowed(
+          parsed.state,
+          parsed.city,
+        );
+        const finalState =
+          parsedLocationIsAllowed
+            ? parsed.state || inferredLocation?.state || ""
+            : inferredLocation?.state || parsed.state || "";
+        const finalCity =
+          parsedLocationIsAllowed
+            ? parsed.city || inferredLocation?.city || ""
+            : inferredLocation?.city || parsed.city || "";
 
-        if (!isDeliveryLocationAllowed(parsed.state, parsed.city)) {
+        if (!isDeliveryLocationAllowed(finalState, finalCity)) {
           toast.error(DELIVERY_RESTRICTION_MESSAGE);
         } else {
-          setManualAddress((prev) => ({ ...prev, ...parsed }));
+          setManualAddress((prev) => ({
+            ...prev,
+            ...parsed,
+            city: finalCity,
+            state: finalState,
+          }));
           setShowExtraFields(true);
         }
 
@@ -577,7 +681,7 @@ export function AddressModal({
                   <button
                     key={place_id}
                     type="button"
-                    onClick={() => handleSelectLocation(place_id)}
+                    onClick={() => handleSelectLocation(place_id, description)}
                     className="w-full px-3 py-2 flex items-start gap-2 hover:bg-brand-light transition-colors text-left border-b border-gray-100 last:border-0"
                   >
                     <FiMapPin className="w-4 h-4 text-brand mt-0.5 flex-shrink-0" />
