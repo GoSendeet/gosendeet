@@ -1,87 +1,194 @@
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
-import { useEffect, useState } from "react";
-import purple from "@/assets/icons/big-purple-checkmark.png";
-import { Link, useLocation } from "react-router-dom";
 import { Spinner } from "@/components/Spinner";
 import { useMutation } from "@tanstack/react-query";
 import { resendVerification } from "@/services/auth";
 import { toast } from "sonner";
+import { Link, useLocation } from "react-router-dom";
+import {
+  ArrowRight,
+  CheckCircle2,
+  CircleAlert,
+  MailCheck,
+  RefreshCcw,
+} from "lucide-react";
 
 const VerifyEmail = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
   const email = queryParams.get("email") || "";
-  const [isVerified, setIsVerified] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "success") {
-      setIsVerified(true);
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
+  const isVerified = status === "success";
+  const hasVerificationResult = status !== null;
+  const isLoading = !hasVerificationResult;
 
   const { mutate, isPending } = useMutation({
     mutationFn: resendVerification,
     onSuccess: () => {
-      toast.success("Successful");
+      toast.success("Verification email sent successfully");
     },
     onError: (data) => {
-      toast.error(data?.message);
+      toast.error(data?.message || "Unable to resend verification email.");
     },
   });
 
-  const submit = () => {
+  const handleResend = () => {
+    if (!email) {
+      toast.error("No email address was found for this verification request.");
+      return;
+    }
+
     mutate(email);
   };
 
   return (
     <AuthLayout>
-      <div className="md:px-20 px-6 md:py-20 py-8">
-        {isLoading && !isVerified && (
-          <div className="h-[55vh] w-full flex items-center justify-center">
-            <Spinner />
+      <div className="bg-neutral900 md:px-20 px-6 md:py-20 py-10 min-h-[calc(100vh-88px)]">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-6 items-stretch">
+            <section className="bg-[#0F3324] text-white rounded-[28px] p-8 md:p-10 relative overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(109,255,177,0.22),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(255,255,255,0.08),_transparent_35%)]" />
+              <div className="relative z-10 h-full flex flex-col justify-between gap-10">
+                <div>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em]">
+                    <MailCheck className="w-4 h-4" />
+                    Account Verification
+                  </span>
+                  <h1 className="mt-6 text-4xl md:text-5xl font-clash font-semibold tracking-tight leading-tight">
+                    One quick step and your account is ready.
+                  </h1>
+                  <p className="mt-4 text-sm md:text-base text-white/80 max-w-lg leading-7">
+                    We&apos;re confirming your email so your deliveries, updates,
+                    and account access stay secure from the start.
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl bg-white/10 border border-white/10 p-5 backdrop-blur-sm">
+                    <p className="text-2xl font-semibold font-clash">Secure</p>
+                    <p className="mt-2 text-sm text-white/75">
+                      Verification helps protect your account before you start
+                      booking and tracking shipments.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white/10 border border-white/10 p-5 backdrop-blur-sm">
+                    <p className="text-2xl font-semibold font-clash">Fast</p>
+                    <p className="mt-2 text-sm text-white/75">
+                      Once your email is confirmed, you can go straight into
+                      login and continue onboarding.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white rounded-[28px] border border-neutral200 p-6 md:p-8 shadow-sm flex flex-col justify-center">
+              {isLoading && (
+                <div className="text-center py-10">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-green400/30 flex items-center justify-center">
+                    <Spinner />
+                  </div>
+                  <h2 className="mt-6 text-3xl font-clash font-semibold text-neutral600">
+                    Verifying your account
+                  </h2>
+                  <p className="mt-3 text-neutral500 leading-7 max-w-md mx-auto">
+                    Please hold on while we confirm your verification link and
+                    prepare your account.
+                  </p>
+                </div>
+              )}
+
+              {!isLoading && isVerified && (
+                <div className="text-center py-6">
+                  <div className="w-[72px] h-[72px] mx-auto rounded-full bg-green400/30 text-green700 flex items-center justify-center">
+                    <CheckCircle2 className="w-10 h-10" />
+                  </div>
+                  <h2 className="mt-6 text-3xl font-clash font-semibold text-neutral600">
+                    Your account has been verified
+                  </h2>
+                  <p className="mt-3 text-neutral500 leading-7 max-w-md mx-auto">
+                    Everything looks good. You can now sign in and start using
+                    Gosendeet.
+                  </p>
+
+                  {email && (
+                    <div className="mt-6 rounded-2xl bg-neutral100 border border-neutral200 px-4 py-4 text-left">
+                      <p className="text-xs uppercase tracking-[0.18em] text-neutral500 font-semibold">
+                        Verified Email
+                      </p>
+                      <p className="mt-2 text-sm text-neutral600 break-all">
+                        {email}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                    <Link to="/signin">
+                      <Button className="w-full sm:w-auto bg-green100 hover:bg-green800 text-white">
+                        Proceed to Login
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Link to="/">
+                      <Button
+                        variant="outline"
+                        className="w-full sm:w-auto border-neutral300"
+                      >
+                        Go to Homepage
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {!isLoading && !isVerified && (
+                <div className="py-6">
+                  <div className="w-[72px] h-[72px] rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
+                    <CircleAlert className="w-10 h-10" />
+                  </div>
+                  <h2 className="mt-6 text-3xl font-clash font-semibold text-neutral600 text-center">
+                    We couldn&apos;t verify this account
+                  </h2>
+                  <p className="mt-3 text-neutral500 leading-7 text-center max-w-md mx-auto">
+                    The verification link may have expired, already been used,
+                    or is no longer valid. You can request a fresh one below.
+                  </p>
+
+                  {email && (
+                    <div className="mt-6 rounded-2xl bg-neutral100 border border-neutral200 px-4 py-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-neutral500 font-semibold">
+                        Email Address
+                      </p>
+                      <p className="mt-2 text-sm text-neutral600 break-all">
+                        {email}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex flex-col gap-3">
+                    <Button
+                      variant="secondary"
+                      className="w-full bg-green100 hover:bg-green800 text-white"
+                      onClick={handleResend}
+                      loading={isPending}
+                    >
+                      Resend Verification Email
+                      <RefreshCcw className="w-4 h-4" />
+                    </Button>
+                    <Link to="/signup">
+                      <Button
+                        variant="outline"
+                        className="w-full border-neutral300"
+                      >
+                        Back to Signup
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
-        )}
-        <div className="xl:w-1/2 md:w-[80%] mx-auto bg-purple300 py-12 md:px-10 px-4">
-          {!isLoading && isVerified && (
-            // ✅ Success Screen
-            <div className="flex flex-col justify-center items-center text-center min-h-[350px] my-auto">
-              <img src={purple} alt="purple" />
-              <h1 className="text-2xl text-neutral600 font-semibold font-clash my-3">
-                Welcome to Gosendeet!
-              </h1>
-              <p className="text-neutral600 lg:w-3/4">
-                Your journey starts now. We're here to simplify deliveries,
-                enhance customer experiences, and support your next big move.
-              </p>
-              <Link to={"/signin"}>
-                <Button className="mt-6">Proceed to Login</Button>
-              </Link>
-            </div>
-          )}
-          {!isLoading && !isVerified && (
-            <div className="flex flex-col min-h-[350px] my-auto">
-              <h1 className="lg:text-[40px] md:text-[36px] text-[30px] font-semibold font-clash  mb-1">
-                Looks like we’ve hit a slight snag
-              </h1>
-              <p className="font-medium text-neutral800">
-                Please try again or check back in a bit
-              </p>
-              <Button
-                className="mt-6 w-full"
-                variant={"secondary"}
-                onClick={submit}
-                loading={isPending}
-              >
-                Try again
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </AuthLayout>
