@@ -25,9 +25,9 @@ import { googleSignup } from "@/services/auth";
 import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 
 const Signup = () => {
-  const showGoogleAuth =
-    import.meta.env.DEV ||
-    window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
+  // const showGoogleAuth =
+  //   import.meta.env.DEV ||
+  //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
   const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [userType, setUserType] = useState<"customer" | "franchise">(
     "customer",
@@ -470,21 +470,19 @@ const Signup = () => {
                   Get Started
                   <ArrowRight size={20} />
                 </Button>
-                {showGoogleAuth && (
-                  <>
-                    <p className="text-center text-gray-600">OR</p>
-                    <Button
-                      type="button"
-                      variant={"outline"}
-                      className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
-                      onClick={handleGoogleLogin}
-                      loading={loading}
-                    >
-                      <img src={google} alt="google" className="w-[20px]" />
-                      <span>Continue with Google</span>
-                    </Button>
-                  </>
-                )}
+               
+                <p className="text-center text-gray-600">OR</p>
+                <Button
+                  type="button"
+                  variant={"outline"}
+                  className="border-neutral500 bg-transparent w-full mt-1 mb-4 hover:bg-white hover:border-0"
+                  onClick={handleGoogleLogin}
+                  loading={loading}
+                >
+                  <img src={google} alt="google" className="w-[20px]" />
+                  <span>Continue with Google</span>
+                </Button>
+                 
               </form>
 
               {/* Login Link */}
