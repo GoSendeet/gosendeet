@@ -1,11 +1,6 @@
 import enterprise from "@/assets/images/enterprise.png";
-import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  Headphones,
-  Table,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, Headphones, Table, Wallet } from "lucide-react";
+import { Link } from "react-router-dom";
 const Logistics = () => {
   return (
     <div className="relative w-full bg-white md:px-20 px-6 md:py-20 py-10 font-arial">
@@ -76,9 +71,15 @@ const Logistics = () => {
               </li>
             </ul>
 
-            <Button className="bg-green1000 rounded-xl w-fit font-bold text-white shadow-[0px 25px 50px -12px #0D542B33]">
-              Open a Business Account <ArrowRight />
-            </Button>
+            <Link
+              to="/signup?type=franchise"
+              className="bg-green1000 rounded-xl w-fit py-3 px-6 transform transition-all duration-300 ease-in-out hover:scale-95 font-bold text-white shadow-[0px 25px 50px -12px #0D542B33]"
+            >
+              <p className="flex items-center gap-2">
+                Open a Business Account
+                <ArrowRight />
+              </p>
+            </Link>
           </div>
         </div>
 

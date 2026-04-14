@@ -34,8 +34,8 @@ const Navbar = () => {
   //   }
   // }, [userId]);
   return (
-    <nav className="w-full z-20 bg-[#FFFFFF1A] ">
-      <div className="flex justify-between items-center py-3 lg:py-5 xl:px-30 md:px-20 px-6 border-b border-b-neutral300">
+    <nav className="bg-white backdrop-blur-md">
+      <div className="flex justify-between items-center py-5 lg:py-5 xl:px-30 md:px-20 px-3 border-b border-b-neutral300">
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
@@ -169,7 +169,7 @@ const Navbar = () => {
 
               <a href="/signup">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-black bg-white rounded">
-                  Become a Franchise
+                  Sign Up
                 </button>
               </a>
             </>
