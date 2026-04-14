@@ -1,23 +1,37 @@
 import logo from "@/assets/images/gosendeet-black-logo.png";
+import { type MouseEvent } from "react";
+import { Link } from "react-router-dom";
+import ContactSalesDialog from "@/components/ContactSalesDialog";
+import { openChatwootWidget } from "@/lib/chatwoot";
+import { toast } from "sonner";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const handleHelpCenterClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+
+    const opened = openChatwootWidget();
+    if (!opened) {
+      toast.info("Support chat is still loading. Please try again in a moment.");
+    }
+  };
+
   const footerLinks = {
     platform: [
-      { label: "Direct", href: "/direct" },
-      { label: "Compare", href: "/compare" },
-      { label: "Tracking", href: "/tracking" },
+      { label: "Direct", href: "/cost-calculator" },
+      { label: "Compare", href: "/cost-calculator", mode:"compare" },
+      { label: "Tracking", href: "/track" },
     ],
     company: [
       { label: "About", href: "/about" },
-      { label: "Careers", href: "/careers" },
-      { label: "Become a Franchise", href: "/franchise" },
-      { label: "Partners", href: "/partners" },
+      // { label: "Careers", href: "/careers" },
+      { label: "Become a Franchise", href: "/signup?type=franchise" },
+      { label: "Partners", href: "/signup?type=franchise" },
     ],
     support: [
       { label: "Help Center", href: "/help" },
-      { label: "Trust & Safety", href: "/safety" },
+      { label: "Trust & Safety", href: "/about" },
       { label: "Contact", href: "/contact" },
     ],
     legal: [
@@ -49,12 +63,13 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.platform.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
+                      state={link.mode ? { mode: link.mode } : {}}
                       className="text-grey300 hover:text-blue100 transition-colors text-sm"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -66,12 +81,12 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="text-grey300 hover:text-blue100 transition-colors text-sm"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -83,12 +98,27 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.support.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-grey300 hover:text-blue100 transition-colors text-sm"
-                    >
-                      {link.label}
-                    </a>
+                    {link.label === "Help Center" ? (
+                      <button
+                        type="button"
+                        onClick={handleHelpCenterClick}
+                        className="text-grey300 hover:text-blue100 transition-colors text-sm bg-transparent border-0 p-0 cursor-pointer"
+                      >
+                        {link.label}
+                      </button>
+                    ) : link.label === "Contact" ? (
+                      <ContactSalesDialog
+                        triggerLabel="Contact"
+                        triggerClassName="text-grey300 hover:text-blue100 transition-colors text-sm"
+                      />
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="text-grey300 hover:text-blue100 transition-colors text-sm"
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -100,12 +130,12 @@ const Footer = () => {
               <ul className="space-y-3">
                 {footerLinks.legal.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
+                    <Link
+                      to={link.href}
                       className="text-grey300 hover:text-blue100 transition-colors text-sm"
                     >
                       {link.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>

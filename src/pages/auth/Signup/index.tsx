@@ -23,20 +23,26 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
 import { isNonProductionEmailValidationEnv } from "@/utils/environment";
+import { useSearchParams } from "react-router-dom";
+
+const getInitialUserType = (typeParam: string | null): "customer" | "franchise" =>
+  typeParam === "franchise" ? "franchise" : "customer";
 
 const Signup = () => {
   // const showGoogleAuth =
   //   import.meta.env.DEV ||
   //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
   const skipEmailValidation = isNonProductionEmailValidationEnv();
+  const [searchParams] = useSearchParams();
   const [userType, setUserType] = useState<"customer" | "franchise">(
-    "customer",
+    getInitialUserType(searchParams.get("type")),
   );
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
 
   const emailSchema = skipEmailValidation
     ? z.string({ required_error: "Email address is required" }).trim().min(1, {
