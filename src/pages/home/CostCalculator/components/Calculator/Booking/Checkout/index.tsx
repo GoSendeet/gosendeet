@@ -12,9 +12,9 @@ const Checkout = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const location = useLocation();
 
-  const { bookingId, bookingData } = location?.state || {};
-  const successUrl = `${APP_BASE_URL}/success-page?bookingId=${bookingId}`;
-  const errorUrl = `${APP_BASE_URL}/error-page?bookingId=${bookingId}`;
+  const { bookingData } = location?.state || {};
+  const successUrl = `${APP_BASE_URL}/success-page`;
+  const errorUrl = `${APP_BASE_URL}/error-page`;
 
   const [isChecked, setIsChecked] = useState(false);
 
@@ -26,9 +26,9 @@ const Checkout = () => {
         navigate("/signin");
       }, 1000);
     }
-  }, [userId]);
+  }, [navigate, userId]);
 
-    useEffect(() => {
+  useEffect(() => {
     // If user somehow lands here after finishing a booking, redirect
     const bookingCompleted = sessionStorage.getItem("bookingCompleted");
     if (bookingCompleted) {
@@ -37,22 +37,28 @@ const Checkout = () => {
 
     // Hard replace checkout history entry with "/" so back button never returns here
     window.history.replaceState(null, "", "/");
-    sessionStorage.removeItem("bookingCompleted")
+    sessionStorage.removeItem("bookingCompleted");
+  }, [navigate]);
 
-  }, []);
+  useEffect(() => {
+    if (!bookingData) {
+      toast.error("Booking details are missing. Please start again.");
+      navigate("/", { replace: true });
+    }
+  }, [bookingData, navigate]);
 
-  const total = Number(bookingData?.tax) + Number(bookingData?.courierCost);
+  const total = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
 
   const { mutate, isPending } = useMutation({
     mutationFn: ({
-      bookingId,
+      bookingData,
       successUrl,
       errorUrl,
     }: {
-      bookingId: string;
+      bookingData: Record<string, unknown>;
       successUrl: string;
       errorUrl: string;
-    }) => payForBooking(bookingId, successUrl, errorUrl),
+    }) => payForBooking(bookingData, successUrl, errorUrl),
     onSuccess: (data: any) => {
       toast.success("Successful");
       window.location.href = data?.data?.authorizationUrl;
@@ -63,7 +69,12 @@ const Checkout = () => {
   });
 
   const submit = () => {
-    mutate({ bookingId, successUrl, errorUrl });
+    if (!bookingData) {
+      toast.error("Booking details are missing. Please start again.");
+      return;
+    }
+
+    mutate({ bookingData, successUrl, errorUrl });
   };
 
   return (
@@ -95,7 +106,7 @@ const Checkout = () => {
                 <div className="md:w-1/2">
                   <p className="font-clash font-semibold mb-2">Phone Number</p>
                   <p className="font-medium text-sm">
-                    {bookingData?.senderPhone}
+                    {bookingData?.senderPhoneNumber}
                   </p>
                 </div>
               </div>
