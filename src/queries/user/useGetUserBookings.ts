@@ -11,6 +11,7 @@ export const useGetBookingsById = (id: string) => {
   const query = useQuery({
     queryKey: ["bookings", id],
     queryFn: () => getBookingsById(id),
+    enabled: !!id,
   });
   return {
     isLoading: query.isPending,
@@ -96,5 +97,4 @@ export const useGetSharedQuotes = (id: string) => {
     refetchUserData: query.refetch,
   };
 };
-
 

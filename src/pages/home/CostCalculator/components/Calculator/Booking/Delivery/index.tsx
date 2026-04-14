@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/layouts/HomePageLayout";
 import { useForm } from "react-hook-form";
@@ -7,8 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/InputField";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { createBooking } from "@/services/user";
 import { allowOnlyNumbers, parseDateInput } from "@/lib/utils";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 
@@ -17,7 +15,6 @@ const Delivery = () => {
   const { bookingRequest, bookingDetails } = location?.state || {};
   const userId = sessionStorage.getItem("userId") || "";
   const authToken = sessionStorage.getItem("authToken") || "";
-  const [bookingData, setBookingData] = useState({});
 
   const currency = bookingDetails?.currency || "NGN";
   const basePrice = parseFloat(String(bookingDetails?.price || "0").replace(/[^\d.]/g, "")) || 0;
@@ -110,25 +107,6 @@ const Delivery = () => {
     }
   }, [userData, reset]);
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createBooking,
-    onSuccess: (data: any) => {
-      toast.success("Successful");
-      navigate("/checkout", {
-        state: { bookingId: data?.data?.id, bookingData: bookingData },
-      });
-    },
-    onError: (data: any) => {
-      console.error("[Booking onError] full error →", data);
-      const message =
-        data?.message ||
-        data?.error ||
-        (Array.isArray(data?.errors) ? data.errors[0] : null) ||
-        "Booking failed. Please try again.";
-      toast.error(message);
-    },
-  });
-
   const onSubmit = (data: z.infer<typeof schema>) => {
     if (!userId || !authToken) {
       toast.error("Please sign in to continue");
@@ -160,14 +138,14 @@ const Delivery = () => {
       slaConfigId: bookingDetails?.slaConfigId,
       itemValue: Number(bookingRequest?.itemPrice) || 0,
     };
-    setBookingData({
+    const nextBookingData = {
       courierName: bookingDetails?.courier?.name,
       ...payload,
+    };
+
+    navigate("/checkout", {
+      state: { bookingData: nextBookingData },
     });
-    // console.log("[onSubmit] bookingDetails (full) :", JSON.stringify(bookingDetails, null, 2));
-    // console.log("[onSubmit] bookingRequest (full) :", JSON.stringify(bookingRequest, null, 2));
-    // console.log("[onSubmit] booking payload :", JSON.stringify(payload, null, 2));
-    mutate(payload);
   };
   return (
     <Layout>
@@ -293,10 +271,8 @@ const Delivery = () => {
             <Button
               type="submit"
               className=" rounded-full py-3 px-8 bg-green100 hover:bg-green800"
-              disabled={isPending || !userId || !authToken}
-              loading={isPending}
+              disabled={!userId || !authToken}
             >
-              {/* {isPending && <Loader2 className="h-6 w-6 animate-spin" />}  */}
               Proceed to Checkout
             </Button>
           </div>

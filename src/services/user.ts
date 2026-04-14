@@ -90,10 +90,28 @@ export const createBooking = async (data: unknown) => {
   }
 };
 
-export const payForBooking = async (bookingId: string, successUrl: string, errorUrl: string) => {
+export const payForBooking = async (
+  bookingRequest: unknown,
+  successUrl: string,
+  errorUrl: string
+) => {
   try {
     ensureAuthenticated();
-    const res = await api.post(`/booking/payments/initialize?bookingId=${bookingId}&successUrl=${successUrl}&errorUrl=${errorUrl}`);
+    const res = await api.post(`/booking/payments/initialize`, {
+      bookingRequest,
+      successUrl,
+      errorUrl,
+    });
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
+export const verifyBookingPayment = async (reference: string) => {
+  try {
+    ensureAuthenticated();
+    const res = await api.get(`/booking/payments/callback/${reference}`);
     return res.data;
   } catch (error: unknown) {
     throwApiError(error);
