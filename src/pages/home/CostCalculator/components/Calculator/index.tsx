@@ -626,7 +626,7 @@ const Calculator = () => {
   };
 
   return (
-    <div className="md:px-20 px-6 py-4 bg-[#F8FAFC]">
+    <div className="md:px-20 px-6 py-12 bg-[#F8FAFC]">
       {/* Mode Switcher Tabs - Top of Calculator */}
       <div className="w-full mb-6 flex justify-center">
         <ModeSwitcher

@@ -1,8 +1,9 @@
-import { Button } from "@/components/ui/button";
 import { Badge, CircleCheckBig, Diamond, ShieldCheck } from "lucide-react";
 import coverage from "@/assets/images/coverage.png";
 import verified from "@/assets/images/verified2.png";
+import { Link } from "react-router-dom";
 const Services = () => {
+
   return (
     <>
       <div className="font-arial bg-[#F8FAFC] md:px-20 px-6 md:py-20 py-10">
@@ -69,9 +70,12 @@ const Services = () => {
                 </li>
               </ul>
 
-              <Button className="bg-white w-fit font-bold text-blue100 shadow-[0px_0px_30px_-5px_#FFFFFF4D]">
+              <Link
+                className="bg-white w-fit py-3 px-6 transform transition-all duration-300 ease-in-out hover:scale-95 rounded-3xl font-bold text-blue100 shadow-[0px_0px_30px_-5px_#FFFFFF4D]"
+                to="/cost-calculator"
+              >
                 Book Premium Direct
-              </Button>
+              </Link>
             </div>
           </div>
 

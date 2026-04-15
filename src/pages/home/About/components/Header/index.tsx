@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ShieldCheck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const stats = [
@@ -38,15 +39,18 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-wrap gap-4">
-            <Button className="bg-green3000 text-white md:w-fit w-full hover:bg-green300 font-semibold rounded-2xl">
+            <Link 
+              to="/signup" 
+              className="bg-green3000 py-3 px-5 transform transition duration-300 ease-in-out hover:scale-105 text-white md:w-fit w-full font-semibold rounded-2xl">
+              <p className="flex items-center gap-2 justify-between">
               Join Our Network
-
               <ArrowRight size={20} />  
-            </Button>
+              </p>
+            </Link>
             <Button
               className="bg-white text-green100 md:w-fit w-full hover:bg-white/90 font-semibold rounded-2xl"
             >
-              Read Our Story
+              <a href="#purpose">Read Our Story</a>
             </Button>
           </div>
         </div>
