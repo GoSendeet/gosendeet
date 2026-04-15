@@ -42,7 +42,7 @@ const AuthLayout = ({ children }: LayoutProps) => {
       <header className="fixed top-0 left-0 w-full z-50">
         <Navbar />
       </header>
-      <main className="pt-20 flex-grow">{children}</main>
+      <main className="pt-18 lg:pt-20 flex-grow">{children}</main>
     </div>
   );
 };

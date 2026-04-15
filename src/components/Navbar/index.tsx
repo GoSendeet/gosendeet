@@ -46,23 +46,23 @@ const Navbar = () => {
         {/* Hamburger Icon (mobile view) */}
         <div className="lg:hidden flex items-center gap-4">
           {authToken === null ? (
-            <Link to="/signin">
-              <Button size={"sm"} className="bg-green100">
-                Sign In
-                <ArrowUpRight />
-              </Button>
-            </Link>
+            location.pathname === "/signin" ? (
+              <Link to="/signup">
+                <Button size={"sm"} className="bg-green100">
+                  Sign Up
+                  <ArrowUpRight />
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/signin">
+                <Button size={"sm"} className="bg-green100">
+                  Sign In
+                  <ArrowUpRight />
+                </Button>
+              </Link>
+            )
           ) : (
             <>
-              {/* <div
-                className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-purple500 cursor-pointer"
-                onClick={() => {
-                  role === "user" && navigate("/dashboard");
-                  ["admin", "super_admin"].includes(role) && navigate("/admin-dashboard");
-                }}
-              >
-                {letter}
-              </div> */}
               <Home
                 className="text-green500"
                 size={24}
@@ -161,17 +161,17 @@ const Navbar = () => {
 
           {authToken === null && (
             <>
-              <a href="/signin">
+              <Link to="/signin">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-white bg-black rounded mb-4">
                   Sign In
                 </button>
-              </a>
+              </Link>
 
-              <a href="/signup">
+              <Link to="/signup">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-black bg-white rounded">
                   Sign Up
                 </button>
-              </a>
+              </Link>
             </>
           )}
         </div>
