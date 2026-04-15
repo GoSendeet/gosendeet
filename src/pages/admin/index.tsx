@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
+import ApprovedClients from "./ApprovedClients";
 import Profiles from "./Profiles";
 import Orders from "./Orders";
 import Companies from "./Companies";
+import Credentials from "./Credentials";
 import Reports from "./Reports";
 import Settings from "./Settings";
 import { toast } from "sonner";
@@ -19,6 +21,8 @@ const AdminDashboard = () => {
     { key: "profiles", label: "Profiles" },
     { key: "orders", label: "Orders" },
     { key: "companies", label: "Companies" },
+    { key: "approved-clients", label: "Approved Clients" },
+    { key: "credentials", label: "Credentials" },
     { key: "reports", label: "Reports" },
     { key: "notifications", label: "Notifications" },
     { key: "settings", label: "Settings" },
@@ -97,6 +101,8 @@ const AdminDashboard = () => {
         {activeTab === "profiles" && <Profiles />}
         {activeTab === "orders" && <Orders />}
         {activeTab === "companies" && <Companies />}
+        {activeTab === "approved-clients" && <ApprovedClients />}
+        {activeTab === "credentials" && <Credentials />}
         {activeTab === "reports" && <Reports  setActiveTab={setActiveTab}/>}
         {activeTab === "notifications" && <Notifications />}
         {activeTab === "settings" && <Settings />}
