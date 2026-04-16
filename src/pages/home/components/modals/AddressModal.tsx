@@ -856,7 +856,7 @@ export function AddressModal({
             onClick={handleSubmit}
             variant="secondary"
             size="custom"
-            className="w-full py-2.5 text-sm font-bold"
+            className="w-full py-2.5 text-sm font-bold mt-4"
             disabled={!isFormValid}
           >
             {buttonText}

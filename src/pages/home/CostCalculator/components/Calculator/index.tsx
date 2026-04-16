@@ -107,6 +107,9 @@ const Calculator = () => {
 
   const inputData =
     sharedQuoteRequest || stateInputData || storedInputData || {};
+  const hasRouteQuery = Boolean(
+    inputData?.pickupLocation && inputData?.dropOffLocation,
+  );
 
   const PRICE_MIN = 0;
   const PRICE_STEP = 200;
@@ -1165,17 +1168,19 @@ const Calculator = () => {
                     <img src={empty} alt="empty quotes" className="h-50" />
 
                     <p className="text-center font-bold text-green-600 text-lg mb-1">
-                      No courier services available
+                      {hasRouteQuery
+                        ? "No available quote for this route"
+                        : "No courier services available"}
                     </p>
                     <p className="text-center text-gray-600 text-sm">
-                      Use the form above to search for courier services by
-                      entering your pickup location, destination, and package
-                      details.
+                      {hasRouteQuery
+                        ? "Try a different pickup/drop-off route or update package details."
+                        : "Use the form above to search for courier services by entering your pickup location, destination, and package details."}
                     </p>
                   </div>
                 )}
 
-                {filteredAndSortedData.length === 0 && (
+                {hasQuotes && filteredAndSortedData.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-12">
                     <p className="text-center font-bold text-gray-600 text-lg mb-2">
                       No results match your filters
