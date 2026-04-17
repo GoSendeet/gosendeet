@@ -8,10 +8,14 @@ import { Spinner } from "@/components/Spinner";
 import { formatDate } from "@/lib/utils";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { Check } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { verifyBookingPayment } from "@/services/user";
 
 const Confirmation = () => {
   const [searchParams] = useSearchParams();
-  const bookingId = searchParams.get("bookingId") || "";
+  const reference = searchParams.get("reference") || searchParams.get("trxref") || "";
+  const [bookingId, setBookingId] = useState("");
+  const [verificationComplete, setVerificationComplete] = useState(false);
 
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(bookingId);
 
@@ -26,8 +30,46 @@ const Confirmation = () => {
         navigate("/signin");
       }, 1000);
     }
-  }, [userId]);
+  }, [navigate, userId]);
   const [loading, setLoading] = useState(false);
+
+  const { mutate: verifyPayment, isPending: isVerifyingPayment } = useMutation({
+    mutationFn: verifyBookingPayment,
+    onSuccess: (response: any) => {
+      const paymentStatus = response?.data?.status;
+      const verifiedBookingId = response?.data?.bookingId;
+
+      if (paymentStatus !== "SUCCESS") {
+        toast.error(response?.data?.message || "Payment was not successful.");
+        navigate("/error-page", { replace: true });
+        return;
+      }
+
+      if (!verifiedBookingId) {
+        toast.error("Payment succeeded, but the order could not be created.");
+        navigate("/error-page", { replace: true });
+        return;
+      }
+
+      setBookingId(verifiedBookingId);
+      setVerificationComplete(true);
+      sessionStorage.setItem("bookingCompleted", "true");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "We could not verify your payment.");
+      navigate("/error-page", { replace: true });
+    },
+  });
+
+  useEffect(() => {
+    if (!reference) {
+      toast.error("Payment reference is missing.");
+      navigate("/error-page", { replace: true });
+      return;
+    }
+
+    verifyPayment(reference);
+  }, [navigate, reference, verifyPayment]);
 
 
 useEffect(() => {
@@ -73,13 +115,13 @@ useEffect(() => {
 
   return (
     <Layout>
-      {isLoading && !isSuccess && (
+      {(isVerifyingPayment || (verificationComplete && isLoading && !isSuccess)) && (
         <div className="h-[50vh] w-full flex items-center justify-center">
           <Spinner />
         </div>
       )}
 
-      {isError && !isLoading && (
+      {verificationComplete && isError && !isLoading && (
         <div className="h-[50vh] w-full flex justify-center flex-col items-center">
           <p className="font-semibold font-inter text-xl text-center">
             There was an error getting the data
@@ -87,7 +129,7 @@ useEffect(() => {
         </div>
       )}
 
-      {!isLoading && isSuccess && data && data?.data && (
+      {verificationComplete && !isLoading && isSuccess && data && data?.data && (
         <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
           <div className="flex lg:flex-row flex-col gap-6 justify-between ">
             <div className="lg:w-[65%] flex flex-col gap-6">
@@ -210,7 +252,7 @@ useEffect(() => {
         </div>
       )}
 
-      {data && !data?.data && !isLoading && isSuccess && (
+      {verificationComplete && data && !data?.data && !isLoading && isSuccess && (
         <div className="h-[50vh] w-full flex justify-center flex-col items-center">
           <p className="font-semibold font-inter text-xl text-center">
             There are no results

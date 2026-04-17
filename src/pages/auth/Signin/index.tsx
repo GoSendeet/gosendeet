@@ -21,7 +21,7 @@ const Signin = () => {
     email: z
       .string({ required_error: "Email Address is required" })
       .min(1, { message: "Email Address cannot be empty" })
-      .email({ message: "Invalid email address" })
+      .email({ message: "Invalid email address" }),
   });
 
   const {
@@ -67,13 +67,12 @@ const Signin = () => {
       <div className="md:px-20 px-6 md:py-20 py-8">
         <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4 rounded-3xl">
           <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter mb-1 tracking-tight">
-            Login or Signup
+            Sign in to your account
           </h1>
           <p className="font-medium text-neutral800">
             Enter your details to access your account
           </p>
 
-         
           <Button
             variant={"outline"}
             className="border-neutral500 bg-transparent w-full mt-8 mb-4 hover:bg-white hover:border-0"
@@ -85,7 +84,6 @@ const Signin = () => {
           </Button>
 
           <p className="text-center font-medium text-neutral800">OR</p>
-           
 
           <div className="py-4 text-sm">
             <form onSubmit={handleSubmit(onSubmit)}>
@@ -123,11 +121,24 @@ const Signin = () => {
                 Continue
               </Button>
             </form>
+            <div className="text-center mt-6">
+              <p className="text-grey300 text-sm">
+                Don't have an account?{" "}
+                <Link to="/signup">
+                  <span className="text-blue100 font-semibold hover:underline">
+                    Sign Up
+                  </span>
+                </Link>
+              </p>
+            </div>
           </div>
+
           <p className="font-medium text-neutral800 text-center lg:text-base text-sm">
             By continuing, you accept our{" "}
             <Link to="/terms">
-              <span className="border-b border-b-neutral800">Terms of Use</span>{" "}
+              <span className="border-b border-b-neutral800">
+                Terms of Use
+              </span>{" "}
             </Link>
             and{" "}
             <Link to="/privacy">

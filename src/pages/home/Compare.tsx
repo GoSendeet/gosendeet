@@ -1,6 +1,6 @@
 import compareImg from "@/assets/images/compare.png";
-import { Button } from "@/components/ui/button";
 import { ArrowRight, BadgeCheck, DollarSign, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
 const Compare = () => {
   return (
     <div className="relative w-full bg-grey400 border border-[#F1F5F9] md:px-20 px-6 md:py-20 py-10 font-arial">
@@ -70,9 +70,16 @@ const Compare = () => {
               </li>
             </ul>
 
-            <Button className="bg-green1000 rounded-xl w-fit font-bold text-white shadow-[0px 25px 50px -12px #0D542B33]">
-              Get Started Now <ArrowRight />
-            </Button>
+            <Link
+              to="/cost-calculator"
+              state={{ mode: "compare" }}
+              className="bg-green1000 rounded-xl w-fit py-3 px-6 font-bold text-white transform transition-all duration-300 ease-in-out hover:scale-95 shadow-[0px 25px 50px -12px #0D542B33]"
+            >
+              <p className="flex items-center gap-2">
+                Get Started Now
+                <ArrowRight />
+              </p>
+            </Link>
           </div>
         </div>
       </div>
