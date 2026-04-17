@@ -29,14 +29,18 @@ const getInitialUserType = (typeParam: string | null): "customer" | "franchise" 
   typeParam === "franchise" ? "franchise" : "customer";
 
 const Signup = () => {
-  // const showGoogleAuth =
-  //   import.meta.env.DEV ||
-  //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
+  // remove showFranchiseForm or comment this out to revert to old logic
+  const showFranchiseForm =
+    import.meta.env.DEV ||
+    window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
   const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [searchParams] = useSearchParams();
+  const requestedUserType = getInitialUserType(searchParams.get("type"));
   const [userType, setUserType] = useState<"customer" | "franchise">(
-    getInitialUserType(searchParams.get("type")),
+    requestedUserType,
   );
+  //Remove this isFranchiseComingSoon to revert to old logic
+  const isFranchiseComingSoon = userType === "franchise" && !showFranchiseForm;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [open, setOpen] = useState(false);
@@ -131,7 +135,10 @@ const Signup = () => {
       message: "Passwords do not match",
     });
 
-  const schema = userType === "customer" ? customerSchema : franchiseSchema;
+  const schema =
+    userType === "franchise" && showFranchiseForm
+      ? franchiseSchema
+      : customerSchema;
 
   const {
     register,
@@ -159,7 +166,9 @@ const Signup = () => {
     mutate({
       ...data,
       username: `${data.firstName} ${data.lastName}`.trim(),
-      role: userType === "franchise" ? "FRANCHISE" : "USER",
+      role: userType === "franchise" && showFranchiseForm ? "FRANCHISE" : "USER",
+      // USE this role for reverting to old logic
+      //role: userType === "franchise" ? "FRANCHISE" : "USER",
     });
   };
 
@@ -227,11 +236,14 @@ const Signup = () => {
               <div className="relative bg-green4000 rounded-2xl p-1.5 flex mb-8">
                 {/* sliding pill */}
                 <div
-                  className={`absolute inset-y-1.5 w-[calc(50%-6px)] bg-white rounded-xl shadow-sm transition-all duration-500 ease-in-out ${
-                    userType === "customer" ? "left-1.5" : "left-[50%]"
+                  className={`absolute inset-y-1.5 bg-white rounded-xl shadow-sm transition-all duration-500 ease-in-out ${
+                    userType === "customer"
+                      ? "w-[calc(50%-6px)] left-1.5"
+                      : "w-[calc(50%-6px)] left-[50%]"
                   }`}
                 />
                 <button
+                  type="button"
                   onClick={() => setUserType("customer")}
                   className={`relative z-10 flex-1 py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
                     userType === "customer" ? "text-blue100" : "text-grey300"
@@ -241,6 +253,7 @@ const Signup = () => {
                   Customer
                 </button>
                 <button
+                  type="button"
                   onClick={() => setUserType("franchise")}
                   className={`relative z-10 flex-1 py-2 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
                     userType === "franchise" ? "text-blue100" : "text-grey300"
@@ -251,7 +264,29 @@ const Signup = () => {
                 </button>
               </div>
 
-              {/* Form */}
+              {/* Form / Coming Soon - remove isFranchiseComingSoon rapper to revert to old logic  */}
+              {isFranchiseComingSoon ? (
+                <div className="rounded-2xl border border-green200 bg-green300 p-6">
+                  <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-green800">
+                    <Store size={14} />
+                    Franchise Partner
+                  </p>
+                  <h3 className="mt-4 text-2xl font-bold text-blue100">
+                    Coming Soon
+                  </h3>
+                  <p className="mt-2 text-sm text-grey300">
+                    Franchise partner onboarding on gosendeet.com will be
+                    available soon. Please check back shortly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setUserType("customer")}
+                    className="mt-5 cursor-pointer rounded-xl bg-green100 px-4 py-2 text-sm font-semibold text-white hover:bg-green800"
+                  >
+                    Continue as Customer
+                  </button>
+                </div>
+              ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-4">
@@ -306,8 +341,8 @@ const Signup = () => {
                   )}
                 </div>
 
-                {/* Company Fields (Franchise Only) */}
-                {userType === "franchise" && (
+                {/* remove showFranchiseForm for revert */}
+                {showFranchiseForm && userType === "franchise" && (
                   <>
                     <div>
                       <label className="block text-sm  text-blue100 mb-2">
@@ -328,8 +363,8 @@ const Signup = () => {
                   </>
                 )}
 
-                {/* Company Email (Franchise Only) */}
-                {userType === "franchise" && (
+                {/* Company Email (Franchise Only) remove showFranchiseForm for revert */}
+                {showFranchiseForm && userType === "franchise" && (
                   <div>
                     <label className="block text-sm  text-blue100 mb-2">
                       Company Email
@@ -490,12 +525,13 @@ const Signup = () => {
                 </Button>
                  
               </form>
+              )}
 
               {/* Login Link */}
               <div className="text-center mt-6">
                 <p className="text-grey300 text-sm">
                   Already have an account?{" "}
-                  <Link to="/login">
+                  <Link to="/signin">
                     <span className="text-blue100 font-semibold hover:underline">
                       Log In
                     </span>
