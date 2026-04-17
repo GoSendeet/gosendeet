@@ -220,7 +220,7 @@ const Signup = () => {
           </div>
 
           {/* Right Section - Form */}
-          <div className="xl:w-[60%] lg:w-[50%] bg-white p-8 flex flex-col">
+          <div className="xl:w-[60%] lg:w-[50%] bg-white p-8 flex flex-col rounded-xl">
             <div className=" mx-auto w-full">
               {/* User Type Toggle */}
               <p className="mb-8 text-grey300">I want to register as a:</p>

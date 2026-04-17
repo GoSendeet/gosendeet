@@ -190,10 +190,26 @@ const FormHorizontalBar = ({
       getQuotes(vars.data, vars.direct),
 
     onSuccess: (response: any) => {
-      const quotes = response?.data ?? [];
+      const quotes = Array.isArray(response?.data?.content)
+        ? response.data.content
+        : Array.isArray(response?.data)
+          ? response.data
+          : [];
 
       if (quotes.length === 0) {
-        toast.error("No quotes found! Please try a different package type.");
+        toast.success("No quotes available for the provided details.");
+        navigate("/cost-calculator", {
+          state: {
+            inputData,
+            results: response,
+            mode: mode, // Use the actual current mode
+          },
+        });
+
+        if (typeof setData === "function") {
+          setData(response);
+        }
+
         resetQuoteMutation();
         return;
       }
