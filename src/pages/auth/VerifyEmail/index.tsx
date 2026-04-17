@@ -2,31 +2,98 @@ import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
 import { Spinner } from "@/components/Spinner";
 import { useMutation } from "@tanstack/react-query";
-import { resendVerification } from "@/services/auth";
+import { resendVerification, validateEmail } from "@/services/auth";
 import { toast } from "sonner";
 import { Link, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
   CircleAlert,
+  Clock3,
   MailCheck,
   RefreshCcw,
 } from "lucide-react";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const VerifyEmail = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
-  const email = queryParams.get("email") || "";
+  const emailFromQuery = queryParams.get("email") || "";
+
+  const [email, setEmail] = useState(emailFromQuery);
+  const [secondsLeft, setSecondsLeft] = useState(0);
 
   const isVerified = status === "success";
   const hasVerificationResult = status !== null;
   const isLoading = !hasVerificationResult;
+  const canResend = secondsLeft === 0;
+  const cooldownStorageKey = useMemo(
+    () =>
+      email.trim()
+        ? `verification-resend-until:${email.trim().toLowerCase()}`
+        : "",
+    [email],
+  );
+
+  useEffect(() => {
+    setEmail(emailFromQuery);
+  }, [emailFromQuery]);
+
+  useEffect(() => {
+    if (!cooldownStorageKey) {
+      setSecondsLeft(0);
+      return;
+    }
+
+    const getRemainingSeconds = () => {
+      const rawValue = localStorage.getItem(cooldownStorageKey);
+      if (!rawValue) {
+        return 0;
+      }
+
+      const resendAt = Number(rawValue);
+      if (Number.isNaN(resendAt)) {
+        localStorage.removeItem(cooldownStorageKey);
+        return 0;
+      }
+
+      const remaining = Math.max(
+        0,
+        Math.ceil((resendAt - Date.now()) / 1000),
+      );
+
+      if (remaining === 0) {
+        localStorage.removeItem(cooldownStorageKey);
+      }
+
+      return remaining;
+    };
+
+    setSecondsLeft(getRemainingSeconds());
+
+    const interval = window.setInterval(() => {
+      setSecondsLeft(getRemainingSeconds());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [cooldownStorageKey]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: resendVerification,
     onSuccess: () => {
       toast.success("Verification email sent successfully");
+      if (cooldownStorageKey) {
+        localStorage.setItem(
+          cooldownStorageKey,
+          String(Date.now() + RESEND_COOLDOWN_SECONDS * 1000),
+        );
+        setSecondsLeft(RESEND_COOLDOWN_SECONDS);
+      }
     },
     onError: (data) => {
       toast.error(data?.message || "Unable to resend verification email.");
@@ -34,12 +101,33 @@ const VerifyEmail = () => {
   });
 
   const handleResend = () => {
-    if (!email) {
-      toast.error("No email address was found for this verification request.");
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      toast.error("Enter the email address tied to the unverified account.");
       return;
     }
 
-    mutate(email);
+    if (!canResend) {
+      toast.error(`Please wait ${secondsLeft}s before requesting a new link.`);
+      return;
+    }
+
+    validateEmail(normalizedEmail)
+      .then((response) => {
+        const matchedEmail = response?.data?.email || normalizedEmail;
+        const alreadyVerified = Boolean(response?.data?.isVerified);
+
+        if (alreadyVerified) {
+          toast.error("This account has already been verified. Please sign in.");
+          return;
+        }
+
+        mutate(matchedEmail);
+      })
+      .catch((error: { message?: string }) => {
+        toast.error(error?.message || "We could not find that email address.");
+      });
   };
 
   return (
@@ -148,11 +236,10 @@ const VerifyEmail = () => {
                     <CircleAlert className="w-10 h-10" />
                   </div>
                   <h2 className="mt-6 text-3xl font-clash font-semibold text-neutral600 text-center">
-                    We couldn&apos;t verify this account
+                    This account is not verified.
                   </h2>
                   <p className="mt-3 text-neutral500 leading-7 text-center max-w-md mx-auto">
-                    The verification link may have expired, already been used,
-                    or is no longer valid. You can request a fresh one below.
+                    Click on the button below to verify your account
                   </p>
 
                   {email && (
@@ -166,16 +253,44 @@ const VerifyEmail = () => {
                     </div>
                   )}
 
+                  {!email && (
+                    <div className="mt-6">
+                      <label className="text-xs uppercase tracking-[0.18em] text-neutral500 font-semibold">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="Enter your account email"
+                        className="mt-3 w-full rounded-2xl border border-neutral300 px-4 py-4 text-sm text-neutral600 outline-none transition focus:border-green500"
+                      />
+                    </div>
+                  )}
+
                   <div className="mt-8 flex flex-col gap-3">
                     <Button
                       variant="secondary"
                       className="w-full bg-green100 hover:bg-green800 text-white"
                       onClick={handleResend}
                       loading={isPending}
+                      disabled={isPending || !canResend}
                     >
-                      Resend Verification Email
+                      {canResend
+                        ? "Send Verification Email"
+                        : `Resend available in ${secondsLeft}s`}
                       <RefreshCcw className="w-4 h-4" />
                     </Button>
+                    {!canResend && (
+                      <div className="rounded-2xl border border-neutral200 bg-neutral100 px-4 py-3 text-sm text-neutral500 flex items-center gap-2">
+                        <Clock3 className="w-4 h-4 text-green600" />
+                        You can request another verification email in{" "}
+                        <span className="font-semibold text-neutral600">
+                          {secondsLeft}s
+                        </span>
+                        .
+                      </div>
+                    )}
                     <Link to="/signup">
                       <Button
                         variant="outline"
