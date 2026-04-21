@@ -203,7 +203,7 @@ const VerifyEmail = () => {
                     This account is not verified.
                   </h2>
                   <p className="mt-3 text-neutral500 leading-7 text-center max-w-md mx-auto">
-                    Click on the button below to verify your account
+                    Click the button below to verify your account.
                   </p>
 
                   {email && (
