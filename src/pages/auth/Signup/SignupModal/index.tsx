@@ -5,6 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 export function SignupModal({
   open,
@@ -15,6 +16,8 @@ export function SignupModal({
   setOpen: any;
   email: string;
 }) {
+  const navigate = useNavigate();
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="gap-0">
@@ -39,7 +42,10 @@ export function SignupModal({
           <Button
             variant={"secondary"}
             className="w-fit mb-2"
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              setOpen(false);
+              navigate("/signin", { replace: true });
+            }}
           >
             Continue
           </Button>

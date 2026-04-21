@@ -100,7 +100,7 @@ const Navbar = () => {
         {authToken === null ? (
           <div className="hidden lg:flex lg:flex-row gap-8 flex-col">
             <Link to="/signup">
-              <Button size={"lg"} variant="outline">
+              <Button size={"sm"} variant="outline">
                 Sign Up
               </Button>
             </Link>
