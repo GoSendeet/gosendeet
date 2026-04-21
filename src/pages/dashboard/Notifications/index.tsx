@@ -167,7 +167,7 @@ const Notifications = ({ setActiveTab }: any) => {
                 <p className="text-neutral600 text-sm mb-4">
                   Ready to send something special or track a delivery?
                 </p>
-                <Button onClick={() => setActiveTab("overview")}>
+                <Button onClick={() => setActiveTab("overview")} className="bg-brand">
                   Book a delivery
                 </Button>
               </div>
