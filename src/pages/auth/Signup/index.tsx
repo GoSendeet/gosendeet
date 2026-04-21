@@ -23,6 +23,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
 import { isNonProductionEmailValidationEnv } from "@/utils/environment";
+import { createSignupUsername } from "@/utils/username";
 import { useSearchParams } from "react-router-dom";
 
 const getInitialUserType = (typeParam: string | null): "customer" | "franchise" =>
@@ -158,7 +159,7 @@ const Signup = () => {
     setEmail(data.email);
     mutate({
       ...data,
-      username: `${data.firstName} ${data.lastName}`.trim(),
+      username: createSignupUsername(data.firstName, data.lastName),
       role: userType === "franchise" ? "FRANCHISE" : "USER",
     });
   };
