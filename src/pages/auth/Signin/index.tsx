@@ -35,14 +35,6 @@ const Signin = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: validateEmail,
     onSuccess: (data) => {
-      if (data?.data?.isVerified === false) {
-        toast.warning("User not verified");
-        navigate(`/verify-account?email=${encodeURIComponent(data?.data?.email || "")}&status=error`, {
-          replace: true,
-        });
-        return;
-      }
-
       toast.success("Successful");
       navigate("/login", {
         state: {

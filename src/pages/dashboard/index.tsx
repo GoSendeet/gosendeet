@@ -96,7 +96,9 @@ const Dashboard = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === "overview" && <Overview data={userData}/>}
+        {activeTab === "overview" && (
+          <Overview data={userData} refetchUserData={refetchUserData} />
+        )}
         {activeTab === "notifications" && (
           <Notifications setActiveTab={setActiveTab} />
         )}
