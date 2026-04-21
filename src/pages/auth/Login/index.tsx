@@ -74,6 +74,14 @@ const Login = () => {
       navigate(getDefaultRouteForRole(user.role));
     },
     onError: (error: { message?: string }) => {
+      if (error?.message === "Account is not verified") {
+        navigate(
+          `/verify-account?email=${encodeURIComponent(email)}&status=error`,
+          { replace: true },
+        );
+        return;
+      }
+
       toast.error(error?.message || "Login failed");
     },
   });
