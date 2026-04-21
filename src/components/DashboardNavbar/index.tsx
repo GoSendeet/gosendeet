@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "../../constants";
-import logo from "@/assets/images/sendeet-black-logo.png";
+import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
@@ -77,12 +77,12 @@ const DashboardNavbar = () => {
   });
 
   return (
-    <nav className="w-full z-20">
-      <div className="flex justify-between items-center lg:py-5 py-6 xl:px-30 md:px-20 px-6 bg-white border-b border-b-neutral300">
+    <nav className="w-full">
+      <div className="flex justify-between items-center lg:py-5 py-4 xl:px-30 md:px-20 px-6 bg-white border-b border-b-neutral300">
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
-            <img src={logo} alt="logo" className="" />
+            <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>
 

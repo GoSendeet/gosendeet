@@ -64,7 +64,7 @@ const Signin = () => {
 
   return (
     <AuthLayout>
-      <div className="md:px-20 px-6 md:py-20 py-8">
+      <div className="md:px-20 px-2.5 md:py-20 py-8">
         <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-12 md:px-10 px-4 rounded-3xl">
           <h1 className="lg:text-[40px] text-[30px] font-semibold font-inter mb-1 tracking-tight">
             Sign in to your account
