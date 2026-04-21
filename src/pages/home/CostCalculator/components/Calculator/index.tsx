@@ -161,6 +161,7 @@ const Calculator = () => {
   const minPriceRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const resultsSectionRef = useRef<HTMLDivElement | null>(null);
+  const quoteDetailsRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledToResultsRef = useRef(false);
 
   const maxPriceInitializedRef = useRef(false);
@@ -217,21 +218,33 @@ const Calculator = () => {
   useEffect(() => {
     if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
     if (mode === "tracking" || isFetchingQuotes || isLoadingMore) return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
 
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-    if (!isMobile) {
-      hasAutoScrolledToResultsRef.current = true;
-      return;
-    }
+    const shouldWaitForQuoteDetails = mode === "gosendeet";
+    if (shouldWaitForQuoteDetails && !hasQuotes) return;
 
     const hasFetchedResponse =
       hasQuotes ||
       Boolean((data && Object.keys(data).length > 0) || hasRouteQuery);
     if (!hasFetchedResponse) return;
 
-    const scrollToResults = () => {
-      const target = resultsSectionRef.current;
-      if (!target) return;
+    let retryTimeoutId: number | undefined;
+    let attempts = 0;
+    const maxAttempts = 12;
+
+    const scrollToTarget = () => {
+      const target =
+        mode === "gosendeet"
+          ? quoteDetailsRef.current
+          : resultsSectionRef.current;
+
+      if (!target) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimeoutId = window.setTimeout(scrollToTarget, 120);
+        }
+        return;
+      }
 
       const navbarOffset = 88;
       const yPosition =
@@ -240,12 +253,13 @@ const Calculator = () => {
       hasAutoScrolledToResultsRef.current = true;
     };
 
-    const rafId = requestAnimationFrame(scrollToResults);
-    const timeoutId = window.setTimeout(scrollToResults, 120);
+    const rafId = requestAnimationFrame(scrollToTarget);
+    const timeoutId = window.setTimeout(scrollToTarget, 140);
 
     return () => {
       cancelAnimationFrame(rafId);
       clearTimeout(timeoutId);
+      if (retryTimeoutId) clearTimeout(retryTimeoutId);
     };
   }, [
     autoScrollToResults,
@@ -1391,7 +1405,7 @@ const Calculator = () => {
       )}
 
       {mode === "gosendeet" && hasQuotes && (
-        <div className="max-w-3xl mx-auto my-8">
+        <div ref={quoteDetailsRef} className="max-w-3xl mx-auto my-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between">
             <div className="flex items-center gap-6 mb-4">
               <img
