@@ -1,4 +1,3 @@
-// import logo from "@/assets/images/sendeet-black-logo.png";
 import logo from "@/assets/images/logo-green.png";
 
 import { Link } from "react-router-dom";
