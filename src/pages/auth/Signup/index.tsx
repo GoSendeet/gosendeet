@@ -21,6 +21,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
 import { isNonProductionEmailValidationEnv } from "@/utils/environment";
+import { createSignupUsername } from "@/utils/username";
 import { useSearchParams } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
@@ -167,9 +168,8 @@ const Signup = () => {
     setEmail(data.email);
     mutate({
       ...data,
-      username: `${data.firstName} ${data.lastName}`.trim(),
-      role:
-        userType === "franchise" && showFranchiseForm ? "FRANCHISE" : "USER",
+      username: createSignupUsername(data.firstName, data.lastName),
+      role: userType === "franchise" && showFranchiseForm ? "FRANCHISE" : "USER",
       // USE this role for reverting to old logic
       //role: userType === "franchise" ? "FRANCHISE" : "USER",
     });
