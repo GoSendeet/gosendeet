@@ -217,7 +217,7 @@ const VerifyEmail = () => {
                     </div>
                   )}
 
-                  {!email && (
+                  {!emailFromQuery && (
                     <div className="mt-6">
                       <label className="text-xs uppercase tracking-[0.18em] text-neutral500 font-semibold">
                         Email Address
