@@ -88,7 +88,11 @@ const Calculator = () => {
   const [searchParams] = useSearchParams();
   const shareId = searchParams.get("shareId") || "";
   const { data: sharedQuote } = useGetSharedQuotes(shareId);
-  const { results, inputData: stateInputData } = location.state || {};
+  const {
+    results,
+    inputData: stateInputData,
+    autoScrollToResults = false,
+  } = location.state || {};
   const [mode, setMode] = useState<FormMode>(
     location?.state?.mode ?? "gosendeet",
   );
@@ -156,6 +160,9 @@ const Calculator = () => {
 
   const minPriceRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
+  const resultsSectionRef = useRef<HTMLDivElement | null>(null);
+  const quoteDetailsRef = useRef<HTMLDivElement | null>(null);
+  const hasAutoScrolledToResultsRef = useRef(false);
 
   const maxPriceInitializedRef = useRef(false);
   useEffect(() => {
@@ -207,6 +214,62 @@ const Calculator = () => {
       setData(results);
     }
   }, [results, sharedQuote, shareId]);
+
+  useEffect(() => {
+    if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
+    if (mode === "tracking" || isFetchingQuotes || isLoadingMore) return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+
+    const shouldWaitForQuoteDetails = mode === "gosendeet";
+    if (shouldWaitForQuoteDetails && !hasQuotes) return;
+
+    const hasFetchedResponse =
+      hasQuotes ||
+      Boolean((data && Object.keys(data).length > 0) || hasRouteQuery);
+    if (!hasFetchedResponse) return;
+
+    let retryTimeoutId: number | undefined;
+    let attempts = 0;
+    const maxAttempts = 12;
+
+    const scrollToTarget = () => {
+      const target =
+        mode === "gosendeet"
+          ? quoteDetailsRef.current
+          : resultsSectionRef.current;
+
+      if (!target) {
+        if (attempts < maxAttempts) {
+          attempts += 1;
+          retryTimeoutId = window.setTimeout(scrollToTarget, 120);
+        }
+        return;
+      }
+
+      const navbarOffset = 88;
+      const yPosition =
+        target.getBoundingClientRect().top + window.scrollY - navbarOffset;
+      window.scrollTo({ top: Math.max(0, yPosition), behavior: "smooth" });
+      hasAutoScrolledToResultsRef.current = true;
+    };
+
+    const rafId = requestAnimationFrame(scrollToTarget);
+    const timeoutId = window.setTimeout(scrollToTarget, 140);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timeoutId);
+      if (retryTimeoutId) clearTimeout(retryTimeoutId);
+    };
+  }, [
+    autoScrollToResults,
+    mode,
+    isFetchingQuotes,
+    isLoadingMore,
+    hasQuotes,
+    data,
+    hasRouteQuery,
+  ]);
 
   //Debounce min price — clamp here so free typing doesn't break filtering
   useEffect(() => {
@@ -629,7 +692,7 @@ const Calculator = () => {
   };
 
   return (
-    <div className="md:px-20 px-6 py-12 bg-[#F8FAFC]">
+    <div className="md:px-20 px-4 md:px-6 py-12 bg-[#F8FAFC]">
       {/* Mode Switcher Tabs - Top of Calculator */}
       <div className="w-full mb-6 flex justify-center">
         <ModeSwitcher
@@ -650,7 +713,7 @@ const Calculator = () => {
       </div>
 
       {/* Results Section Header */}
-
+      <div ref={resultsSectionRef}>
       {mode === "compare" && (
         <>
           {/* Filter & Sort button — only show when quotes were ever loaded */}
@@ -1342,9 +1405,9 @@ const Calculator = () => {
       )}
 
       {mode === "gosendeet" && hasQuotes && (
-        <div className="max-w-3xl mx-auto my-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 mb-8">
+        <div ref={quoteDetailsRef} className="max-w-3xl mx-auto my-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between">
+            <div className="flex items-center gap-6 mb-4">
               <img
                 src={logo}
                 alt="logo"
@@ -1355,7 +1418,7 @@ const Calculator = () => {
               </h1>
             </div>
             <Button
-              className="w-fit bg-brand"
+              className="w-fit bg-brand mb-4"
               loading={shareLoading}
               onClick={shareUrl ? copyUrl : handleShare}
             >
@@ -1366,7 +1429,7 @@ const Calculator = () => {
 
           {/* Service Level Options */}
           {quoteContent.length > 1 && (
-            <div className="flex flex-wrap gap-3 mb-4">
+            <div className="flex flex-wrap gap-2 mb-4">
               {quoteContent.map((quote: any, idx: number) => {
                 const sla =
                   quote?.serviceLevelAgreements?.[0] ?? `Option ${idx + 1}`;
@@ -1411,32 +1474,32 @@ const Calculator = () => {
 
           <div className="bg-white rounded-3xl border border-gray-200 shadow-lg overflow-hidden">
             {/* Quote Details */}
-            <div className="px-8 py-6 space-y-6">
+            <div className="px-4 lg:px-5 py-6 space-y-6">
               {/* Route Info */}
               <div className="">
                 <div className="flex gap-4">
                   <div className="shrink-0 w-10 h-10 rounded-lg bg-brand-light flex items-center justify-center">
                     <FiPackage className="w-5 h-5 text-brand" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex flex-col gap-4">
                     <div className="flex items-start gap-4 mb-4">
-                      <MapPin className="text-brand" />
+                      <MapPin className="text-brand shrink-0" size={20} />
                       <div>
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
                           From
                         </p>
-                        <p className="text-base font-medium text-[#1a1a1a]">
+                        <p className="text-sm lg:text-base font-medium text-[#1a1a1a]">
                           {bookingRequest?.pickupLocation || "Not specified"}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start gap-4 mb-4">
-                      <MapPin className="text-brand" />
-                      <div>
+                      <MapPin className="text-brand shrink-0" size={20} />
+                      <div className="col-span-2">
                         <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
                           To
                         </p>
-                        <p className="text-base font-medium text-[#1a1a1a]">
+                        <p className="text-sm lg:text-base font-medium text-[#1a1a1a]">
                           {bookingRequest?.dropOffLocation || "Not specified"}
                         </p>
                       </div>
@@ -1577,6 +1640,7 @@ const Calculator = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

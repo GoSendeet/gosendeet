@@ -203,6 +203,7 @@ const FormHorizontalBar = ({
             inputData,
             results: response,
             mode: mode, // Use the actual current mode
+            autoScrollToResults: isDashboard,
           },
         });
 
@@ -221,6 +222,7 @@ const FormHorizontalBar = ({
           inputData,
           results: response,
           mode: mode, // Use the actual current mode
+          autoScrollToResults: isDashboard,
         },
       });
 
