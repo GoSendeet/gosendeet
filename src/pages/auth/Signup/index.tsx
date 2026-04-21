@@ -12,8 +12,6 @@ import { SignupModal } from "./SignupModal";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
-  Eye,
-  EyeOff,
   ShieldCheck,
   Store,
   User,
