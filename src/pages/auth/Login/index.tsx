@@ -76,7 +76,7 @@ const Login = () => {
     onError: (error: { message?: string }) => {
       if (error?.message === "Account is not verified") {
         navigate(
-          `/verify-email?email=${encodeURIComponent(email)}&status=error`,
+          `/verify-account?email=${encodeURIComponent(email)}&status=error`,
           { replace: true },
         );
         return;
