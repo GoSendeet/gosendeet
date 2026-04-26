@@ -1,4 +1,3 @@
-import { RxExternalLink } from "react-icons/rx";
 import bell from "@/assets/images/no-notifications-empty-state.png";
 import { Button } from "@/components/ui/button";
 import { useGetAllNotifications } from "@/queries/user/useGetUserNotifications";

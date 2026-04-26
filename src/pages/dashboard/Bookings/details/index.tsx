@@ -19,13 +19,34 @@ import { downloadBookingInvoicePdf } from "@/lib/pdf/bookingInvoice";
 import { useState } from "react";
 import openChatwootChat from "@/lib/openChatwootChat";
 
+type BookingData = {
+  id?: string;
+  trackingNumber?: string;
+  status?: string;
+  senderName?: string;
+  receiverName?: string;
+  packageType?: string;
+  bookingDate?: string;
+  companyName?: string;
+  weight?: string | number;
+  weightUnit?: string;
+  length?: string | number;
+  width?: string | number;
+  height?: string | number;
+  dimensionsUnit?: string;
+  [key: string]: unknown;
+};
+
 type BookingDetailsProps = {
-  bookingData: Record<string, unknown>;
+  bookingData: BookingData;
 };
 
 export function BookingDetails({ bookingData }: BookingDetailsProps) {
+  const bookingId = bookingData.id ?? "";
+  const bookingStatus = bookingData.status ?? "";
+  const bookingDate = bookingData.bookingDate ?? "";
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
-    bookingData.id,
+    bookingId,
   );
   const [isDownloading, setIsDownloading] = useState(false);
 
@@ -70,7 +91,7 @@ export function BookingDetails({ bookingData }: BookingDetailsProps) {
           </div>
         )}
 
-        {!isLoading && isSuccess && data && data?.data?.length > 0 && (
+        {!isLoading && isSuccess && data?.data && (
           <>
             <DialogHeader>
               <DialogTitle>
@@ -93,12 +114,12 @@ export function BookingDetails({ bookingData }: BookingDetailsProps) {
                 </button>
                 <p
                   className={cn(
-                    statusClasses[bookingData?.status] ??
+                    statusClasses[bookingStatus] ??
                       "bg-gray-100 text-gray-800", // fallback if status not found
                     "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
                   )}
                 >
-                  {formatStatus(bookingData?.status)}
+                  {formatStatus(bookingStatus)}
                 </p>
                 {/* <p className="px-4 py-1 w-fit font-medium rounded-2xl bg-[#FEF2F2] text-[#EC2D30]">
               Canceled
@@ -135,7 +156,7 @@ export function BookingDetails({ bookingData }: BookingDetailsProps) {
                     Pickup Created
                   </p>
                   <p className="text-sm">
-                    {formatDateTime(bookingData?.bookingDate)}
+                    {formatDateTime(bookingDate)}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">

@@ -1,9 +1,7 @@
-import { RxExternalLink } from "react-icons/rx";
 import Bookings from "../Bookings";
 import { cn } from "@/lib/utils";
 // import CreateBooking from "@/components/CreateBooking";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
-import { Link } from "react-router-dom";
 import SupportPanel from "@/components/SupportPanel";
 
 const Overview = ({ data }: { data: any }) => {

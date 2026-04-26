@@ -1,7 +1,7 @@
 import Layout from "@/layouts/HomePageLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { MouseEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
@@ -10,7 +10,6 @@ import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { Check } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { verifyBookingPayment } from "@/services/user";
-import { openChatwootWidget } from "@/lib/chatwoot";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import openChatwootChat from "@/lib/openChatwootChat";
 
