@@ -27,6 +27,9 @@ import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { DateRangePicker } from "@/components/DateRangePicker.tsx";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { getBookingsById } from "@/services/bookings";
+import { downloadBookingInvoicePdf } from "@/lib/pdf/bookingInvoice";
 
 const Bookings = () => {
   const [lastPage, setLastPage] = useState(1);
@@ -41,6 +44,7 @@ const Bookings = () => {
   const startStr = range?.from ? format(range.from, "yyyy-MM-dd") : "";
   const endStr = range?.to ? format(range.to, "yyyy-MM-dd") : "";
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [downloadingBookingId, setDownloadingBookingId] = useState<string | null>(null);
 
   // Reset pagination when status changes
   useEffect(() => {
@@ -74,6 +78,32 @@ const Bookings = () => {
       clearTimeout(handler); // cancel timeout if user types again
     };
   }, [searchTerm]);
+
+  const handleDownloadInvoice = async (booking: Record<string, unknown>) => {
+    const bookingId = String(booking?.id ?? "");
+    if (!bookingId) {
+      toast.error("Booking ID is missing");
+      return;
+    }
+
+    setDownloadingBookingId(bookingId);
+    const loadingToast = toast.loading("Generating invoice PDF...");
+    try {
+      const response = await getBookingsById(bookingId);
+      await downloadBookingInvoicePdf({
+        booking,
+        details: response?.data,
+      });
+      toast.success("Invoice downloaded", { id: loadingToast });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to download invoice";
+      toast.error(message, {
+        id: loadingToast,
+      });
+    } finally {
+      setDownloadingBookingId(null);
+    }
+  };
 
   return (
     <div className="md:px-4">
@@ -197,9 +227,15 @@ const Bookings = () => {
                         // setIsDialogOpen={setIsDialogOpen}
                         bookingData={bookingData}
                       />
-                      <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
-                        <LuDownload size={18} /> Download{" "}
-                      </p>
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer w-full text-left disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() => handleDownloadInvoice(item)}
+                        disabled={downloadingBookingId === item?.id}
+                      >
+                        <LuDownload size={18} />
+                        {downloadingBookingId === item?.id ? "Generating..." : "Download"}
+                      </button>
                     </PopoverContent>
                   </Popover>
                 </div>
@@ -316,9 +352,15 @@ const Bookings = () => {
                           // setIsDialogOpen={setIsDialogOpen}
                           bookingData={bookingData}
                         />
-                        <p className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer">
-                          <LuDownload size={18} /> Download
-                        </p>
+                        <button
+                          type="button"
+                          className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer w-full text-left disabled:cursor-not-allowed disabled:opacity-60"
+                          onClick={() => handleDownloadInvoice(item)}
+                          disabled={downloadingBookingId === item?.id}
+                        >
+                          <LuDownload size={18} />
+                          {downloadingBookingId === item?.id ? "Generating..." : "Download"}
+                        </button>
                       </PopoverContent>
                     </Popover>
                   </div>

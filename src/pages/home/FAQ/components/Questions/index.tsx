@@ -49,9 +49,9 @@ const Questions = () => {
         {faqs.map((faq, index) => (
           <div
             key={index}
-            className="bg-orange-50 flex flex-col gap-2 md:p-8 p-4"
+            className="bg-brand-light flex flex-col gap-2 md:p-8 p-4"
           >
-            <FaCircleQuestion size={25} className="text-orange500" />
+            <FaCircleQuestion size={25} className="text-brand" />
 
             <h3 className="font-clash font-semibold leading-[140%]">
               {faq.question}

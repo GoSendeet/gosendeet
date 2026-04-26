@@ -1,55 +1,47 @@
-/**
- * Centralized error handling utility for API requests
- * Extracts and formats error messages from various error response formats
- */
-
-interface ApiErrorResponse {
-  message?: string;
-  [key: string]: unknown;
-}
-
 interface AxiosErrorShape {
   response?: {
     data?: unknown;
   };
-  message?: string;
 }
 
-/**
- * Unwraps and throws a formatted error from various error response formats
- * Handles Axios error responses, error objects with messages, and string errors
- *
- * @param error - The error object to unwrap
- * @param fallbackMessage - Optional fallback message if no error details found
- * @throws Always throws a formatted error object with a message property
- */
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+export const extractMessage = (value: unknown): string | undefined => {
+  if (typeof value === "string" && value.trim()) return value;
+
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const message = extractMessage(item);
+      if (message) return message;
+    }
+    return undefined;
+  }
+
+  if (isRecord(value)) {
+    if (typeof value.message === "string" && value.message.trim()) return value.message;
+    if (typeof value.error === "string" && value.error.trim()) return value.error;
+    for (const nestedValue of Object.values(value)) {
+      const message = extractMessage(nestedValue);
+      if (message) return message;
+    }
+  }
+
+  return undefined;
+};
+
 export const throwApiError = (
   error: unknown,
   fallbackMessage = "Something went wrong"
 ): never => {
-  // Handle object errors
-  if (typeof error === "object" && error !== null) {
-    // Check for Axios error response pattern
-    const axiosError = error as AxiosErrorShape;
-    if (axiosError.response?.data) {
-      throw axiosError.response.data;
-    }
+  const axiosError = error as AxiosErrorShape;
+  const responseData = axiosError?.response?.data;
+  const fallback = extractMessage(error) || fallbackMessage;
+  const message = extractMessage(responseData) || fallback;
 
-    // Check for error with message property
-    const errorWithMessage = error as ApiErrorResponse;
-    if (
-      typeof errorWithMessage.message === "string" &&
-      errorWithMessage.message.trim()
-    ) {
-      throw { message: errorWithMessage.message };
-    }
+  if (isRecord(responseData)) {
+    throw { ...responseData, message };
   }
 
-  // Handle string errors
-  if (typeof error === "string" && error.trim()) {
-    throw { message: error };
-  }
-
-  // Fallback error
-  throw { message: fallbackMessage };
+  throw { message };
 };

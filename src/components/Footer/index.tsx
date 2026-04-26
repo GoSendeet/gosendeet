@@ -1,21 +1,10 @@
 import logo from "@/assets/images/gosendeet-black-logo.png";
-import { type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import ContactSalesDialog from "@/components/ContactSalesDialog";
-import { openChatwootWidget } from "@/lib/chatwoot";
-import { toast } from "sonner";
+import openChatwootChat from "@/lib/openChatwootChat";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
-  const handleHelpCenterClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-
-    const opened = openChatwootWidget();
-    if (!opened) {
-      toast.info("Support chat is still loading. Please try again in a moment.");
-    }
-  };
 
   const footerLinks = {
     platform: [
@@ -33,6 +22,7 @@ const Footer = () => {
       { label: "Help Center", href: "/help" },
       { label: "Trust & Safety", href: "/about" },
       { label: "Contact", href: "/contact" },
+      { label: "FAQ", href: "/faq" },
     ],
     legal: [
       { label: "Privacy", href: "/privacy" },
@@ -101,7 +91,7 @@ const Footer = () => {
                     {link.label === "Help Center" ? (
                       <button
                         type="button"
-                        onClick={handleHelpCenterClick}
+                        onClick={openChatwootChat}
                         className="text-grey300 hover:text-blue100 transition-colors text-sm bg-transparent border-0 p-0 cursor-pointer"
                       >
                         {link.label}
@@ -112,12 +102,12 @@ const Footer = () => {
                         triggerClassName="text-grey300 hover:text-blue100 transition-colors text-sm"
                       />
                     ) : (
-                      <a
-                        href={link.href}
+                      <Link
+                        to={link.href}
                         className="text-grey300 hover:text-blue100 transition-colors text-sm"
                       >
                         {link.label}
-                      </a>
+                      </Link>
                     )}
                   </li>
                 ))}
