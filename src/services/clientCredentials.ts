@@ -1,8 +1,5 @@
-import { AxiosError } from "axios";
-
 import { api } from "./axios";
-
-type ApiError = { message?: string };
+import { throwApiError } from "@/lib/errorHandling";
 
 export type ClientCredential = {
   id: string;
@@ -28,11 +25,6 @@ export type ClientCredentialCreatePayload = {
 export type ClientCredentialCreateResult = {
   credential: ClientCredential;
   rawSecret: string;
-};
-
-const throwApiError = (error: unknown): never => {
-  const axiosError = error as AxiosError<ApiError>;
-  throw axiosError?.response?.data || { message: (error as Error).message };
 };
 
 const toArray = <T>(value: T | T[] | null | undefined): T[] => {

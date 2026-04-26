@@ -104,6 +104,7 @@ const Dashboard = () => {
         {activeTab === "settings" && <ProfileSettings data={userData}/>}
         {activeTab === "security" && <Security data={userData}/>}
       </div>
+      
     </div>
   );
 };

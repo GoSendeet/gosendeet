@@ -1,10 +1,5 @@
-import { AxiosError } from "axios";
 import { api, authApi } from "./axios";
-
-const throwApiError = (error: unknown): never => {
-  const axiosError = error as AxiosError<{ message: string }>;
-  throw axiosError?.response?.data || { message: (error as Error).message };
-};
+import { throwApiError } from "@/lib/errorHandling";
 
 const ensureAuthenticated = () => {
   const authToken = sessionStorage.getItem("authToken");
