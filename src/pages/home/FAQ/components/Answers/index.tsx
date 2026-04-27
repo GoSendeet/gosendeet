@@ -48,8 +48,8 @@ const Answers = () => {
               className={`flex items-center gap-4 font-clash font-semibold px-4 py-2 text-[18px] leading-[140%] cursor-pointer transition-all 
               ${
                 selectedTitle === title
-                  ? "bg-orange-50 rounded"
-                  : "hover:bg-orange-50 hover:rounded"
+                  ? "bg-brand-light rounded"
+                  : "hover:bg-brand-light hover:rounded"
               }`}
               onClick={() => setSelectedTitle(title)}
             >

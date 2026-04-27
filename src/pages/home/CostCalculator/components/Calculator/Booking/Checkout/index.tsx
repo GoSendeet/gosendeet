@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { payForBooking } from "@/services/user";
+import CurrencyFormatter from "@/components/CurrencyFormatter";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 const Checkout = () => {
@@ -221,12 +222,12 @@ const Checkout = () => {
                 <p className="flex justify-between items-start gap-4 font-medium text-sm">
                   <span className="text-neutral600">Subtotal</span>
                   <span className="text-right">
-                    ₦ {bookingData?.courierCost}
+                    ₦ {CurrencyFormatter(bookingData?.courierCost)}
                   </span>
                 </p>
                 <p className="flex justify-between items-start gap-4 font-medium text-sm">
                   <span className="text-neutral600">Tax</span>
-                  <span className="text-right">₦ {bookingData?.tax}</span>
+                  <span className="text-right">₦ {CurrencyFormatter(bookingData?.tax)}</span>
                 </p>
               </div>
 
@@ -234,7 +235,7 @@ const Checkout = () => {
 
               <p className="flex justify-between items-start gap-4 font-semibold">
                 <span className="text-neutral600">Total</span>
-                <span className="text-right">₦ {total}</span>
+                <span className="text-right">₦ {CurrencyFormatter(total)}</span>
               </p>
             </div>
           </div>

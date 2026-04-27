@@ -1,10 +1,5 @@
 import { api, BASE_URL, authApi } from "./axios";
-import { AxiosError } from "axios";
-
-const throwApiError = (error: unknown): never => {
-  const axiosError = error as AxiosError<{ message: string }>;
-  throw axiosError?.response?.data || { message: (error as Error).message };
-};
+import { throwApiError } from "@/lib/errorHandling";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
@@ -20,8 +15,8 @@ export const signup = async (data: {
   try {
     const res = await authApi.post("/auth/create-account", data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -29,8 +24,8 @@ export const validateEmail = async (email: string) => {
   try {
     const res = await authApi.post(`/auth?email=${email}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -38,8 +33,8 @@ export const login = async (data: { email: string; password: string }) => {
   try {
     const res = await authApi.post("/auth/login", data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -47,8 +42,8 @@ export const logout = async () => {
   try {
     const res = await api.post("/auth/logout");
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -85,8 +80,8 @@ export const resetPassword = async ({
       `/auth/reset-password?resetToken=${resetToken}&newPassword=${password}&confirmPassword=${confirmPassword}`
     );
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -94,8 +89,8 @@ export const changePassword = async (data: any) => {
   try {
     const res = await api.post(`/security/change-password`, data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -103,8 +98,8 @@ export const deleteAccount = async () => {
   try {
     const res = await api.delete(`/security`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -114,8 +109,8 @@ export const activateAccount = async (status: string) => {
       `/security/update-account-status?status=${status}`
     );
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 

@@ -10,6 +10,7 @@ import { useGetTrackBookings } from "@/queries/user/useGetUserBookings";
 import { statusClasses } from "@/constants";
 import { Spinner } from "@/components/Spinner";
 import RatingModal from "./components/RatingModal";
+import openChatwootChat from "@/lib/openChatwootChat";
 
 const Tracking = () => {
   const [activeTab, setActiveTab] = useState("history");
@@ -160,8 +161,10 @@ const Tracking = () => {
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center justify-center mt-5">
-                <p className="font-medium">Need help with delivery</p>
-                <Button variant="secondary">Contact Support</Button>
+                <p className="font-medium">Need help with delivery?</p>
+                <Button variant="secondary" onClick={openChatwootChat}>
+                  Contact Support
+                </Button>
               </div>
 
               <RatingModal

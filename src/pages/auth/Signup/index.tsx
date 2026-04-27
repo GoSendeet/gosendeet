@@ -12,9 +12,11 @@ import { SignupModal } from "./SignupModal";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
+  CheckCircle2,
   ShieldCheck,
   Store,
   User,
+  XCircle,
 } from "lucide-react";
 import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
@@ -50,6 +52,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [hasPasswordInteraction, setHasPasswordInteraction] = useState(false);
 
   const emailSchema = skipEmailValidation
     ? z.string({ required_error: "Email address is required" }).trim().min(1, {
@@ -69,6 +72,63 @@ const Signup = () => {
         .trim()
         .email({ message: "Invalid company email" });
 
+  const PASSWORD_MIN_LENGTH = 8;
+  const PASSWORD_REGEX = {
+    lowercase: /[a-z]/,
+    uppercase: /[A-Z]/,
+    number: /\d/,
+    special: /[^A-Za-z0-9]/,
+    noSpaces: /^\S+$/,
+  };
+
+  const getPasswordChecks = (password: string) => [
+    {
+      label: `At least ${PASSWORD_MIN_LENGTH} characters`,
+      isValid: password.length >= PASSWORD_MIN_LENGTH,
+    },
+    {
+      label: "At least one lowercase letter",
+      isValid: PASSWORD_REGEX.lowercase.test(password),
+    },
+    {
+      label: "At least one uppercase letter",
+      isValid: PASSWORD_REGEX.uppercase.test(password),
+    },
+    {
+      label: "At least one number",
+      isValid: PASSWORD_REGEX.number.test(password),
+    },
+    {
+      label: "At least one special character",
+      isValid: PASSWORD_REGEX.special.test(password),
+    },
+    {
+      label: "No spaces",
+      isValid: PASSWORD_REGEX.noSpaces.test(password),
+    },
+  ];
+
+  const strongPasswordSchema = z
+    .string({ required_error: "Password is required" })
+    .min(PASSWORD_MIN_LENGTH, {
+      message: `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+    })
+    .regex(PASSWORD_REGEX.lowercase, {
+      message: "Password must include at least one lowercase letter",
+    })
+    .regex(PASSWORD_REGEX.uppercase, {
+      message: "Password must include at least one uppercase letter",
+    })
+    .regex(PASSWORD_REGEX.number, {
+      message: "Password must include at least one number",
+    })
+    .regex(PASSWORD_REGEX.special, {
+      message: "Password must include at least one special character",
+    })
+    .refine((value) => PASSWORD_REGEX.noSpaces.test(value), {
+      message: "Password cannot contain spaces",
+    });
+
   const customerSchema = z
     .object({
       firstName: z
@@ -83,12 +143,10 @@ const Signup = () => {
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
-      password: z
-        .string({ required_error: "Password is required" })
-        .min(8, { message: "Password must be at least 8 characters" }),
+      password: strongPasswordSchema,
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
-        .min(8, { message: "Password must be at least 8 characters" }),
+        .min(1, { message: "Please confirm your password" }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
           message:
@@ -120,12 +178,10 @@ const Signup = () => {
       phone: z
         .string({ required_error: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
-      password: z
-        .string({ required_error: "Password is required" })
-        .min(8, { message: "Password must be at least 8 characters" }),
+      password: strongPasswordSchema,
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
-        .min(8, { message: "Password must be at least 8 characters" }),
+        .min(1, { message: "Please confirm your password" }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
           message:
@@ -148,10 +204,14 @@ const Signup = () => {
     handleSubmit,
     reset,
     control,
+    watch,
     formState: { errors },
   } = useForm<any>({
     resolver: zodResolver(schema),
   });
+
+  const passwordValue = watch("password") ?? "";
+  const passwordChecks = getPasswordChecks(passwordValue);
 
   const { mutate, isPending } = useMutation({
     mutationFn: signup,
@@ -433,10 +493,12 @@ const Signup = () => {
                       Password
                     </label>
                     <div className="flex items-center gap-2 relative">
+
                       <input
                         type={showPassword ? "text" : "password"}
                         {...register("password")}
-                        placeholder="Min. 8 characters"
+                        onFocus={() => setHasPasswordInteraction(true)}
+                        placeholder="Enter strong password"
                         className="w-full px-4 py-3 border border-grey200 rounded-lg focus:outline-none focus:border-green500"
                       />
                       <button
@@ -457,6 +519,33 @@ const Signup = () => {
                         {(errors.password as any)?.message}
                       </p>
                     )}
+                    <div
+                      className={`grid transition-all duration-500 ease-out ${
+                        hasPasswordInteraction
+                          ? "grid-rows-[1fr] opacity-100 mt-3"
+                          : "grid-rows-[0fr] opacity-0 mt-0"
+                      }`}
+                    >
+                      <div className="overflow-hidden">
+                        <div className="space-y-1.5">
+                          {passwordChecks.map((check) => (
+                            <p
+                              key={check.label}
+                              className={`text-xs flex items-center gap-1.5 ${
+                                check.isValid ? "text-green-700" : "text-red-500"
+                              }`}
+                            >
+                              {check.isValid ? (
+                                <CheckCircle2 size={14} className="shrink-0" />
+                              ) : (
+                                <XCircle size={14} className="shrink-0" />
+                              )}
+                              <span>{check.label}</span>
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Confirm Password */}

@@ -1,11 +1,12 @@
 import { api } from "./axios";
+import { throwApiError } from "@/lib/errorHandling";
 
 export const getBookingsById = async (id: string) => {
   try {
     const res = await api.get(`/bookings/${id}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -43,8 +44,8 @@ export const getAllBookings = async ({
 
     const res = await api.get(`/bookings?${params.toString()}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -65,8 +66,8 @@ export const getBookingStats = async ({
 
     const res = await api.get(`/bookings/stats?${params.toString()}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -75,8 +76,8 @@ export const createTrackingHistory = async (data: any) => {
   try {
     const res = await api.post(`/tracking-history`, data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -85,8 +86,8 @@ export const trackBookings = async (id: string) => {
   try {
     const res = await api.get(`/bookings/track/${id}`);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
 
@@ -95,7 +96,7 @@ export const createRatings = async (data: any) => {
   try {
     const res = await api.post(`/ratings`, data);
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };
