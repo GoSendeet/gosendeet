@@ -31,6 +31,7 @@ import {
   getErrorMessage,
   formatToDatetimeLocal,
   formatTo12Hour,
+  toISOFromLocalInput,
 } from "@/lib/utils";
 import { TaskDto } from "@/services/tasks";
 
@@ -262,8 +263,13 @@ const PublicDispatchPage = () => {
       return;
     }
 
-    const windowStart = new Date(draftEtaStart).toISOString();
-    const windowEnd = new Date(draftEtaEnd).toISOString();
+    const windowStart = toISOFromLocalInput(draftEtaStart);
+    const windowEnd = toISOFromLocalInput(draftEtaEnd);
+
+    if (!windowStart || !windowEnd) {
+      toast.error("Please provide valid start and end times");
+      return;
+    }
 
     etaWindowMutation.mutate({ taskId: editingTaskId, windowStart, windowEnd });
   }, [editingTaskId, draftEtaStart, draftEtaEnd, etaWindowMutation]);
