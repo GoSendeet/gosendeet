@@ -1,15 +1,16 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
+import { hasAuthSession } from "./authSession";
 import { getDefaultRouteForRole, isFranchiseRole } from "./roles";
 
 const FranchiseRoutes = () => {
   const navigate = useNavigate();
-  const authToken = sessionStorage.getItem("authToken");
+  const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role");
 
   useEffect(() => {
-    if (!authToken) {
+    if (!isAuthenticated) {
       navigate("/signin", { replace: true });
       return;
     }
@@ -17,9 +18,9 @@ const FranchiseRoutes = () => {
     if (!isFranchiseRole(role)) {
       navigate(getDefaultRouteForRole(role), { replace: true });
     }
-  }, [authToken, role, navigate]);
+  }, [isAuthenticated, role, navigate]);
 
-  if (authToken && isFranchiseRole(role)) {
+  if (isAuthenticated && isFranchiseRole(role)) {
     return <Outlet />;
   }
 

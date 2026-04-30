@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/InputField";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { allowOnlyNumbers, parseDateInput } from "@/lib/utils";
+import { hasAuthSession } from "@/lib/authSession";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 
 const Delivery = () => {
   const location = useLocation();
   const { bookingRequest, bookingDetails } = location?.state || {};
   const userId = sessionStorage.getItem("userId") || "";
-  const authToken = sessionStorage.getItem("authToken") || "";
+  const isAuthenticated = hasAuthSession();
 
   const currency = bookingDetails?.currency || "NGN";
   const basePrice = parseFloat(String(bookingDetails?.price || "0").replace(/[^\d.]/g, "")) || 0;
@@ -23,13 +24,13 @@ const Delivery = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    if (!userId || !authToken) {
+    if (!userId || !isAuthenticated) {
       toast.error("Please sign in to continue");
       setTimeout(() => {
         navigate("/signin");
       }, 1000);
     }
-  }, [authToken, navigate, userId]);
+  }, [isAuthenticated, navigate, userId]);
 
   const { data: userData, refetchUserData } = useGetUserDetails(userId);
 
@@ -108,7 +109,7 @@ const Delivery = () => {
   }, [userData, reset]);
 
   const onSubmit = (data: z.infer<typeof schema>) => {
-    if (!userId || !authToken) {
+    if (!userId || !isAuthenticated) {
       toast.error("Please sign in to continue");
       navigate("/signin");
       return;
@@ -271,7 +272,7 @@ const Delivery = () => {
             <Button
               type="submit"
               className=" rounded-full py-3 px-8 bg-green100 hover:bg-green800"
-              disabled={!userId || !authToken}
+              disabled={!userId || !isAuthenticated}
             >
               Proceed to Checkout
             </Button>

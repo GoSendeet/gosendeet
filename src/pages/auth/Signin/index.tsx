@@ -34,28 +34,16 @@ const Signin = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: validateEmail,
-    onSuccess: (data) => {
-      if (data?.data?.isVerified === false) {
-        toast.warning("User not verified");
-        navigate(`/verify-account?email=${encodeURIComponent(data?.data?.email || "")}&status=error`, {
-          replace: true,
-        });
-        return;
-      }
-
+    onSuccess: (_response, submittedEmail) => {
       toast.success("Successful");
       navigate("/login", {
         state: {
-          username: data?.data?.username,
-          email: data?.data?.email,
+          email: submittedEmail,
         },
       });
     },
     onError: (data) => {
-      toast.error(data?.message);
-      if (data?.message.endsWith(`not found`)) {
-        navigate("/login");
-      }
+      toast.error(data?.message || "Unable to continue");
     },
   });
 

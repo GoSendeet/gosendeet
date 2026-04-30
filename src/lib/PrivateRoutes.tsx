@@ -1,26 +1,26 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
+import { hasAuthSession } from "./authSession";
 import { getDefaultRouteForRole } from "./roles";
 
 const PrivateRoutes = () => {
   const navigate = useNavigate();
-  const authToken = sessionStorage.getItem("authToken");
-
+  const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role");
 
   useEffect(() => {
-    if (!authToken) {
+    if (!isAuthenticated) {
       navigate("/signin", { replace: true });
       return;
     }
 
-    if (authToken && role !== "user") {
+    if (isAuthenticated && role !== "user") {
       navigate(getDefaultRouteForRole(role), { replace: true });
     }
-  }, [authToken, role, navigate]);
+  }, [isAuthenticated, role, navigate]);
 
-  if (authToken && role === "user") {
+  if (isAuthenticated && role === "user") {
     return <Outlet />;
   }
 

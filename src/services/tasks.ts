@@ -95,6 +95,7 @@ export interface DispatchPreviewCompanyDetail {
 export interface DispatchPreviewData {
   bookingId: string;
   orderNumber: string;
+  trackingNumber: string;
   companiesAffected: number;
   draftTasksReady: number;
   tasksPerCompany: Record<string, number>;
@@ -104,12 +105,19 @@ export interface DispatchPreviewData {
 }
 
 export interface DispatchSummary {
-  bookingId: string;
-  orderNumber: string;
   dispatchedAt: string;
+  totalCompaniesNotified: number;
   totalTasksDispatched: number;
-  companiesNotified: number;
-  dispatchTokens: Record<string, string>;
+  companies: Record<
+    string,
+    {
+      companyId: string;
+      companyName: string;
+      email: string;
+      taskCount: number;
+      token: string;
+    }
+  >;
 }
 
 export interface DispatchResponse {

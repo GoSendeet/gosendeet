@@ -1,11 +1,11 @@
 import { api, authApi } from "./axios";
 import { throwApiError } from "@/lib/errorHandling";
+import { hasAuthSession } from "@/lib/authSession";
 
 const ensureAuthenticated = () => {
-  const authToken = sessionStorage.getItem("authToken");
   const userId = sessionStorage.getItem("userId");
 
-  if (!authToken || !userId) {
+  if (!hasAuthSession() || !userId) {
     throw { message: "Please sign in to continue" };
   }
 };

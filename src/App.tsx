@@ -53,7 +53,7 @@ function App() {
           <Route path="/track-booking" element={<Tracking />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/dispatch/:trackingId/:token" element={<PublicDispatchPage />} />
+          <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/signup" element={<Signup />} />
@@ -62,6 +62,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-account" element={<VerifyEmail />} />
           <Route path="/:id/verify-email" element={<VerifyEmail />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/:id/reset-password" element={<ResetPassword />} />
           <Route path="/oauth2/callback" element={<ValidateGoogleLogin />} />
         </Route>

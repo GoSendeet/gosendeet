@@ -10,6 +10,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 
 import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
+import { storeAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 import { login } from "@/services/auth";
 
@@ -54,34 +55,17 @@ const Login = () => {
     mutationFn: (data: LoginFormValues) => login({ email, password: data.password }),
     onSuccess: (response) => {
       const user = response?.data?.user;
-      const token = response?.data?.token;
-
-      if (!token || !user) {
+      if (!user) {
         toast.error("Invalid login response");
         return;
       }
 
-      sessionStorage.setItem("authToken", token);
-      sessionStorage.setItem("userId", user.id);
-      sessionStorage.setItem("role", user.role);
-      sessionStorage.setItem("sessionExpired", "false");
-
-      if (user.profilePicture) {
-        sessionStorage.setItem("profileImage", user.profilePicture);
-      }
+      storeAuthSession(user);
 
       toast.success("Login Successful");
       navigate(getDefaultRouteForRole(user.role));
     },
     onError: (error: { message?: string }) => {
-      if (error?.message === "Account is not verified") {
-        navigate(
-          `/verify-account?email=${encodeURIComponent(email)}&status=error`,
-          { replace: true },
-        );
-        return;
-      }
-
       toast.error(error?.message || "Login failed");
     },
   });

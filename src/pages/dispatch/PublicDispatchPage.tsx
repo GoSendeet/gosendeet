@@ -1,15 +1,17 @@
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { CheckCircle2, Circle, AlertCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { usePublicDispatch } from "@/queries/dispatch/usePublicDispatch";
 import {
   acceptDispatch,
   declineDispatch,
+  exchangeDispatchAccess,
   startTask,
   completeTask,
   updateTaskEtaWindow,
   terminateTask,
+  type DispatchView,
 } from "@/services/dispatchPublic";
 import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
@@ -62,10 +64,10 @@ const getRelativeDate = (dateString: string): string => {
 };
 
 const PublicDispatchPage = () => {
-  const { token = "", trackingId = "" } = useParams();
+  const { trackingId = "" } = useParams();
   const navigate = useNavigate();
-
-  const missingToken = !token;
+  const [searchParams] = useSearchParams();
+  const accessToken = searchParams.get("access")?.trim() || "";
 
   const [activeTab, setActiveTab] = useState<TabView>("review");
   const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
@@ -83,13 +85,46 @@ const PublicDispatchPage = () => {
   const [showInternalNotes, setShowInternalNotes] = useState(false);
   const [terminatingTaskId, setTerminatingTaskId] = useState<string | null>(null);
   const [terminateReason, setTerminateReason] = useState("");
+  const [sessionReady, setSessionReady] = useState(!accessToken);
+  const [accessError, setAccessError] = useState<string | null>(null);
+  const [initialDispatchView, setInitialDispatchView] = useState<DispatchView | null>(null);
 
-  const { data, isLoading, isError, refetch } = usePublicDispatch(
-    token,
-    !!token
-  );
+  useEffect(() => {
+    let cancelled = false;
 
-  const dispatchView = useMemo(() => data, [data]);
+    if (!accessToken) {
+      setSessionReady(true);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setSessionReady(false);
+    setAccessError(null);
+
+    exchangeDispatchAccess(accessToken)
+      .then((dispatchView) => {
+        if (cancelled) return;
+        setInitialDispatchView(dispatchView);
+        setSessionReady(true);
+        navigate(`/dispatch/${dispatchView.trackingNumber || trackingId}`, {
+          replace: true,
+        });
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setAccessError(getErrorMessage(error, "Unable to validate dispatch access"));
+        setSessionReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, navigate, trackingId]);
+
+  const { data, isLoading, isError, refetch } = usePublicDispatch(sessionReady);
+
+  const dispatchView = useMemo(() => data ?? initialDispatchView, [data, initialDispatchView]);
   const aggregatedStatus = dispatchView?.aggregatedStatus ?? "UNKNOWN";
   const displayStatus =
     aggregatedStatus === "DISPATCHED" ? "ASSIGNED" : aggregatedStatus;
@@ -159,7 +194,7 @@ const PublicDispatchPage = () => {
   }, [dispatchedTasks.length, ongoingTasks.length, completedTasks.length]);
 
   const acceptMutation = useMutation({
-    mutationFn: (message?: string) => acceptDispatch(token, message),
+    mutationFn: (message?: string) => acceptDispatch(message),
     onSuccess: (res) => {
       toast.success(res?.message ?? "Dispatch accepted");
       setAcceptDialogOpen(false);
@@ -171,7 +206,7 @@ const PublicDispatchPage = () => {
   });
 
   const declineMutation = useMutation({
-    mutationFn: (reason: string) => declineDispatch(token, reason),
+    mutationFn: (reason: string) => declineDispatch(reason),
     onSuccess: (res) => {
       toast.success(res?.message ?? "Dispatch declined");
       setDeclineDialogOpen(false);
@@ -184,7 +219,7 @@ const PublicDispatchPage = () => {
   });
 
   const startMutation = useMutation({
-    mutationFn: (taskId: string) => startTask(token, taskId),
+    mutationFn: (taskId: string) => startTask(taskId),
     onSuccess: () => {
       toast.success("Task started");
       refetch();
@@ -196,7 +231,7 @@ const PublicDispatchPage = () => {
 
   const etaWindowMutation = useMutation({
     mutationFn: ({ taskId, windowStart, windowEnd }: { taskId: string; windowStart: string; windowEnd: string }) =>
-      updateTaskEtaWindow(token, taskId, windowStart, windowEnd),
+      updateTaskEtaWindow(taskId, windowStart, windowEnd),
     onSuccess: (_, { taskId }) => {
       // Check if we're in start mode
       if (startingTaskId === taskId) {
@@ -218,7 +253,7 @@ const PublicDispatchPage = () => {
 
   const terminateMutation = useMutation({
     mutationFn: ({ taskId, reason }: { taskId: string; reason: string }) =>
-      terminateTask(token, taskId, reason),
+      terminateTask(taskId, reason),
     onSuccess: (res) => {
       toast.success(res?.message ?? "Task terminated");
       setTerminatingTaskId(null);
@@ -310,7 +345,7 @@ const PublicDispatchPage = () => {
     string
   >({
     mutationFn: (taskId: string) =>
-      completeTask(token, taskId, {
+      completeTask(taskId, {
         message: completionMessages[taskId],
         notes: completionNotes[taskId],
         proofPhotos: completionProofs[taskId],
@@ -336,11 +371,10 @@ const PublicDispatchPage = () => {
     },
   });
 
-  if (missingToken) {
+  if (!sessionReady || (accessToken && !dispatchView && !accessError)) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-neutral100 px-4 text-center">
-        <p className="text-xl font-semibold mb-4">Dispatch token missing or invalid</p>
-        <Button onClick={() => navigate("/" )}>Go Home</Button>
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner />
       </div>
     );
   }
@@ -353,10 +387,12 @@ const PublicDispatchPage = () => {
     );
   }
 
-  if (isError || !dispatchView) {
+  if (accessError || isError || !dispatchView) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
-        <p className="text-xl font-semibold mb-4">Unable to load dispatch details</p>
+        <p className="text-xl font-semibold mb-4">
+          {accessError || "Unable to load dispatch details"}
+        </p>
         <Button onClick={() => refetch()}>Retry</Button>
       </div>
     );
