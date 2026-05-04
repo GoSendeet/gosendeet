@@ -29,9 +29,8 @@ const BankTab = () => {
     isPending,
     isSuccess,
   } = useMutation({
-    mutationFn: async (data: BankAccountFormData) => {
-      // TODO: later we will replace with actual API call
-      console.log("Bank account payload:", data);
+    mutationFn: async (_data: BankAccountFormData) => {
+      // TODO: wire up to POST /franchise/bank-account API endpoint
     },
     onSuccess: () => reset(),
   });

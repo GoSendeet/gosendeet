@@ -50,6 +50,12 @@ const Checkout = () => {
 
   const total = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
 
+  const ALLOWED_PAYMENT_ORIGINS = [
+    "https://checkout.paystack.com",
+    "https://standard.paystack.com",
+    "https://paystack.com",
+  ];
+
   const { mutate, isPending } = useMutation({
     mutationFn: ({
       bookingData,
@@ -61,8 +67,13 @@ const Checkout = () => {
       errorUrl: string;
     }) => payForBooking(bookingData, successUrl, errorUrl),
     onSuccess: (data: any) => {
+      const url: string = data?.data?.authorizationUrl ?? "";
+      if (!url || !ALLOWED_PAYMENT_ORIGINS.some((origin) => url.startsWith(origin))) {
+        toast.error("Invalid payment redirect. Please contact support.");
+        return;
+      }
       toast.success("Successful");
-      window.location.href = data?.data?.authorizationUrl;
+      window.location.href = url;
     },
     onError: (data: any) => {
       toast.error(data?.message);
