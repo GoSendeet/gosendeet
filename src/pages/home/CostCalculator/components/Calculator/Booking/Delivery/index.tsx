@@ -46,8 +46,8 @@ const Delivery = () => {
       .min(1, { message: "Name cannot be empty" }),
     sender_phone: z
       .string({ required_error: "Sender’s number is required" })
-      .regex(/^\+?[0-9]{11,15}$/, {
-        message: "Invalid phone number",
+      .regex(/^(\+234|0)[7-9][0-9]{9}$/, {
+        message: "Enter a valid Nigerian number (e.g. 08012345678 or +2348012345678)",
       }),
     sender_email: z
       .string()
@@ -62,11 +62,8 @@ const Delivery = () => {
 
     receiver_phone: z
       .string({ required_error: "Receiver’s number is required" })
-      .min(1, { message: "Receiver’s number cannot be empty" })
-      .min(11, { message: "Receiver’s number must be at least 11 digits" })
-      .max(15, { message: "Receiver’s number must be at most 15 digits" })
-      .regex(/^\+?[0-9]{11,15}$/, {
-        message: "Receiver’s number is invalid",
+      .regex(/^(\+234|0)[7-9][0-9]{9}$/, {
+        message: "Enter a valid Nigerian number (e.g. 08012345678 or +2348012345678)",
       }),
 
     receiver_email: z
