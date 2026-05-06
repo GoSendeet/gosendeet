@@ -5,6 +5,7 @@ import TrackBooking from "@/components/TrackBooking";
 
 const Track = () => {
   const [open, setOpen] = useState(false);
+  
   return (
     <Layout>
       <div className="md:px-20 px-6 md:py-16 py-8">
