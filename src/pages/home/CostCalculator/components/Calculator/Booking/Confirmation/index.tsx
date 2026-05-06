@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { verifyBookingPayment } from "@/services/user";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import openChatwootChat from "@/lib/openChatwootChat";
+import openWhatsAppSupport from "@/lib/openWhatsAppSupport";
 
 const Confirmation = () => {
   const [searchParams] = useSearchParams();
@@ -113,7 +114,6 @@ const Confirmation = () => {
     trackBookingsHandler(data?.data?.trackingNumber, navigate, setLoading);
   };
 
-
   return (
     <Layout>
       {(isVerifyingPayment ||
@@ -164,11 +164,24 @@ const Confirmation = () => {
                     </Button>
                   </div>
 
-                  <div className="flex md:flex-row flex-col gap-4 items-center justify-center mt-20">
+                  <div className="flex flex-col gap-4 items-center justify-center mt-18">
                     <p className="font-medium">Need help with delivery?</p>
-                    <Button variant="secondary" onClick={openChatwootChat}>
-                      Contact Support
-                    </Button>
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+                      <Button
+                        variant="secondary"
+                        className="bg-green-500"
+                        onClick={openChatwootChat}
+                      >
+                        Live Chat
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="bg-brand"
+                        onClick={() => openWhatsAppSupport()}
+                      >
+                        WhatsApp Support
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
