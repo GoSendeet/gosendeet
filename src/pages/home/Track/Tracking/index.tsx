@@ -11,6 +11,7 @@ import { statusClasses } from "@/constants";
 import { Spinner } from "@/components/Spinner";
 import RatingModal from "./components/RatingModal";
 import openChatwootChat from "@/lib/openChatwootChat";
+import openWhatsAppSupport from "@/lib/openWhatsAppSupport";
 
 const Tracking = () => {
   const [activeTab, setActiveTab] = useState("history");
@@ -160,12 +161,25 @@ const Tracking = () => {
                 )}
               </div>
 
-              <div className="flex md:flex-row flex-col gap-4 items-center justify-center mt-5">
-                <p className="font-medium">Need help with delivery?</p>
-                <Button variant="secondary" onClick={openChatwootChat}>
-                  Contact Support
-                </Button>
-              </div>
+                <div className="flex flex-col gap-4 items-center justify-center mt-18">
+                    <p className="font-medium">Need help with delivery?</p>
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+                      <Button
+                        variant="secondary"
+                        className="bg-green-500"
+                        onClick={openChatwootChat}
+                      >
+                        Live Chat
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="bg-brand"
+                        onClick={() => openWhatsAppSupport()}
+                      >
+                        WhatsApp Support
+                      </Button>
+                    </div>
+                  </div>
 
               <RatingModal
                 open={openRatingModal}
