@@ -1,0 +1,461 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Length 4269 >>
+stream
+BT /F2 22 Tf 0.050 0.250 0.130 rg 1 0 0 1 50 780 Tm (GoSendeet Security Audit) Tj ET
+BT /F1 9 Tf 0.300 0.300 0.300 rg 1 0 0 1 50 740 Tm (Audit date: 2026-04-30) Tj ET
+BT /F1 9 Tf 0.300 0.300 0.300 rg 1 0 0 1 50 728 Tm (Scope reviewed: frontend SPA, client-side auth/session model, exposed API contract, public) Tj ET
+BT /F1 9 Tf 0.300 0.300 0.300 rg 1 0 0 1 50 716 Tm (dispatch flow, deployment/build config, and dependency posture inferable from this repository.) Tj ET
+BT /F2 15 Tf 0.050 0.250 0.130 rg 1 0 0 1 50 696 Tm (1. Vulnerability Summary) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 674 Tm (* Critical: 0) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 659 Tm (* High: 5) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 644 Tm (* Medium: 2) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 629 Tm (* Low: 2) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 606 Tm (Threat model:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 591 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 576 Tm (* Anonymous user: can hit public marketing pages, sign-in flows, password reset,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 561 Tm (  tracking, and public dispatch links.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 546 Tm (* Authenticated user: can manipulate browser state, tamper with requests, and attempt) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 531 Tm (  horizontal or vertical privilege escalation.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 516 Tm (* Privileged admin/operator: can create API credentials, dispatch partners, and) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 501 Tm (  interact with high-value business operations.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 486 Tm (* Insider or compromised third party: can abuse support widgets, copied links,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 471 Tm (  browser extensions, analytics, and CI/dev tooling.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 448 Tm (Primary trust boundaries:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 433 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 418 Tm (* Browser storage vs server-issued session cookies) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 403 Tm (* Public dispatch bearer links vs authenticated dashboard flows) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 388 Tm (* Third-party scripts vs first-party authenticated UI) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 373 Tm (* Frontend-controlled identifiers vs backend authorization checks) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 350 Tm (Sensitive assets:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 335 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 320 Tm (* Session cookies, reset tokens, dispatch access tokens) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 305 Tm (* User identities and roles) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 290 Tm (* Raw API client secrets) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 275 Tm (* Booking/order/task metadata and customer delivery information) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 260 Tm (* Any material encrypted or signed with the committed `VITE_SECRET_KEY`) Tj ET
+BT /F2 15 Tf 0.050 0.250 0.130 rg 1 0 0 1 50 237 Tm (2. Detailed Findings) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 207 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 192 Tm (Client-side authorization state is trusted from `sessionStorage`) Tj ET
+0.820 0.270 0.100 rg 50 172 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 178 Tm (Severity: High) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 153 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 138 Tm (Route guards, session bootstrap, user identity selection) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 123 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 108 Tm (`src/lib/authSession.ts:25-38`, `src/lib/AdminRoutes.tsx:7-25`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 93 Tm (`src/lib/PrivateRoutes.tsx:7-25`, `src/lib/FranchiseRoutes.tsx:7-25`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 78 Tm (`src/services/user.ts:5-16`) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Length 5188 >>
+stream
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 780 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 765 Tm (The SPA treats `authSession`, `userId`, and `role` stored in `sessionStorage` as the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 750 Tm (signal for whether a user is authenticated and which dashboard they may access. That) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 735 Tm (state is writable by any JavaScript executing in the origin, by the user in devtools,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 720 Tm (and by malicious browser extensions. The frontend also uses the stored `userId` to) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 705 Tm (choose which profile to fetch.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 690 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 675 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 660 Tm (1. An attacker gains script execution through XSS, a compromised third-party script,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 645 Tm (or a malicious extension.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 630 Tm (2. The attacker sets `sessionStorage.authSession=true`, changes `role` to `admin`, and) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 615 Tm (swaps `userId` to another target.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 600 Tm (3. The SPA unlocks privileged routes and begins issuing sensitive requests for the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 585 Tm (attacker-chosen identity.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 570 Tm (4. Any backend endpoint with weak authorization or missing object-level checks is) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 555 Tm (immediately exposed.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 540 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 525 Tm (This does not by itself prove backend compromise, but it removes an important defense) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 510 Tm (layer, makes latent BOLA/IDOR bugs much easier to exploit, and turns any XSS into an) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 495 Tm (instant privilege-escalation primitive.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 480 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 465 Tm (Treat browser storage as display cache only. Derive auth and role exclusively from a) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 450 Tm (server-validated session or signed access token, fetch the current principal from) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 435 Tm (`/auth/session` on load, and never let the browser choose the canonical `userId` or) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 420 Tm (role for privileged requests.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 397 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 382 Tm (Third-party support JavaScript runs on every page without CSP hardening) Tj ET
+0.820 0.270 0.100 rg 50 362 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 368 Tm (Severity: High) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 343 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 328 Tm (Global `ChatwootWidget`, authenticated dashboards, deployment headers) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 313 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 298 Tm (`src/components/ChatwootWidget/index.tsx:3-21`, `src/App.tsx:35-92`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 283 Tm (`index.html:1-55`, `vercel.json:1-4`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 268 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 253 Tm (A third-party script is appended into `document.head` for all routes, including) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 238 Tm (authenticated and administrative screens. The app does not define a Content Security) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 223 Tm (Policy, a strict `Referrer-Policy`, or any deployment-level security headers in the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 208 Tm (repo. If the support platform, its DNS, or a script dependency is compromised, the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 193 Tm (attacker gets same-origin script execution inside privileged sessions.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 178 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 163 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 148 Tm (1. The Chatwoot asset origin or a transitive dependency is compromised.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 133 Tm (2. The malicious script loads automatically for admins, franchise partners, and end) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 118 Tm (users.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 103 Tm (3. It reads `sessionStorage`, captures visible secrets, and performs authenticated API) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 88 Tm (actions via the user's cookies.) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 5193 >>
+stream
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 780 Tm (4. It can silently create client credentials, copy dispatch links, or exfiltrate) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 765 Tm (profile/order data.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 750 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 735 Tm (Full browser-session compromise across all roles, with especially severe impact for) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 720 Tm (admin users because the widget executes inside the same trust domain as credential) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 705 Tm (management and dispatch tooling.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 690 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 675 Tm (Remove third-party scripts from privileged routes or isolate them in a sandboxed) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 660 Tm (iframe on public-only pages. Add a strict CSP, `Referrer-Policy`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 645 Tm (`Permissions-Policy`, and only allow explicitly pinned script origins. Prefer) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 630 Tm (server-side support integrations over live script injection where possible.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 607 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 592 Tm (Bearer secrets are transmitted in URLs for dispatch access and password reset) Tj ET
+0.820 0.270 0.100 rg 50 572 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 578 Tm (Severity: High) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 553 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 538 Tm (Public dispatch flow, password reset flow) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 523 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 508 Tm (`src/pages/dispatch/PublicDispatchPage.tsx:67-123`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 493 Tm (`src/pages/admin/Orders/TaskManagement/modals/DispatchPreviewDialog.tsx:181-220`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 478 Tm (`src/pages/auth/ResetPassword/index.tsx:16-19`, `src/services/auth.ts:102-116`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 463 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 448 Tm (Public dispatch access is granted through `?access=...` URL parameters, and password) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 433 Tm (reset consumes `resetToken` from the query string. Query-string bearer tokens are) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 418 Tm (routinely copied into browser history, screenshots, logs, chat systems, monitoring) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 403 Tm (tools, and email clients. The dispatch token is removed only after client-side) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 388 Tm (redemption; the reset token is never scrubbed from the URL in this flow.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 373 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 358 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 343 Tm (1. An admin copies a dispatch link from the UI or a user opens a password-reset link) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 328 Tm (on a monitored/shared device.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 313 Tm (2. The full URL is exposed through history, clipboard sync, support transcripts, email) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 298 Tm (forwarding, or endpoint telemetry.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 283 Tm (3. A second party reuses the stolen bearer value before expiry or before the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 268 Tm (legitimate user finishes the flow.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 253 Tm (4. The attacker accepts/declines/completes dispatch tasks or resets the account) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 238 Tm (password.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 223 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 208 Tm (Unauthorized operational control of deliveries and potential full account takeover) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 193 Tm (for password-reset victims.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 178 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 163 Tm (Do not place bearer secrets in query strings. Use one-time POST redemption, URL) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 148 Tm (fragments plus immediate `history.replaceState`, short expiries, replay detection,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 133 Tm (device/session binding, and step-up verification for sensitive flows.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 110 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 95 Tm (A real-looking secret is committed in a `VITE_` client environment variable) Tj ET
+0.820 0.270 0.100 rg 50 75 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 81 Tm (Severity: High) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 4957 >>
+stream
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 780 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 765 Tm (Secret management, build pipeline, any downstream crypto usage) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 750 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 735 Tm (`.env:1-5`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 720 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 705 Tm (The repository contains `VITE_SECRET_KEY`, and Vite exposes all `VITE_` variables to) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 690 Tm (browser code at build time. That means this value must be treated as public. Even if) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 675 Tm (it is currently unused by the SPA, the naming strongly suggests it was intended to be) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 660 Tm (secret, which indicates a broken secret-handling process and creates a serious risk) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 645 Tm (if the same key is reused elsewhere.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 630 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 615 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 600 Tm (1. An attacker inspects the repository or built frontend bundle.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 585 Tm (2. The attacker extracts `VITE_SECRET_KEY`.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 570 Tm (3. If the same key is reused for encryption, signing, token generation, or backend) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 555 Tm (configuration, the attacker forges or decrypts protected material.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 540 Tm (4. Even if not reused, the leak demonstrates unsafe developer behavior that often) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 525 Tm (correlates with additional hidden secret reuse.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 510 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 495 Tm (Potential cryptographic bypass or token forgery if reused, plus guaranteed loss of) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 480 Tm (confidentiality for the committed value itself.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 465 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 450 Tm (Rotate the exposed key immediately, remove it from git history if feasible, keep) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 435 Tm (secrets server-side only, and reserve `VITE_` variables for values safe to disclose) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 420 Tm (publicly.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 397 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 382 Tm (Raw API client secrets are issued directly to the browser) Tj ET
+0.820 0.270 0.100 rg 50 362 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 368 Tm (Severity: High) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 343 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 328 Tm (Admin credential management) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 313 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 298 Tm (`src/services/clientCredentials.ts:25-28`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 283 Tm (`src/services/clientCredentials.ts:113-148`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 268 Tm (`src/pages/admin/Credentials/index.tsx:130-140`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 253 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 238 Tm (The admin UI requests new API credentials and receives the raw secret into JavaScript) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 223 Tm (memory, where it is stored in React state and shown to the operator. In a hardened) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 208 Tm (environment this is still a high-risk pattern, because any XSS, third-party script) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 193 Tm (compromise, shoulder-surfing, browser malware, or extension compromise turns into) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 178 Tm (long-lived API credential theft.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 163 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 148 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 133 Tm (1. An attacker compromises an admin browser session through a malicious script or) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 118 Tm (extension.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 103 Tm (2. The attacker waits for the operator to create a new client credential.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 88 Tm (3. The raw secret is captured from the response or from in-memory UI state.) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 4917 >>
+stream
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 780 Tm (4. The attacker uses the secret outside the browser, persisting access even after the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 765 Tm (admin logs out.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 750 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 735 Tm (Long-lived API compromise that survives normal session cleanup and may allow direct) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 720 Tm (backend access from outside the web app.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 705 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 690 Tm (Move credential issuance into an isolated administrative flow with step-up auth,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 675 Tm (strict origin isolation, and audit logging. Prefer showing the secret once from a) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 660 Tm (dedicated backend page or downloadable artifact instead of keeping it in the SPA's) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 645 Tm (general-purpose runtime.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 622 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 607 Tm (Cookie-authenticated mutations show no visible CSRF protection) Tj ET
+0.850 0.620 0.130 rg 50 587 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 593 Tm (Severity: Medium) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 568 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 553 Tm (Authenticated API client and state-changing endpoints) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 538 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 523 Tm (`src/services/axios.ts:7-19`, `src/services/auth.ts:123-149`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 508 Tm (`src/services/clientCredentials.ts:140-168`, `src/services/companies.ts:4-78`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 493 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 478 Tm (The frontend uses `withCredentials: true` for both auth and application API clients,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 463 Tm (but the repo shows no CSRF token acquisition, no `X-CSRF-*` header injection, and no) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 448 Tm (explicit origin-checking mechanism. If the backend allows cross-site credentialed) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 433 Tm (requests through permissive cookie settings or a future CORS mistake, many) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 418 Tm (state-changing endpoints become CSRF candidates.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 403 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 388 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 373 Tm (1. A logged-in victim visits an attacker-controlled site.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 358 Tm (2. The attacker coerces the browser into sending authenticated requests to the API) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 343 Tm (using the victim's cookies.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 328 Tm (3. Because the client contract contains no anti-CSRF token, the backend must rely) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 313 Tm (entirely on cookie attributes and server-side origin enforcement.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 298 Tm (4. Any server-side gap results in unauthorized state changes such as account actions,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 283 Tm (company updates, or credential revocation/creation.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 268 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 253 Tm (Forced actions in a victim session, particularly dangerous for admin and franchise) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 238 Tm (roles.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 223 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 208 Tm (Add a synchronizer or double-submit CSRF token, verify `Origin`/`Referer` on) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 193 Tm (sensitive endpoints, and enforce `SameSite=Lax` or `Strict` unless a narrowly) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 178 Tm (justified exception exists.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 155 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 140 Tm (The two-step sign-in flow likely leaks account existence) Tj ET
+0.850 0.620 0.130 rg 50 120 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 126 Tm (Severity: Medium) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 101 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 86 Tm (Authentication and verification flows) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 5022 >>
+stream
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 780 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 765 Tm (`src/services/auth.ts:43-49`, `src/pages/auth/Signin/index.tsx:35-52`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 750 Tm (`src/pages/auth/VerifyEmail/index.tsx:77-100`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 735 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 720 Tm (Sign-in first calls `/auth` with only an email address and forwards backend error) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 705 Tm (messages directly to the user. That pattern commonly reveals whether an email is) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 690 Tm (registered, unverified, or blocked before a password is ever requested. The) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 675 Tm (verification resend flow also returns user-facing success/error feedback tied to a) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 660 Tm (supplied email address.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 645 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 630 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 615 Tm (1. An attacker automates requests against the email-validation entry point.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 600 Tm (2. They classify responses and timing differences for large email lists.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 585 Tm (3. Confirmed accounts are targeted for password spraying, phishing, or social) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 570 Tm (engineering.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 555 Tm (4. Unverified accounts can be singled out for onboarding fraud or helpdesk abuse.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 540 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 525 Tm (User enumeration that materially improves credential-stuffing efficiency and targeted) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 510 Tm (attacks.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 495 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 480 Tm (Return uniform responses for unknown and known emails, rate-limit aggressively, add) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 465 Tm (bot detection, and avoid surfacing backend-specific auth state during) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 450 Tm (pre-authentication.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 427 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 412 Tm (Verification resend throttling is enforced only in `localStorage`) Tj ET
+0.100 0.530 0.240 rg 50 392 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 398 Tm (Severity: Low) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 373 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 358 Tm (Email verification resend UX) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 343 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 328 Tm (`src/pages/auth/VerifyEmail/index.tsx:14-18`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 313 Tm (`src/pages/auth/VerifyEmail/index.tsx:41-73`,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 298 Tm (`src/pages/auth/VerifyEmail/index.tsx:77-100`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 283 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 268 Tm (The resend cooldown is tracked in `localStorage`, which an attacker can clear or) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 253 Tm (bypass simply by sending requests directly to the API. This is acceptable as a) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 238 Tm (usability feature, but it provides no real abuse protection.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 223 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 208 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 193 Tm (1. An attacker clears browser storage or skips the UI entirely.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 178 Tm (2. They send repeated resend requests to the backend.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 163 Tm (3. If server-side rate limiting is missing or weak, the victim receives verification) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 148 Tm (email spam and the endpoint becomes a low-cost abuse primitive.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 133 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 118 Tm (Spam, support burden, and additional user-enumeration signal.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 103 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 88 Tm (Keep the client-side timer for UX only, but enforce resend quotas and anomaly) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 73 Tm (detection on the backend by account, IP, and device fingerprint.) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 4789 >>
+stream
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 780 Tm (Title:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 765 Tm (The repo pins versions with published security advisories affecting local development) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 750 Tm (and dependency hygiene) Tj ET
+0.100 0.530 0.240 rg 50 730 110 18 re f
+BT /F2 10 Tf 1.000 1.000 1.000 rg 1 0 0 1 58 736 Tm (Severity: Low) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 711 Tm (Affected component:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 696 Tm (Dependency and development security posture) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 681 Tm (Evidence:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 666 Tm (`package.json:28`, `package.json:77-78`) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 651 Tm (Description:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 636 Tm (The repo uses `axios@^1.9.0` and `vite@^6.2.0`. GitHub's advisory database shows) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 621 Tm (published advisories affecting older Axios 1.x branches and Vite 6.0.0-6.4.1. The) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 606 Tm (Vite issue is dev-server-specific, but it still matters if developers expose) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 591 Tm (preview/dev instances or reuse this stack in CI.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 576 Tm (Exploitation scenario:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 561 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 546 Tm (1. A developer starts a vulnerable Vite dev server with network exposure.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 531 Tm (2. An attacker connects to the dev WebSocket and reads arbitrary local files under the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 516 Tm (published Vite advisory conditions.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 501 Tm (3. Separately, unresolved Axios advisory debt increases the chance that a future) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 486 Tm (unsafe usage or transitive gadget chain becomes exploitable.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 471 Tm (Impact:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 456 Tm (Developer workstation or CI exposure rather than direct production compromise, plus) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 441 Tm (weaker supply-chain hygiene.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 426 Tm (Recommended fix:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 411 Tm (Upgrade Vite to at least `6.4.2` or newer maintained versions and review Axios) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 396 Tm (against current patched releases. Re-run dependency review regularly and avoid) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 381 Tm (exposing dev servers beyond localhost.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 366 Tm (Reference:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 351 Tm (Vite advisory GHSA-p9ff-h696-f583 \(GitHub Advisory Database, published 2026-04-06\);) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 336 Tm (Axios advisories GHSA-fvcv-3m26-pcqx and GHSA-jr5f-v2jv-69x6.) Tj ET
+BT /F2 15 Tf 0.050 0.250 0.130 rg 1 0 0 1 50 313 Tm (3. Attack Chains) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 283 Tm (Chain:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 268 Tm (Support-script compromise to long-lived API takeover) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 253 Tm (1. Compromise the globally loaded Chatwoot script or any allowed script source.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 238 Tm (2. Read `sessionStorage` and silently operate inside an admin session.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 223 Tm (3. Create a new API credential and capture `rawSecret`.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 208 Tm (4. Persist access outside the browser via the stolen API secret.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 185 Tm (Chain:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 170 Tm (Query-string leak to dispatch hijack) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 155 Tm (1. An admin copies a dispatch link containing `?access=...`.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 140 Tm (2. The link is forwarded into chat, email, logs, or clipboard history.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 125 Tm (3. An attacker redeems the bearer token before or alongside the intended recipient.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 110 Tm (4. The attacker accepts, terminates, or completes dispatch tasks and injects false) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 95 Tm (delivery state.) Tj ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Length 3452 >>
+stream
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 780 Tm (Chain:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 765 Tm (XSS or extension abuse to privilege escalation) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 750 Tm (1. Gain script execution in the SPA.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 735 Tm (2. Overwrite `sessionStorage.role` and `sessionStorage.userId`.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 720 Tm (3. Let the app unlock admin or franchise routes and issue attacker-chosen requests.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 705 Tm (4. Combine with any backend authorization gap to read or modify other users' records.) Tj ET
+BT /F2 15 Tf 0.050 0.250 0.130 rg 1 0 0 1 50 682 Tm (4. Secure Design Recommendations) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 652 Tm (Architectural improvements:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 637 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 622 Tm (* Move to a server-authoritative identity model. The browser should never be the) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 607 Tm (  source of truth for role or principal selection.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 592 Tm (* Separate public, authenticated, and highly privileged surfaces by origin or at) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 577 Tm (  least by CSP policy. Customer support widgets should never share the exact) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 562 Tm (  execution context of admin credential management.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 547 Tm (* Replace bearer URLs for sensitive operations with one-time POST redemption flows,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 532 Tm (  short lifetimes, replay protection, and contextual binding.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 517 Tm (* Isolate API credential issuance behind step-up authentication, stronger auditing,) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 502 Tm (  and a dedicated privileged workflow.) Tj ET
+BT /F2 11 Tf 0.100 0.100 0.100 rg 1 0 0 1 50 479 Tm (Safer patterns and best practices:) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 62 464 Tm () Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 449 Tm (* Add strict response headers: CSP, `Referrer-Policy`, `X-Frame-Options` or) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 434 Tm (  `frame-ancestors`, `Permissions-Policy`, and HSTS at the deployment layer.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 419 Tm (* Remove secrets from client env files and rotate any key that has ever been exposed) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 404 Tm (  to the frontend or committed to git.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 389 Tm (* Enforce backend CSRF protection, rate limiting, and object-level authorization on) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 374 Tm (  every ID-bearing endpoint, regardless of what the UI does.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 359 Tm (* Treat the current frontend as an attacker-controlled client when designing API) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 344 Tm (  authorization checks.) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 329 Tm (* Upgrade Vite and review Axios against current advisories as part of dependency) Tj ET
+BT /F1 11 Tf 0.120 0.120 0.120 rg 1 0 0 1 50 314 Tm (  hygiene.) Tj ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 19 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 17 0 R >>
+endobj
+19 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R] /Count 8 >>
+endobj
+20 0 obj
+<< /Type /Catalog /Pages 19 0 R >>
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000000015 00000 n 
+0000000085 00000 n 
+0000000160 00000 n 
+0000004481 00000 n 
+0000004618 00000 n 
+0000009858 00000 n 
+0000009995 00000 n 
+0000015240 00000 n 
+0000015377 00000 n 
+0000020386 00000 n 
+0000020524 00000 n 
+0000025494 00000 n 
+0000025633 00000 n 
+0000030708 00000 n 
+0000030847 00000 n 
+0000035689 00000 n 
+0000035828 00000 n 
+0000039333 00000 n 
+0000039472 00000 n 
+0000039577 00000 n 
+trailer
+<< /Size 21 /Root 20 0 R >>
+startxref
+39628
+%%EOF

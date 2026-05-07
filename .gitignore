@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+audit-results
+.scannerwork
 *.local
 
 # Editor directories and files

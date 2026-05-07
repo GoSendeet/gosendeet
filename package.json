@@ -8,7 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --json > audit-results/npm-audit.json",
+    "security:audit:summary": "npm audit --audit-level=moderate",
+    "sonar": "sonar-scanner",
+    "ci:security": "npm run security:audit && npm run sonar"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
@@ -72,6 +76,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "sonar-scanner": "^3.1.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
