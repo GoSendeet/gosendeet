@@ -12,7 +12,7 @@
   animation: blink 1s step-start infinite;
 }
 
-/* Custom horizontal scrollbar for PackageTypeModal */
+/* Custom horizontal scrollbar for package pickers */
 .custom-scrollbar::-webkit-scrollbar {
   height: 8px;
 }
@@ -666,11 +666,11 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
 
 @media (min-width: 1024px) {
   .direct-send {
-    width: 200px;
+    width: 100%;
   }
   
   .direct-send-package {
-    width: 200px;
+    width: 100%;
   }
 
   .direct-send-pickup {
@@ -686,7 +686,7 @@ linear-gradient(0deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32));
   }
 
   .gosend-custom-button {
-    width: 155px;
+    width: 160px;
     height: 88px;
     margin-bottom: 0;
     margin-top: 0;

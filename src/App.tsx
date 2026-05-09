@@ -8,6 +8,7 @@ import CostCalculator from "./pages/home/CostCalculator";
 import FAQ from "./pages/home/FAQ";
 import Track from "./pages/home/Track";
 import Delivery from "./pages/home/CostCalculator/components/Calculator/Booking/Delivery";
+import PickupTime from "./pages/home/CostCalculator/components/Calculator/Booking/PickupTime";
 import Checkout from "./pages/home/CostCalculator/components/Calculator/Booking/Checkout";
 import Confirmation from "./pages/home/CostCalculator/components/Calculator/Booking/Confirmation";
 import Tracking from "./pages/home/Track/Tracking";
@@ -49,6 +50,7 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
           <Route path="/delivery" element={<Delivery />} />
+          <Route path="/pickup-time" element={<PickupTime />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/success-page" element={<Confirmation />} />
           <Route path="/error-page" element={<ErrorPage />} />

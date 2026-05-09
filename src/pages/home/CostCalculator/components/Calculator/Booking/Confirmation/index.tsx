@@ -254,14 +254,6 @@ const Confirmation = () => {
                       </span>
                     </p>
 
-                    <p className="flex justify-between items-center font-medium text-sm">
-                      <span className="text-neutral600">Tax</span>
-                      <span className="text-right">
-                        {data?.data?.cost?.tax
-                          ? `₦${CurrencyFormatter(data?.data?.cost?.tax)}`
-                          : "--"}
-                      </span>
-                    </p>
                   </div>
 
                   <hr className="border-b border-b-neutral200 my-4" />
