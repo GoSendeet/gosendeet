@@ -3,18 +3,17 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { getQuotes } from "@/services/user";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
-import { AddressModal } from "./modals/AddressModal";
-import { PackageTypeModal } from "./modals/PackageTypeModal";
-import { PickupDateModal } from "./modals/PickupDateModal";
-import { SlLocationPin } from "react-icons/sl";
-import { FiPackage } from "react-icons/fi";
+import { AddressPopover } from "./AddressPopover";
+import { PackageTypePopover } from "./PackageTypePopover";
+import { Popover, PopoverAnchor, PopoverTrigger } from "@/components/ui/popover";
+import { FiFlag, FiMapPin, FiPackage } from "react-icons/fi";
 import { FaAngleDown } from "react-icons/fa";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
@@ -175,7 +174,9 @@ const FormHorizontalBar = ({
   const [pickupModalOpen, setPickupModalOpen] = useState(false);
   const [destinationModalOpen, setDestinationModalOpen] = useState(false);
   const [packageModalOpen, setPackageModalOpen] = useState(false);
-  const [dateModalOpen, setDateModalOpen] = useState(false);
+  const [pickupSearchQuery, setPickupSearchQuery] = useState("");
+  const [destinationSearchQuery, setDestinationSearchQuery] = useState("");
+  const pickupInputRef = useRef<HTMLInputElement | null>(null);
 
   // Store package name and data for display
   const [packageName, setPackageName] = useState("");
@@ -259,7 +260,6 @@ const FormHorizontalBar = ({
       .min(1, { message: "Enter weight" }),
     dimensions: z.string().optional(),
     itemPrice: z.string().optional(),
-    pickupDate: z.string().optional(),
   });
 
   const {
@@ -277,7 +277,6 @@ const FormHorizontalBar = ({
       weight: "",
       dimensions: "",
       itemPrice: "",
-      pickupDate: "",
     },
   });
 
@@ -287,12 +286,23 @@ const FormHorizontalBar = ({
   const weight = watch("weight");
   const dimensions = watch("dimensions");
   const itemPrice = watch("itemPrice");
-  const pickupDate = watch("pickupDate");
 
-  const normalizeData = (data: any) => ({
-    ...data,
-    packageTypeId: String(data?.packageTypeId ?? ""),
-  });
+  useEffect(() => {
+    setPickupSearchQuery(pickupLocation || "");
+  }, [pickupLocation]);
+
+  useEffect(() => {
+    setDestinationSearchQuery(dropOffLocation || "");
+  }, [dropOffLocation]);
+
+  const normalizeData = (data: any) => {
+    const rest = { ...(data || {}) };
+    delete rest.pickupDate;
+    return {
+      ...rest,
+      packageTypeId: String(data?.packageTypeId ?? ""),
+    };
+  };
 
   const saveInputData = (data: any) => {
     const normalized = normalizeData(data);
@@ -313,7 +323,6 @@ const FormHorizontalBar = ({
         weight: storedData.weight ?? "",
         dimensions: storedData.dimensions ?? "",
         itemPrice: storedData.itemPrice ?? "",
-        pickupDate: storedData.pickupDate ?? "",
       });
     } else if (bookingRequest) {
       const normalized = normalizeData(bookingRequest);
@@ -396,7 +405,7 @@ const FormHorizontalBar = ({
     // Dashboard uses a tighter, card-like container with subtle border
     isDashboard
       ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
-      : "w-full mx-auto max-w-[354px] lg:max-w-[1024px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
+      : "w-full mx-auto max-w-[354px] lg:max-w-[1120px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
     !isDashboard && variant === "bold" && "bg-white border",
     !isDashboard && variant === "minimal" && "bg-white border border-gray-200",
     !isDashboard && variant === "floating" && "bg-white",
@@ -419,7 +428,7 @@ const FormHorizontalBar = ({
   // Determine if form should be vertical (dashboard route)
   const containerClass = isDashboard
     ? `space-y-2`
-    : "grid grid-cols-1 gap-y-2 lg:gap-8 items-end lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.8fr)_auto]";
+    : "grid grid-cols-1 gap-y-2 lg:gap-6 items-end lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_auto]";
 
   // Compare mode has 3 cards + button, so use a different grid
   const compareContainerClass = isDashboard
@@ -430,7 +439,7 @@ const FormHorizontalBar = ({
   if (!isHydrated) {
     return (
       <div className={containerStyles}>
-        <div className="animate-pulse">
+        <div>
           {/* Desktop Grid Skeleton */}
           <div className="hidden lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-6">
             <div className="space-y-3">
@@ -483,7 +492,7 @@ const FormHorizontalBar = ({
   }
 
   return (
-    <div className="relative w-full mx-auto max-w-[354px] lg:max-w-[1024px]">
+    <div className="relative w-full mx-auto max-w-[354px] lg:max-w-[1120px]">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px] 
@@ -497,7 +506,7 @@ const FormHorizontalBar = ({
               mode={mode}
               onModeChange={setCurrentMode}
               variant="pill"
-              animate
+              animate={false}
             />
           </div>
         )}
@@ -564,200 +573,255 @@ const FormHorizontalBar = ({
           // Direct Mode with Modal Triggers
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className={containerClass}>
-              {/* Pickup Location - Modal Trigger */}
-              <div
-                onClick={() => {
-                  setActiveCard("pickup");
-                  setPickupModalOpen(true);
-                }}
-                className={cn(
-                  "direct-send",
-                  isDashboard && "mt-4 w-full!",
-                  activeCard === "pickup" &&
-                    !pickupLocation &&
-                    "ring-2 ring-brand/40",
-                )}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex items-center justify-between gap-2",
-                  )}
-                >
-                  <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Pickup From
-                  </p>
-                  <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
-                </label>
-
-                <div className="w-full flex items-center justify-between">
-                  <span
+              <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
+                <PopoverAnchor asChild>
+                  <div
                     className={cn(
-                      "text-base truncate flex items-center",
-                      pickupLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
+                      "direct-send",
+                      isDashboard && "mt-4 w-full!",
+                      activeCard === "pickup" &&
+                        !pickupLocation &&
+                        "ring-2 ring-brand/40",
                     )}
+                    onClick={() => {
+                      pickupInputRef.current?.focus();
+                      setActiveCard("pickup");
+                      setPickupModalOpen(true);
+                    }}
                   >
-                    {pickupLocation ? (
-                      pickupLocation
-                    ) : (
-                      <>
-                        <span className="lg:hidden font-arial font-bold text-sm">
-                          Enter address
-                        </span>
-                        <span className="hidden lg:inline font-arial">
-                          Where from
-                        </span>
-                        {activeCard === "pickup" && (
-                          <span className="caret-blink" />
-                        )}
-                      </>
-                    )}
-                  </span>
-                </div>
-                {errors.pickupLocation && (
-                  <p className="w-fit text-xs text-red-500 mt-1">
-                    {errors.pickupLocation.message}
-                  </p>
-                )}
-              </div>
+                    <label
+                      htmlFor="pickup-location-input"
+                      className={cn(
+                        labelStyles,
+                        "flex items-center justify-between gap-2",
+                      )}
+                    >
+                      <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Pickup address
+                      </p>
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
 
-              {/* Destination - Modal Trigger */}
-              <div
-                className={cn("direct-send", isDashboard && "w-full!")}
-                onClick={() => {
-                  setActiveCard("destination");
-                  setDestinationModalOpen(true);
-                }}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex justify-between items-center gap-2",
-                  )}
-                >
-                  <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Destination
-                  </p>
-                  <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Deliver To
-                  </p>
-
-                  <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
-                </label>
-
-                <div className="w-full flex items-center justify-between">
-                  <span
-                    className={cn(
-                      "text-base truncate",
-                      dropOffLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
-                    )}
-                  >
-                    {dropOffLocation || (
-                      <>
-                        <span className="lg:hidden font-arial font-bold text-sm">
-                          Enter Destination
-                        </span>
-                        <span className="hidden lg:block font-arial">
-                          Where to?
-                        </span>
-                      </>
-                    )}
-                  </span>
-                </div>
-                {errors.dropOffLocation && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.dropOffLocation.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Package Details - Single Modal Trigger */}
-              <div
-                className={cn("direct-send-package", isDashboard && "w-full!")}
-                onClick={() => setPackageModalOpen(true)}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex items-center justify-between gap-2",
-                  )}
-                >
-                  <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Package
-                  </p>
-
-                  <FiPackage size={18} className="text-[#CAD5E2]" />
-                </label>
-                <div className="w-full flex items-center justify-between -mt-1">
-                  {packageName ? (
-                    <>
-                      <span className="text-base truncate text-[#1a1a1a]">
-                        {packageName}
+                    <div className="w-full flex items-center gap-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiMapPin size={18} />
                       </span>
-                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-arial text-sm lg:text-base font-bold text-[#9ca3af]">
-                        Select
-                      </span>
-                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
-                    </>
-                  )}
-                </div>
-
-                {(errors.packageTypeId || errors.weight) && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.packageTypeId?.message || errors.weight?.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Pickup - Modal Trigger (Only for gosendeet mode) */}
-              <div
-                className={cn("direct-send-pickup", isDashboard && "w-full!")}
-                onClick={() => setDateModalOpen(true)}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex justify-between items-center gap-2",
-                  )}
-                >
-                  <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Pickup
-                  </p>
-
-                  <FiPackage size={18} className="text-[#CAD5E2]" />
-                </label>
-                <div className="flex justify-between items-center -mt-1">
-                  {pickupDate ? (
-                    <div className="flex-1 min-w-0">
-                      <div className="space-y-0.2">
-                        <p className="text-sm text-[#1a1a1a] font-semibold truncate">
-                          {new Date(
-                            pickupDate.split(" ")[0],
-                          ).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                        <p className="text-xs text-gray-600 truncate">
-                          {pickupDate.split(" ").slice(1).join(" ")}
-                        </p>
-                      </div>
+                      <input
+                        ref={pickupInputRef}
+                        id="pickup-location-input"
+                        type="text"
+                        value={pickupSearchQuery}
+                        onFocus={() => {
+                          setActiveCard("pickup");
+                          setPickupModalOpen(true);
+                        }}
+                        onChange={(event) => {
+                          setActiveCard("pickup");
+                          setPickupSearchQuery(event.target.value);
+                          setPickupModalOpen(true);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                          }
+                        }}
+                        placeholder="Enter street, area, or landmark"
+                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                      />
                     </div>
-                  ) : (
-                    <span className="text-sm font-bold lg:text-base font-arial text-[#9ca3af]">
-                      Select
-                    </span>
-                  )}
-                  <FaAngleDown
-                    size={18}
-                    className="text-[#CAD5E2] transition-colors shrink-0"
-                  />
-                </div>
-              </div>
+                    {errors.pickupLocation && (
+                      <p className="w-fit text-xs text-red-500 mt-1">
+                        {errors.pickupLocation.message}
+                      </p>
+                    )}
+                  </div>
+                </PopoverAnchor>
+                <AddressPopover
+                  type="pickup"
+                  open={pickupModalOpen}
+                  query={pickupSearchQuery}
+                  otherAddress={dropOffLocation || ""}
+                  onOpenChange={setPickupModalOpen}
+                  onQueryChange={setPickupSearchQuery}
+                  onSelect={(location) => {
+                    setValue("pickupLocation", location, {
+                      shouldValidate: true,
+                    });
+                    const currentData = watch();
+                    saveInputData({ ...currentData, pickupLocation: location });
+                  }}
+                />
+              </Popover>
+
+              <Popover
+                open={destinationModalOpen}
+                onOpenChange={setDestinationModalOpen}
+              >
+                <PopoverAnchor asChild>
+                  <div className={cn("direct-send", isDashboard && "w-full!")}>
+                    <label
+                      htmlFor="destination-location-input"
+                      className={cn(
+                        labelStyles,
+                        "flex justify-between items-center gap-2",
+                      )}
+                    >
+                      <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Destination address
+                      </p>
+                      <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Deliver To
+                      </p>
+
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
+
+                    <div
+                      className="w-full flex items-center gap-2"
+                      onClick={() => {
+                        setActiveCard("destination");
+                        setDestinationModalOpen(true);
+                      }}
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiFlag size={18} />
+                      </span>
+                      <input
+                        id="destination-location-input"
+                        type="text"
+                        value={destinationSearchQuery}
+                        onFocus={() => {
+                          setActiveCard("destination");
+                          setDestinationModalOpen(true);
+                        }}
+                        onChange={(event) => {
+                          setActiveCard("destination");
+                          setDestinationSearchQuery(event.target.value);
+                          setDestinationModalOpen(true);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                          }
+                        }}
+                        placeholder="Enter street, area, or landmark"
+                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                      />
+                    </div>
+                    {errors.dropOffLocation && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.dropOffLocation.message}
+                      </p>
+                    )}
+                  </div>
+                </PopoverAnchor>
+                <AddressPopover
+                  type="destination"
+                  open={destinationModalOpen}
+                  query={destinationSearchQuery}
+                  otherAddress={pickupLocation || ""}
+                  onOpenChange={setDestinationModalOpen}
+                  onQueryChange={setDestinationSearchQuery}
+                  onSelect={(location) => {
+                    setValue("dropOffLocation", location, {
+                      shouldValidate: true,
+                    });
+                    const currentData = watch();
+                    saveInputData({ ...currentData, dropOffLocation: location });
+                  }}
+                />
+              </Popover>
+
+              <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "direct-send-package text-left",
+                      isDashboard && "w-full!",
+                    )}
+                  >
+                    <label
+                      className={cn(
+                        labelStyles,
+                        "flex items-center justify-between gap-2",
+                      )}
+                    >
+                      <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Package
+                      </p>
+
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
+                    <div className="w-full flex items-center gap-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiPackage size={18} />
+                      </span>
+                      <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                        {packageName ? (
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold text-[#1a1a1a]">
+                              {packageName}
+                            </span>
+                            {weight && (
+                              <span className="block truncate text-xs text-[#64748B]">
+                                {weight}
+                                {selectedPackageData?.weightUnit || "kg"}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="min-w-0 truncate font-arial text-sm text-[#9ca3af]">
+                            Select package
+                          </span>
+                        )}
+                        <FaAngleDown
+                          size={18}
+                          className="shrink-0 text-[#CAD5E2]"
+                        />
+                      </span>
+                    </div>
+
+                    {(errors.packageTypeId || errors.weight) && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.packageTypeId?.message || errors.weight?.message}
+                      </p>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PackageTypePopover
+                  selectedPackageId={packageTypeId || ""}
+                  currentWeight={weight || ""}
+                  currentDimensions={dimensions || ""}
+                  currentItemPrice={itemPrice || ""}
+                  onOpenChange={setPackageModalOpen}
+                  onConfirm={(
+                    id,
+                    name,
+                    weightValue,
+                    dimensionsValue,
+                    itemPriceValue,
+                    packageData,
+                  ) => {
+                    setValue("packageTypeId", id, { shouldValidate: true });
+                    setValue("weight", weightValue, { shouldValidate: true });
+                    setValue("dimensions", dimensionsValue);
+                    setValue("itemPrice", itemPriceValue, {
+                      shouldValidate: true,
+                    });
+                    setPackageName(name);
+                    setSelectedPackageData(packageData);
+                    const currentData = watch();
+                    saveInputData({
+                      ...currentData,
+                      packageTypeId: id,
+                      weight: weightValue,
+                      dimensions: dimensionsValue,
+                      itemPrice: itemPriceValue,
+                    });
+                  }}
+                />
+              </Popover>
 
               {/* Buttons */}
               <div
@@ -820,7 +884,7 @@ const FormHorizontalBar = ({
                     style={{ width: "32px", height: "32px" }}
                   />
                   <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
-                    Get Price
+                    Get Quote
                   </span>
                 </Button>
               </div>
@@ -830,161 +894,256 @@ const FormHorizontalBar = ({
           // Compare Mode with Modal Triggers (no Pickup Date)
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className={compareContainerClass}>
-              {/* Pickup Location - Modal Trigger */}
-              <div
-                className={cn(
-                  "compare-pickup-from cursor-pointer",
-                  isDashboard && "mt-4 w-full!",
-                  activeCard === "pickup" &&
-                    !pickupLocation &&
-                    "ring-2 ring-brand/40",
-                )}
-                onClick={() => {
-                  setActiveCard("pickup");
-                  setPickupModalOpen(true);
-                }}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex justify-between items-center gap-2",
-                  )}
-                >
-                  <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Pickup From
-                  </p>
-                  <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
-                </label>
-                <div className="w-full flex items-center justify-between">
-                  <span
+              <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
+                <PopoverAnchor asChild>
+                  <div
                     className={cn(
-                      "text-base truncate flex items-center",
-                      pickupLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
+                      "compare-pickup-from",
+                      isDashboard && "mt-4 w-full!",
+                      activeCard === "pickup" &&
+                        !pickupLocation &&
+                        "ring-2 ring-brand/40",
                     )}
+                    onClick={() => {
+                      pickupInputRef.current?.focus();
+                      setActiveCard("pickup");
+                      setPickupModalOpen(true);
+                    }}
                   >
-                    {pickupLocation ? (
-                      pickupLocation
-                    ) : (
-                      <>
-                        <span className="lg:hidden font-arial font-bold text-sm">
-                          Enter Address
-                        </span>
-                        <span className="hidden lg:inline text-[#CAD5E2] font-arial font-bold">
-                          Enter Address
-                        </span>
-                        {activeCard === "pickup" && (
-                          <span className="caret-blink" />
-                        )}
-                      </>
-                    )}
-                  </span>
-                </div>
-                {errors.pickupLocation && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.pickupLocation.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Destination - Modal Trigger */}
-              <div
-                className={cn(
-                  "compare-pickup-destination",
-                  isDashboard && "!w-full",
-                )}
-                onClick={() => {
-                  setActiveCard("destination");
-                  setDestinationModalOpen(true);
-                }}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex justify-between items-center gap-2",
-                  )}
-                >
-                  <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Destination
-                  </p>
-                  <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Deliver To
-                  </p>
-                  <SlLocationPin size={18} className="text-[#CAD5E2]" />
-                </label>
-                <div className="w-full flex items-center justify-between">
-                  <span
-                    className={cn(
-                      "text-base truncate",
-                      dropOffLocation ? "text-[#1a1a1a]" : "text-[#9ca3af]",
-                    )}
-                  >
-                    {dropOffLocation || (
-                      <>
-                        <span className="lg:hidden font-arial font-bold text-sm">
-                          Enter Destination
-                        </span>
-                        <span className="hidden lg:block text-[#CAD5E2] font-arial font-bold">
-                          Enter Destination
-                        </span>
-                      </>
-                    )}
-                  </span>
-                </div>
-
-                {errors.dropOffLocation && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.dropOffLocation.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Package Details - Single Modal Trigger */}
-              <div
-                className={cn("direct-send-package", isDashboard && "!w-full")}
-                onClick={() => setPackageModalOpen(true)}
-              >
-                <label
-                  className={cn(
-                    labelStyles,
-                    "flex justify-between items-center gap-2",
-                  )}
-                >
-                  <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                    Package
-                  </p>
-
-                  <FiPackage size={18} className="text-[#CAD5E2]" />
-                </label>
-                <div className="w-full flex flex-col items-start  justify-between">
-                  {packageName && weight && dimensions ? (
-                    <div className="w-full flex items-center justify-between ">
-                      <div className="flex flex-col items-start space-y-0.5">
-                        <span className="text-xs truncate text-[#1a1a1a] font-semibold">
-                          {packageName}
-                        </span>
-                        <span className="text-xs text-gray-600 truncate">
-                          {dimensions} • {weight}
-                          {selectedPackageData?.weightUnit || "kg"}
-                        </span>
-                      </div>
-                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
-                    </div>
-                  ) : (
-                    <div className="w-full flex items-center justify-between">
-                      <span className="font-arial text-sm lg:text-base text-[#9ca3af] font-bold">
-                        Select
+                    <label
+                      htmlFor="compare-pickup-location-input"
+                      className={cn(
+                        labelStyles,
+                        "flex justify-between items-center gap-2",
+                      )}
+                    >
+                      <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Pickup address
+                      </p>
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
+                    <div className="w-full flex items-center gap-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiMapPin size={18} />
                       </span>
-                      <FaAngleDown size={18} className="text-[#CAD5E2]" />
+                      <input
+                        ref={pickupInputRef}
+                        id="compare-pickup-location-input"
+                        type="text"
+                        value={pickupSearchQuery}
+                        onFocus={() => {
+                          setActiveCard("pickup");
+                          setPickupModalOpen(true);
+                        }}
+                        onChange={(event) => {
+                          setActiveCard("pickup");
+                          setPickupSearchQuery(event.target.value);
+                          setPickupModalOpen(true);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                          }
+                        }}
+                        placeholder="Enter street, area, or landmark"
+                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                      />
                     </div>
-                  )}
-                </div>
+                    {errors.pickupLocation && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.pickupLocation.message}
+                      </p>
+                    )}
+                  </div>
+                </PopoverAnchor>
+                <AddressPopover
+                  type="pickup"
+                  open={pickupModalOpen}
+                  query={pickupSearchQuery}
+                  otherAddress={dropOffLocation || ""}
+                  onOpenChange={setPickupModalOpen}
+                  onQueryChange={setPickupSearchQuery}
+                  onSelect={(location) => {
+                    setValue("pickupLocation", location, {
+                      shouldValidate: true,
+                    });
+                    const currentData = watch();
+                    saveInputData({ ...currentData, pickupLocation: location });
+                  }}
+                />
+              </Popover>
 
-                {(errors.packageTypeId || errors.weight) && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.packageTypeId?.message || errors.weight?.message}
-                  </p>
-                )}
-              </div>
+              <Popover
+                open={destinationModalOpen}
+                onOpenChange={setDestinationModalOpen}
+              >
+                <PopoverAnchor asChild>
+                  <div
+                    className={cn(
+                      "compare-pickup-destination",
+                      isDashboard && "!w-full",
+                    )}
+                    onClick={() => {
+                      setActiveCard("destination");
+                      setDestinationModalOpen(true);
+                    }}
+                  >
+                    <label
+                      htmlFor="compare-destination-location-input"
+                      className={cn(
+                        labelStyles,
+                        "flex justify-between items-center gap-2",
+                      )}
+                    >
+                      <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Destination address
+                      </p>
+                      <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Deliver To
+                      </p>
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
+                    <div className="w-full flex items-center gap-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiFlag size={18} />
+                      </span>
+                      <input
+                        id="compare-destination-location-input"
+                        type="text"
+                        value={destinationSearchQuery}
+                        onFocus={() => {
+                          setActiveCard("destination");
+                          setDestinationModalOpen(true);
+                        }}
+                        onChange={(event) => {
+                          setActiveCard("destination");
+                          setDestinationSearchQuery(event.target.value);
+                          setDestinationModalOpen(true);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                          }
+                        }}
+                        placeholder="Enter street, area, or landmark"
+                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                      />
+                    </div>
+
+                    {errors.dropOffLocation && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.dropOffLocation.message}
+                      </p>
+                    )}
+                  </div>
+                </PopoverAnchor>
+                <AddressPopover
+                  type="destination"
+                  open={destinationModalOpen}
+                  query={destinationSearchQuery}
+                  otherAddress={pickupLocation || ""}
+                  onOpenChange={setDestinationModalOpen}
+                  onQueryChange={setDestinationSearchQuery}
+                  onSelect={(location) => {
+                    setValue("dropOffLocation", location, {
+                      shouldValidate: true,
+                    });
+                    const currentData = watch();
+                    saveInputData({ ...currentData, dropOffLocation: location });
+                  }}
+                />
+              </Popover>
+
+              <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(
+                      "direct-send-package text-left",
+                      isDashboard && "!w-full",
+                    )}
+                  >
+                    <label
+                      className={cn(
+                        labelStyles,
+                        "flex items-center justify-between gap-2",
+                      )}
+                    >
+                      <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
+                        Package
+                      </p>
+
+                      <span className="h-2 w-2 rounded-full bg-brand" />
+                    </label>
+                    <div className="w-full flex items-center gap-2">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+                        <FiPackage size={18} />
+                      </span>
+                      <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
+                        {packageName ? (
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-bold text-[#1a1a1a]">
+                              {packageName}
+                            </span>
+                            {weight && (
+                              <span className="block truncate text-xs text-[#64748B]">
+                                {weight}
+                                {selectedPackageData?.weightUnit || "kg"}
+                              </span>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="min-w-0 truncate font-arial text-sm text-[#9ca3af]">
+                            Select package
+                          </span>
+                        )}
+                        <FaAngleDown
+                          size={18}
+                          className="shrink-0 text-[#CAD5E2]"
+                        />
+                      </span>
+                    </div>
+
+                    {(errors.packageTypeId || errors.weight) && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors.packageTypeId?.message || errors.weight?.message}
+                      </p>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PackageTypePopover
+                  selectedPackageId={packageTypeId || ""}
+                  currentWeight={weight || ""}
+                  currentDimensions={dimensions || ""}
+                  currentItemPrice={itemPrice || ""}
+                  onOpenChange={setPackageModalOpen}
+                  onConfirm={(
+                    id,
+                    name,
+                    weightValue,
+                    dimensionsValue,
+                    itemPriceValue,
+                    packageData,
+                  ) => {
+                    setValue("packageTypeId", id, { shouldValidate: true });
+                    setValue("weight", weightValue, { shouldValidate: true });
+                    setValue("dimensions", dimensionsValue);
+                    setValue("itemPrice", itemPriceValue, {
+                      shouldValidate: true,
+                    });
+                    setPackageName(name);
+                    setSelectedPackageData(packageData);
+                    const currentData = watch();
+                    saveInputData({
+                      ...currentData,
+                      packageTypeId: id,
+                      weight: weightValue,
+                      dimensions: dimensionsValue,
+                      itemPrice: itemPriceValue,
+                    });
+                  }}
+                />
+              </Popover>
 
               {/* Compare Button */}
               <div
@@ -1026,7 +1185,7 @@ const FormHorizontalBar = ({
                     style={{ width: "32px", height: "32px" }}
                   />
                   <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
-                    Get Price
+                    Get Quote
                   </span>
                 </Button>
               </div>
@@ -1034,86 +1193,6 @@ const FormHorizontalBar = ({
           </form>
         ) : null}
 
-        {/* Modals for Direct and Compare modes */}
-        {(mode === "gosendeet" || mode === "compare") && (
-          <>
-            <AddressModal
-              type="pickup"
-              open={pickupModalOpen}
-              onOpenChange={setPickupModalOpen}
-              value={pickupLocation || ""}
-              otherAddress={dropOffLocation || ""}
-              onSelect={(location) => {
-                setValue("pickupLocation", location, { shouldValidate: true });
-                // Immediately save to sessionStorage to ensure persistence
-                const currentData = watch();
-                saveInputData({ ...currentData, pickupLocation: location });
-              }}
-            />
-
-            <AddressModal
-              type="destination"
-              open={destinationModalOpen}
-              onOpenChange={setDestinationModalOpen}
-              value={dropOffLocation || ""}
-              otherAddress={pickupLocation || ""}
-              onSelect={(location) => {
-                setValue("dropOffLocation", location, { shouldValidate: true });
-                // Immediately save to sessionStorage to ensure persistence
-                const currentData = watch();
-                saveInputData({ ...currentData, dropOffLocation: location });
-              }}
-            />
-
-            <PackageTypeModal
-              open={packageModalOpen}
-              onOpenChange={setPackageModalOpen}
-              selectedPackageId={packageTypeId || ""}
-              currentWeight={weight || ""}
-              currentDimensions={dimensions || ""}
-              currentItemPrice={itemPrice || ""}
-              onConfirm={(
-                id,
-                name,
-                weightValue,
-                dimensionsValue,
-                itemPriceValue,
-                packageData,
-              ) => {
-                setValue("packageTypeId", id, { shouldValidate: true });
-                setValue("weight", weightValue, { shouldValidate: true });
-                setValue("dimensions", dimensionsValue);
-                setValue("itemPrice", itemPriceValue, { shouldValidate: true });
-                setPackageName(name);
-                setSelectedPackageData(packageData);
-                // Immediately save to sessionStorage to ensure persistence
-                const currentData = watch();
-                saveInputData({
-                  ...currentData,
-                  packageTypeId: id,
-                  weight: weightValue,
-                  dimensions: dimensionsValue,
-                  itemPrice: itemPriceValue,
-                });
-              }}
-            />
-
-            {/* Pickup Date Modal - Only for Direct mode */}
-            {mode === "gosendeet" && (
-              <PickupDateModal
-                open={dateModalOpen}
-                onOpenChange={setDateModalOpen}
-                value={pickupDate || ""}
-                onSelect={(date) => {
-                  setValue("pickupDate", date);
-                  // Immediately save to sessionStorage to ensure persistence
-                  const currentData = watch();
-                  saveInputData({ ...currentData, pickupDate: date });
-                }}
-              />
-            )}
-          </>
-        )}
       </div>
     </div>
   );
