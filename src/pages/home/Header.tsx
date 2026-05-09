@@ -40,10 +40,10 @@ const Header = () => {
         <p className="bg-green300 border border-green600 w-fit h-8.5 mx-auto px-4 py-2 flex items-center gap-2 rounded-full md:text-xs text-xs font-bold my-8 shadow-md relative z-10">
           <span className="w-2.5 h-2.5 bg-green700 rounded-full"></span>
           <span className="uppercase text-green800 font-inter md:block hidden">
-            Nigeria's Most Trusted Logistics Network
+            Nigeria's Secure & Insured Logistics Network
           </span>
           <span className="uppercase text-green800 font-inter md:hidden block">
-            Nigeria's Top Logistics
+            Nigeria's Secure Logistics
           </span>
         </p>
         <div className="relative z-10 text-center mx-auto font-sans font-black text-[36px] leading-[34.2px] tracking-[-0.9px] lg:font-inter lg:font-black lg:text-[96px] lg:leading-[91.2px] lg:tracking-[-2.4px] mb-5">
