@@ -9,8 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --json > audit-results/npm-audit.json",
-    "security:audit:summary": "npm audit --audit-level=moderate",
+    "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --omit=dev --json > audit-results/npm-audit.json",
+    "security:audit:summary": "npm audit --audit-level=moderate --omit=dev",
     "sonar": "sonar-scanner",
     "ci:security": "npm run security:audit && npm run sonar"
   },
