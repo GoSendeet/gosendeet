@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 
 const Header = () => {
   const stats = [
-    { value: "50k+", label: "Packages Delivered" },
-    { value: "99.8%", label: "Reliability Rate" },
-    { value: "12", label: "Cities Covered" },
+    { value: "100%", label: "Insured Deliveries" },
+    { value: "Verified", label: "Courier Partners" },
+    { value: "Tracking", label: "Parcel Tracking" },
     { value: "24/7", label: "Support Active" },
   ];
 
@@ -20,7 +20,7 @@ const Header = () => {
           <div className="flex items-center gap-2 text-white  mb-8 bg-white/10 px-4 py-1 border rounded-full w-fit">
             <ShieldCheck size={20} />
             <span className="text-sm font-semibold uppercase tracking-wider">
-              Trusted by 50k+ Nigerians
+              Secure & Insured Deliveries
             </span>
           </div>
 

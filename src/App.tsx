@@ -35,12 +35,14 @@ import FranchiseLayout from "./layouts/FranchiseLayout";
 import Franchise from "./pages/franchise";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
+import PageTracker from "./components/PageTracker";
 
 function App() {
   return (
     <>
     <ChatwootWidget />
     <Router>
+      <PageTracker />
       <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />

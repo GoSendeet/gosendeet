@@ -9,10 +9,15 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { useMutation } from "@tanstack/react-query";
 import { googleLogin, validateEmail } from "@/services/auth";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { track, EVENT } from "@/lib/analytics";
 
 const Signin = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    track(EVENT.LOGIN_STARTED);
+  }, []);
   // const showGoogleAuth =
   //   import.meta.env.DEV ||
   //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");

@@ -2,6 +2,7 @@ import { Spinner } from "@/components/Spinner";
 import { storeAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 import { getAuthSession } from "@/services/auth";
+import { identifyUser, track, EVENT } from "@/lib/analytics";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,6 +26,8 @@ const ValidateGoogleLogin = () => {
           sessionStorage.getItem("unauthenticated") === "true";
 
         storeAuthSession(user);
+        identifyUser(String(user.id), { role: user.role });
+        track(EVENT.LOGIN_COMPLETED, { method: "google", role: user.role });
         toast.success("Login Successful");
 
         if (isUnauthenticated) {

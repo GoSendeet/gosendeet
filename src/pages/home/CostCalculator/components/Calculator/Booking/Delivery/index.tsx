@@ -12,6 +12,7 @@ import { hasAuthSession } from "@/lib/authSession";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 import { Stepper } from "@/components/ui/stepper";
 import { UserRound } from "lucide-react";
+import { track, EVENT } from "@/lib/analytics";
 
 const inputClasses =
   "rounded-lg border border-[#D0D5DD] bg-white px-4 py-3 !text-[#111827] !opacity-100 placeholder:!text-[#667085] focus:border-green500 focus:ring-2 focus:ring-green500/20";
@@ -160,6 +161,12 @@ const Delivery = () => {
       navigate("/signin");
       return;
     }
+
+    track(EVENT.DELIVERY_DETAILS_SUBMITTED, {
+      courier_name: bookingDetails?.courier?.name,
+      pickup_location: bookingRequest?.pickupLocation,
+      drop_off_location: bookingRequest?.dropOffLocation,
+    });
 
     const payload = {
       // senderId: userId,

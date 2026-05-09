@@ -18,6 +18,7 @@ import { FaAngleDown } from "react-icons/fa";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { GoArrowRight } from "react-icons/go";
+import { track, EVENT } from "@/lib/analytics";
 
 const MAX_SUPPORTED_ITEM_VALUE = 100000;
 
@@ -198,6 +199,13 @@ const FormHorizontalBar = ({
         : Array.isArray(response?.data)
           ? response.data
           : [];
+
+      track(EVENT.QUOTE_COMPLETED, {
+        mode,
+        quote_count: quotes.length,
+        pickup_location: inputData?.pickupLocation,
+        drop_off_location: inputData?.dropOffLocation,
+      });
 
       if (quotes.length === 0) {
         toast.success("No quotes available for the provided details.");
@@ -869,6 +877,13 @@ const FormHorizontalBar = ({
                     }
 
                     saveInputData(data);
+                    track(EVENT.QUOTE_STARTED, {
+                      mode: "gosendeet",
+                      pickup_location: data.pickupLocation,
+                      drop_off_location: data.dropOffLocation,
+                      package_type_id: data.packageTypeId,
+                      weight: data.weight,
+                    });
                     getQuotesDirectly({
                       data: [
                         {
@@ -1175,6 +1190,13 @@ const FormHorizontalBar = ({
                     }
 
                     saveInputData(data);
+                    track(EVENT.QUOTE_STARTED, {
+                      mode: "compare",
+                      pickup_location: data.pickupLocation,
+                      drop_off_location: data.dropOffLocation,
+                      package_type_id: data.packageTypeId,
+                      weight: data.weight,
+                    });
                     // Compare directly - get quotes immediately without opening modal
                     getQuotesDirectly({
                       data: [
