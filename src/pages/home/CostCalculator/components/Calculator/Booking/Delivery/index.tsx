@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { allowOnlyNumbers, parseDateInput } from "@/lib/utils";
 import { hasAuthSession } from "@/lib/authSession";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
+import { track, EVENT } from "@/lib/analytics";
 
 const Delivery = () => {
   const location = useLocation();
@@ -111,6 +112,12 @@ const Delivery = () => {
       navigate("/signin");
       return;
     }
+
+    track(EVENT.DELIVERY_DETAILS_SUBMITTED, {
+      courier_name: bookingDetails?.courier?.name,
+      pickup_location: bookingRequest?.pickupLocation,
+      drop_off_location: bookingRequest?.dropOffLocation,
+    });
 
     const payload = {
       // senderId: userId,
