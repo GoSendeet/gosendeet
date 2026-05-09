@@ -18,7 +18,6 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import companies from "@/assets/images/companies.png";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { googleSignup } from "@/services/auth";
@@ -26,8 +25,6 @@ import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 import { createSignupUsername } from "@/utils/username";
 import { useSearchParams } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { useEffect } from "react";
-import { track, EVENT } from "@/lib/analytics";
 
 const getInitialUserType = (
   typeParam: string | null,
