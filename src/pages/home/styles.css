@@ -20,7 +20,7 @@
   justify-content: center;
   pointer-events: none;
   z-index: 1;
-  opacity: 0.72;
+  opacity: 0.42;
 }
 
 .hero-delivery-illustration {
@@ -33,7 +33,7 @@
 
 @media (max-width: 900px) {
   .hero-delivery-flow {
-    opacity: 0.8;
+    opacity: 0.38;
   }
 
   .hero-delivery-illustration {
