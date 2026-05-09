@@ -13,9 +13,19 @@ interface StepperProps {
 }
 
 export const Stepper = ({ steps, currentStep, className }: StepperProps) => {
+  const currentLabel = steps[currentStep - 1]?.label;
+
   return (
-    <div className={cn("w-full flex justify-center", className)}>
-      <div className="flex items-start gap-0 relative max-w-2xl">
+    <div className={cn("w-full", className)}>
+      <div className="rounded-xl border border-[#EAECF0] bg-white px-4 py-3 sm:hidden">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+          Step {currentStep} of {steps.length}
+        </p>
+        <p className="mt-1 font-semibold text-[#111827]">{currentLabel}</p>
+      </div>
+
+      <div className="hidden w-full overflow-x-auto pb-2 sm:block">
+        <div className="mx-auto flex min-w-[560px] max-w-4xl items-start">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isCompleted = stepNumber < currentStep;
@@ -23,17 +33,25 @@ export const Stepper = ({ steps, currentStep, className }: StepperProps) => {
           const isUpcoming = stepNumber > currentStep;
 
           return (
-            <div key={index} className="flex flex-col items-center" style={{ width: '180px' }}>
-              {/* Step Circle */}
-              <div className="relative flex items-center w-full">
-                {/* Circle */}
-                <div className="absolute left-1/2 -translate-x-1/2 z-10">
+            <div key={step.label} className="flex min-w-0 flex-1 flex-col items-center">
+              <div className="flex w-full items-center">
+                <div className="h-px flex-1">
+                  {index > 0 && (
+                    <div
+                      className={cn(
+                        "h-full border-t-2",
+                        isCompleted || isCurrent ? "border-green500" : "border-dashed border-[#D0D5DD]"
+                      )}
+                    />
+                  )}
+                </div>
+
                   <div
                     className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-200",
-                      isCompleted && "bg-green-500 border-green-500 text-white",
-                      isCurrent && "bg-blue-600 border-blue-600 text-white",
-                      isUpcoming && "bg-white border-neutral-300 text-neutral-400"
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all",
+                    isCompleted && "border-green500 bg-green500 text-white",
+                    isCurrent && "border-green100 bg-green100 text-white shadow-sm",
+                    isUpcoming && "border-[#D0D5DD] bg-white text-[#667085]"
                     )}
                   >
                     {isCompleted ? (
@@ -42,36 +60,38 @@ export const Stepper = ({ steps, currentStep, className }: StepperProps) => {
                       <span className="text-xs font-semibold">{stepNumber}</span>
                     )}
                   </div>
-                </div>
 
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div
-                    className={cn(
-                      "absolute h-0.5 transition-colors duration-200",
-                      "left-1/2 w-full",
-                      stepNumber < currentStep && "bg-green-500",
-                      stepNumber >= currentStep && "bg-neutral-300"
-                    )}
-                  />
-                )}
+                <div className="h-px flex-1">
+                  {index < steps.length - 1 && (
+                    <div
+                      className={cn(
+                        "h-full border-t-2",
+                        isCompleted ? "border-green500" : "border-dashed border-[#D0D5DD]"
+                      )}
+                    />
+                  )}
+                </div>
               </div>
 
-              {/* Label */}
-              <div className="mt-6 text-center w-full px-2">
+              <div className="mt-3 w-full px-2 text-center">
                 <p
                   className={cn(
-                    "text-sm font-medium transition-colors",
-                    (isCompleted || isCurrent) && "text-neutral-900",
-                    isUpcoming && "text-neutral-400"
+                    "truncate text-sm font-semibold transition-colors",
+                    (isCompleted || isCurrent) && "text-[#006B4F]",
+                    isUpcoming && "text-[#667085]"
                   )}
+                  title={step.label}
                 >
                   {step.label}
                 </p>
+                {step.description && (
+                  <p className="mt-1 truncate text-xs text-[#667085]">{step.description}</p>
+                )}
               </div>
             </div>
           );
         })}
+        </div>
       </div>
     </div>
   );

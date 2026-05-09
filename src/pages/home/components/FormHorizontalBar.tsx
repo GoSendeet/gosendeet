@@ -19,6 +19,8 @@ import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { GoArrowRight } from "react-icons/go";
 
+const MAX_SUPPORTED_ITEM_VALUE = 100000;
+
 const normalizeStateKey = (value: string) =>
   value
     .toLowerCase()
@@ -815,6 +817,7 @@ const FormHorizontalBar = ({
                     saveInputData({
                       ...currentData,
                       packageTypeId: id,
+                      packageName: name,
                       weight: weightValue,
                       dimensions: dimensionsValue,
                       itemPrice: itemPriceValue,
@@ -838,6 +841,11 @@ const FormHorizontalBar = ({
                   )}
                   loading={isQuoteLoading}
                   onClick={handleSubmit((data) => {
+                    if ((Number(data.itemPrice) || 0) > MAX_SUPPORTED_ITEM_VALUE) {
+                      toast.error("We currently do not support item values above ₦100,000.");
+                      return;
+                    }
+
                     const invalidFields: string[] = [];
 
                     if (!isServiceableAddress(data.pickupLocation)) {
@@ -1137,6 +1145,7 @@ const FormHorizontalBar = ({
                     saveInputData({
                       ...currentData,
                       packageTypeId: id,
+                      packageName: name,
                       weight: weightValue,
                       dimensions: dimensionsValue,
                       itemPrice: itemPriceValue,
@@ -1160,6 +1169,11 @@ const FormHorizontalBar = ({
                   )}
                   loading={isQuoteLoading}
                   onClick={handleSubmit((data) => {
+                    if ((Number(data.itemPrice) || 0) > MAX_SUPPORTED_ITEM_VALUE) {
+                      toast.error("We currently do not support item values above ₦100,000.");
+                      return;
+                    }
+
                     saveInputData(data);
                     // Compare directly - get quotes immediately without opening modal
                     getQuotesDirectly({

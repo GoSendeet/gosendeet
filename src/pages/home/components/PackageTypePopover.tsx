@@ -290,7 +290,7 @@ export function PackageTypePopover({
               onClick={() => setShowManualWeight(true)}
               className="shrink-0 text-xs font-bold text-brand underline underline-offset-4 hover:text-[#064E3B]"
             >
-              Enter manually
+              Know the exact weight? Add it
             </button>
           </div>
 
