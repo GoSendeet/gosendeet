@@ -26,6 +26,8 @@ import { isNonProductionEmailValidationEnv } from "@/utils/environment";
 import { createSignupUsername } from "@/utils/username";
 import { useSearchParams } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useEffect } from "react";
+import { track, EVENT } from "@/lib/analytics";
 
 const getInitialUserType = (
   typeParam: string | null,
@@ -213,9 +215,14 @@ const Signup = () => {
   const passwordValue = watch("password") ?? "";
   const passwordChecks = getPasswordChecks(passwordValue);
 
+  useEffect(() => {
+    track(EVENT.SIGNUP_STARTED);
+  }, []);
+
   const { mutate, isPending } = useMutation({
     mutationFn: signup,
     onSuccess: () => {
+      track(EVENT.SIGNUP_COMPLETED, { role: userType });
       setOpen(true);
       reset();
     },

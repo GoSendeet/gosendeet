@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { payForBooking } from "@/services/user";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
+import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 const Checkout = () => {
@@ -45,7 +46,13 @@ const Checkout = () => {
     if (!bookingData) {
       toast.error("Booking details are missing. Please start again.");
       navigate("/", { replace: true });
+      return;
     }
+    track(EVENT.CHECKOUT_INITIATED, {
+      courier_name: bookingData?.courierName,
+      total_amount: Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0),
+      currency: bookingData?.currency ?? "NGN",
+    });
   }, [bookingData, navigate]);
 
   const total = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
@@ -72,6 +79,11 @@ const Checkout = () => {
         toast.error("Invalid payment redirect. Please contact support.");
         return;
       }
+      track(EVENT.PAYMENT_STARTED, {
+        courier_name: bookingData?.courierName,
+        total_amount: total,
+        currency: bookingData?.currency ?? "NGN",
+      });
       toast.success("Successful");
       window.location.href = url;
     },

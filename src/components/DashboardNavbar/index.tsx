@@ -11,6 +11,7 @@ import { useMutation } from "@tanstack/react-query";
 import { logout } from "@/services/auth";
 import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/authSession";
+import { resetUser } from "@/lib/analytics";
 
 const DashboardNavbar = () => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const DashboardNavbar = () => {
   const { mutate, isPending } = useMutation({
     mutationFn: logout,
     onSuccess: () => {
+      resetUser();
       clearAuthSession();
       navigate("/");
     },

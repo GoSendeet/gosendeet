@@ -13,6 +13,7 @@ import { verifyBookingPayment } from "@/services/user";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import openChatwootChat from "@/lib/openChatwootChat";
 import openWhatsAppSupport from "@/lib/openWhatsAppSupport";
+import { track, EVENT } from "@/lib/analytics";
 
 const Confirmation = () => {
   const [searchParams] = useSearchParams();
@@ -55,6 +56,7 @@ const Confirmation = () => {
         return;
       }
 
+      track(EVENT.BOOKING_CONFIRMED, { booking_id: verifiedBookingId });
       setBookingId(verifiedBookingId);
       setVerificationComplete(true);
       sessionStorage.setItem("bookingCompleted", "true");
@@ -170,14 +172,14 @@ const Confirmation = () => {
                       <Button
                         variant="secondary"
                         className="bg-green-500"
-                        onClick={openChatwootChat}
+                        onClick={(e) => { track(EVENT.SUPPORT_OPENED, { channel: "chat", source: "confirmation" }); openChatwootChat(e); }}
                       >
                         Live Chat
                       </Button>
                       <Button
                         variant="secondary"
                         className="bg-brand"
-                        onClick={() => openWhatsAppSupport()}
+                        onClick={() => { track(EVENT.SUPPORT_OPENED, { channel: "whatsapp", source: "confirmation" }); openWhatsAppSupport(); }}
                       >
                         WhatsApp Support
                       </Button>
