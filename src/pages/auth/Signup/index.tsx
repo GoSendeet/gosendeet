@@ -215,14 +215,9 @@ const Signup = () => {
   const passwordValue = watch("password") ?? "";
   const passwordChecks = getPasswordChecks(passwordValue);
 
-  useEffect(() => {
-    track(EVENT.SIGNUP_STARTED);
-  }, []);
-
   const { mutate, isPending } = useMutation({
     mutationFn: signup,
     onSuccess: () => {
-      track(EVENT.SIGNUP_COMPLETED, { role: userType });
       setOpen(true);
       reset();
     },
@@ -262,8 +257,8 @@ const Signup = () => {
                 </span>
               </p>
               <h1 className="text-2xl lg:text-5xl font-extrabold text-blue100 tracking-tighter leading-tight">
-                Join Nigeria's Most <br />
-                Trusted <span className="text-green500">Logistics Network</span>
+                Join Nigeria's Secure <br />
+                & Insured <span className="text-green500">Logistics Network</span>
               </h1>
             </div>
 
@@ -281,21 +276,21 @@ const Signup = () => {
                   <ShieldCheck size={24} /> Secure & Insured
                 </h4>
                 <p className=" text-white">
-                  "Since joining as a partner, our delivery efficiency has
-                  improved by 40% across Lagos."
+                  "Every package is insured and tracked as it moves.
+                  Gosendeet gives us the reliability our customers expect."
                 </p>
               </div>
             </div>
 
             {/* Trust Count */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* <div className="hidden md:flex items-center gap-3">
               <img src={companies} alt="companies" />
               <p className="text-grey300">
                 Trusted by{" "}
                 <span className="font-bold text-blue100">2,000+</span>{" "}
                 businesses
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Right Section - Form */}
