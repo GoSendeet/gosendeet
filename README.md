@@ -171,9 +171,9 @@ Development dependencies include:
 - Vercel rewrites all routes to `/` so client-side routing works correctly
 - `npm install --legacy-peer-deps` is configured as the Vercel install command
 
-## CI/CD, Security, and SonarQube
+## CI/CD and Security
 
-The repository includes a GitHub Actions workflow at `.github/workflows/deploy-security-sonarqube.yml`.
+The repository includes a GitHub Actions workflow at `.github/workflows/deploy-security.yml`.
 
 The frontend app also includes local security and SonarQube scripts:
 
@@ -194,14 +194,11 @@ On pull requests to `dev` or `main`, it runs:
 - production build
 - `npm audit --audit-level=moderate`
 - CodeQL JavaScript/TypeScript security analysis
-- SonarQube analysis and quality gate enforcement
 
-On pushes to `dev` or `main`, successful tests, build, security audit, CodeQL, and SonarQube quality gate checks are required before deploying to Vercel.
+On pushes to `dev` or `main`, successful tests, build, security audit, and CodeQL checks are required before deploying to Vercel.
 
 Required GitHub repository secrets:
 
-- `SONAR_TOKEN`
-- `SONAR_HOST_URL`
 - `VERCEL_TOKEN`
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`

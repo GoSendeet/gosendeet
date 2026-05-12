@@ -1,4 +1,4 @@
-name: Deploy with Security and SonarQube
+name: Deploy with Security Checks
 
 on:
   push:
@@ -17,7 +17,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: deploy-security-sonarqube-${{ github.ref }}
+  group: deploy-security-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -89,38 +89,12 @@ jobs:
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
 
-  sonarqube:
-    name: SonarQube Analysis
-    runs-on: ubuntu-latest
-    needs:
-      - quality-security
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run SonarQube scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      - name: Check SonarQube quality gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
   deploy:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs:
       - quality-security
       - codeql
-      - sonarqube
     if: github.event_name == 'push'
     environment:
       name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}

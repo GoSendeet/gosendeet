@@ -11,16 +11,27 @@ import Services from "./Services";
 import Compare from "./Compare";
 import Logistics from "./Logistics";
 import Visibility from "./Visibility";
+import ScrollReveal from "./components/ScrollReveal";
 
 const Home = () => {
   return (
     <div className="v3-minimal-theme">
       <Layout>
-        <Header />
-        <Services />
-        <Compare />
-        <Logistics />
-        <Visibility />
+        <ScrollReveal>
+          <Header />
+        </ScrollReveal>
+        <ScrollReveal>
+          <Services />
+        </ScrollReveal>
+        <ScrollReveal>
+          <Compare />
+        </ScrollReveal>
+        <ScrollReveal>
+          <Logistics />
+        </ScrollReveal>
+        <ScrollReveal>
+          <Visibility />
+        </ScrollReveal>
         {/* <ProcessFlow />
         <ServicesMinimal />
         <Benefits />
