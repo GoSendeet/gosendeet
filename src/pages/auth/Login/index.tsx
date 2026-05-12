@@ -13,6 +13,7 @@ import AuthLayout from "@/layouts/AuthLayout";
 import { storeAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 import { login } from "@/services/auth";
+import { identifyUser, track, EVENT } from "@/lib/analytics";
 
 const schema = z.object({
   password: z
@@ -61,6 +62,8 @@ const Login = () => {
       }
 
       storeAuthSession(user);
+      identifyUser(String(user.id), { role: user.role, email });
+      track(EVENT.LOGIN_COMPLETED, { method: "email", role: user.role });
 
       toast.success("Login Successful");
       navigate(getDefaultRouteForRole(user.role));

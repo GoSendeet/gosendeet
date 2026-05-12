@@ -9,8 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --json > audit-results/npm-audit.json",
-    "security:audit:summary": "npm audit --audit-level=moderate",
+    "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --omit=dev --json > audit-results/npm-audit.json",
+    "security:audit:summary": "npm audit --audit-level=moderate --omit=dev",
     "sonar": "sonar-scanner",
     "ci:security": "npm run security:audit && npm run sonar"
   },
@@ -40,6 +40,7 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^0.487.0",
     "next-themes": "^0.4.6",
+    "posthog-js": "^1.372.10",
     "react": "^19.0.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.0.0",
