@@ -1,10 +1,41 @@
-import { useState } from "react";
 import ActivityStats from "./ActivityStats";
 import { Truck, Zap } from "lucide-react";
 import RecentActivity from "./RecentActivity";
+import {
+  useGetFranchiseDashboardActivity,
+  useGetFranchiseDashboardSummary,
+  useUpdateFranchiseAvailability,
+} from "@/queries/franchise/useFranchiseDashboard";
+import { toast } from "sonner";
 
 const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries: (statusTab: string) => void }) => {
-  const [isOnline, setIsOnline] = useState(true);
+  const {
+    data: summary,
+    isPending: summaryLoading,
+  } = useGetFranchiseDashboardSummary(7);
+  const {
+    data: activities,
+    isPending: activityLoading,
+  } = useGetFranchiseDashboardActivity(10);
+  const availabilityMutation = useUpdateFranchiseAvailability(7);
+  const isOnline = summary?.online ?? false;
+  const todayLabel = new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date());
+
+  const toggleAvailability = () => {
+    availabilityMutation.mutate(!isOnline, {
+      onSuccess: () => {
+        toast.success(`You are now ${!isOnline ? "online" : "offline"}`);
+      },
+      onError: (error: { message?: string }) => {
+        toast.error(error.message ?? "Could not update availability");
+      },
+    });
+  };
 
   return (
     <>
@@ -20,13 +51,14 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
               Hello, GoSendeet Direct 👋
             </h1>
             <p className="text-sm lg:text-base text-frch-text-gray mt-2">
-              Saturday, Feburary 28, 2026.
+              {todayLabel}.
             </p>
           </div>
 
           {/* Online/Offline status toggle */}
           <button
-            onClick={() => setIsOnline((prev) => !prev)}
+            onClick={toggleAvailability}
+            disabled={summaryLoading || availabilityMutation.isPending}
             className="bg-white px-2 w-[135.28px] h-[37.6px] flex items-center gap-2 rounded-full border border-[#E5E7EB] cursor-pointer transition-colors duration-300"
             style={{
               boxShadow:
@@ -46,7 +78,7 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
                 isOnline ? "text-[#1fac53]" : "text-black"
               }`}
             >
-              {isOnline ? "Online" : "Offline"}
+              {summaryLoading ? "Loading" : isOnline ? "Online" : "Offline"}
             </span>
 
             {/* Toggle pill */}
@@ -67,7 +99,7 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
 
       {/* dashboard statistics */}
       <div className="mt-10">
-        <ActivityStats />
+        <ActivityStats summary={summary} isLoading={summaryLoading} />
       </div>
 
       {/* Action Buttons */}
@@ -79,7 +111,7 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
             <Zap size={16} color="#ffff" />
           </span>
           <span className="text-sm font-light">View New Assignments</span>
-          <span className="text-sm font-light">(2)</span>
+          <span className="text-sm font-light">({summary?.pendingAssignments ?? 0})</span>
         </button>
 
         <button
@@ -89,13 +121,13 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
             <Truck size={16} />
           </span>
           <span className="text-sm font-light">Active Deliveries</span>
-          <span className="text-sm font-light">(3)</span>
+          <span className="text-sm font-light">({summary?.activeDeliveries ?? 0})</span>
         </button>
       </div>
 
       {/* Recent Activity */}
       <div className="mt-8">
-        <RecentActivity />
+        <RecentActivity activities={activities} isLoading={activityLoading} />
       </div>
     </>
   );

@@ -12,8 +12,11 @@ type BackendProof = NonNullable<TaskDto["completionProofs"]>[number];
 
 export type FranchiseDeliverySource = {
   id?: string;
+  bookingId?: string;
   orderNumber?: string;
   trackingNumber?: string;
+  isNew?: boolean;
+  status?: string;
   from?: string;
   to?: string;
   pickupLocation?: string;
@@ -153,6 +156,25 @@ export const deriveDeliveryStatus = (
   return "Pending";
 };
 
+const normalizeDeliveryStatus = (
+  status?: string,
+  tasks: Pick<DeliveryTask, "status" | "taskType">[] = [],
+): DeliveryStatus => {
+  const validStatuses: DeliveryStatus[] = [
+    "Pending",
+    "In Transit",
+    "Accepted",
+    "Picked Up",
+    "Delivered",
+    "Declined",
+  ];
+  const matched = validStatuses.find(
+    (validStatus) => validStatus.toLowerCase() === status?.toLowerCase(),
+  );
+
+  return matched ?? deriveDeliveryStatus(tasks);
+};
+
 const formatWeight = (source: FranchiseDeliverySource): string => {
   if (source.weight === null || source.weight === undefined) return EMPTY_VALUE;
   const unit = source.weightUnit ? ` ${source.weightUnit}` : "";
@@ -180,8 +202,9 @@ export const mapFranchiseDelivery = (
 
   return {
     id: toText(source.trackingNumber ?? source.orderNumber ?? source.id),
-    isNew: tasks.some((task) => task.status === "DRAFT"),
-    status: deriveDeliveryStatus(tasks),
+    bookingId: source.bookingId,
+    isNew: source.isNew ?? tasks.some((task) => task.status === "DRAFT"),
+    status: normalizeDeliveryStatus(source.status, tasks),
     from: toText(source.from ?? source.pickupLocation ?? source.pickupAddress),
     to: toText(
       source.to ??

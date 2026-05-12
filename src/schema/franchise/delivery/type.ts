@@ -51,6 +51,7 @@ export type DeliveryStatus =
 
 export type DeliveryType = {
   id: string;
+  bookingId?: string;
   isNew: boolean;
   status: DeliveryStatus;
   from: string;

@@ -2,6 +2,7 @@ import ActiveDeliveries from "./ActiveDeliveries"
 import CompletionsRate from "./CompletionsRate"
 import PendingAssignments from "./PendingAssignments"
 import TodayEarnings from "./TodayEarnings"
+import type { FranchiseDashboardSummary } from "@/services/franchise"
 
 
 
@@ -36,13 +37,37 @@ import TodayEarnings from "./TodayEarnings"
 //     "Completion Rate": "bg-[#ECFDF5]"
 // }
 
-const index = () => {
+const formatCurrency = (value?: number | string) => {
+  if (value === undefined || value === null || value === "") return "₦0";
+  if (typeof value === "number") {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+  return value;
+};
+
+const index = ({
+  summary,
+  isLoading = false,
+}: {
+  summary?: FranchiseDashboardSummary;
+  isLoading?: boolean;
+}) => {
+  const placeholder = isLoading ? "..." : "0";
+  const completionPeriod = summary?.completionRatePeriodDays ?? 7;
+
   return (
     <div className='w-full grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4'>
-        <TodayEarnings />
-        <ActiveDeliveries />
-        <PendingAssignments />
-        <CompletionsRate />
+        <TodayEarnings value={isLoading ? "..." : formatCurrency(summary?.todayEarnings)} />
+        <ActiveDeliveries value={summary?.activeDeliveries?.toString() ?? placeholder} />
+        <PendingAssignments value={summary?.pendingAssignments?.toString() ?? placeholder} />
+        <CompletionsRate
+          value={summary ? `${summary.completionRate}%` : placeholder}
+          subvalue={`${completionPeriod} day${completionPeriod === 1 ? "" : "s"}`}
+        />
     </div>
   )
 }
