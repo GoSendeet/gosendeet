@@ -51,6 +51,42 @@ export type FranchiseDashboardActivity = {
   timestamp: string;
 };
 
+export type FranchiseEarningsSummary = {
+  totalThisMonth: number;
+  pendingAmount: number;
+  nextPayoutEstimate: number;
+  nextPayoutDate: string;
+  completedDeliveriesThisMonth: number;
+};
+
+export type FranchiseEarningsTransaction = {
+  id: string;
+  trackingId: string;
+  amountPaid: number;
+  feePaid: number;
+  commission: number;
+  dateCreated: string;
+};
+
+export type FranchiseSettlementStatus = "Draft" | "Pending Approval" | "Paid";
+
+export type FranchiseSettlement = {
+  id: string;
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  dateRange: string;
+  deliveries: number;
+  gross: number;
+  adjustments: number;
+  netPayout: number;
+  status: FranchiseSettlementStatus;
+  paymentReference?: string | null;
+  paymentMethod?: string | null;
+  paidAt?: string | null;
+  createdAt?: string | null;
+};
+
 const cleanParams = (params: FranchiseDeliveriesParams) =>
   Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== ""),
@@ -165,6 +201,77 @@ export const getFranchiseDashboardActivity = async (
 export const updateFranchiseAvailability = async (online: boolean) => {
   try {
     const res = await api.put("/franchise/availability", { online });
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseEarningsSummary =
+  async (): Promise<FranchiseEarningsSummary> => {
+    try {
+      const res = await api.get<FranchiseEarningsSummary>(
+        "/franchise/earnings/summary",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const getFranchiseEarningsTransactions = async (
+  params: FranchiseDeliveriesParams,
+): Promise<PageResponse<FranchiseEarningsTransaction>> => {
+  try {
+    const res = await api.get<PageResponse<FranchiseEarningsTransaction>>(
+      "/franchise/earnings/transactions",
+      { params: cleanParams(params) },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseSettlements = async (
+  params: FranchiseDeliveriesParams,
+): Promise<PageResponse<FranchiseSettlement>> => {
+  try {
+    const res = await api.get<PageResponse<FranchiseSettlement>>(
+      "/franchise/settlements",
+      { params: cleanParams(params) },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const downloadFranchiseSettlementPdf = async (settlementId: string) => {
+  try {
+    const res = await api.get(`/franchise/settlements/${settlementId}/pdf`, {
+      responseType: "blob",
+    });
+    return res.data as Blob;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const createFranchiseSettlementDispute = async ({
+  settlementId,
+  reason,
+  details,
+}: {
+  settlementId: string;
+  reason: string;
+  details?: string;
+}) => {
+  try {
+    const res = await api.post(`/franchise/settlements/${settlementId}/disputes`, {
+      reason,
+      details,
+    });
     return res.data;
   } catch (error: unknown) {
     return throwApiError(error);
