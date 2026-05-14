@@ -87,6 +87,137 @@ export type FranchiseSettlement = {
   createdAt?: string | null;
 };
 
+export type FranchisePerformanceSummary = {
+  onTimePercent: number;
+  averageRating: number;
+  totalRatings: number;
+  complaints: number;
+  totalDeliveries: number;
+  periodDays: number;
+};
+
+export type FranchisePerformanceWeekStatus =
+  | "Good"
+  | "Below Target"
+  | "At Risk";
+
+export type FranchisePerformanceWeeklyTrend = {
+  id: string;
+  week: string;
+  onTimePercent: number;
+  rating: number;
+  status: FranchisePerformanceWeekStatus;
+};
+
+export type FranchisePerformanceFlag = {
+  id: string;
+  trackingId: string;
+  flag: "ON HOLD" | "PENALTY" | "WARNING";
+  reason: string;
+  date: string;
+};
+
+export type FranchiseProfile = {
+  partnerId?: string | null;
+  userId?: string | null;
+  franchiseId?: string | null;
+  companyId?: string | null;
+  status?: string | null;
+  companyName?: string | null;
+  companyEmail?: string | null;
+  companyPhone?: string | null;
+  website?: string | null;
+  logo?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  username?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  profilePicture?: string | null;
+};
+
+export type FranchiseProfilePayload = {
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  companyEmail?: string;
+  companyPhone?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  phone?: string;
+};
+
+export type FranchiseBankAccount = {
+  bankName?: string | null;
+  bankCode?: string | null;
+  accountNumber?: string | null;
+  maskedAccountNumber?: string | null;
+  accountName?: string | null;
+};
+
+export type FranchiseBankAccountPayload = {
+  bankName: string;
+  bankCode?: string;
+  accountNumber: string;
+  accountName: string;
+};
+
+export type FranchiseVehicleCapabilities = {
+  vehicleType?: string | null;
+  plateNumber?: string | null;
+  maxPackageWeightKg?: number | string | null;
+  packageCapabilities?: string[];
+};
+
+export type FranchiseVehicleCapabilitiesPayload = {
+  vehicleType: string;
+  plateNumber: string;
+  maxPackageWeightKg: number;
+  packageCapabilities: string[];
+};
+
+export type FranchiseAlertPreferences = {
+  pushNotifications: boolean;
+  smsNotifications: boolean;
+  emailNotifications: boolean;
+  assignmentAlerts: boolean;
+  settlementUpdates: boolean;
+  qualityAlerts: boolean;
+};
+
+export type FranchiseNotificationType =
+  | "new_assignment"
+  | "dispatch_accepted"
+  | "decline_confirmed"
+  | "task_started"
+  | "task_completed"
+  | "task_terminated"
+  | "settlement_ready"
+  | "dispute_update"
+  | "quality_flag"
+  | "payment_received"
+  | "system_update";
+
+export type FranchiseNotification = {
+  id: string;
+  type: FranchiseNotificationType;
+  title: string;
+  body: string;
+  trackingId?: string | null;
+  settlementId?: string | null;
+  unread: boolean;
+  createdAt: string;
+  actionLabel?: string | null;
+  actionUrl?: string | null;
+};
+
 const cleanParams = (params: FranchiseDeliveriesParams) =>
   Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== ""),
@@ -272,6 +403,182 @@ export const createFranchiseSettlementDispute = async ({
       reason,
       details,
     });
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchisePerformanceSummary =
+  async (): Promise<FranchisePerformanceSummary> => {
+    try {
+      const res = await api.get<FranchisePerformanceSummary>(
+        "/franchise/performance/summary",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const getFranchisePerformanceWeeklyTrend =
+  async (): Promise<FranchisePerformanceWeeklyTrend[]> => {
+    try {
+      const res = await api.get<FranchisePerformanceWeeklyTrend[]>(
+        "/franchise/performance/weekly-trend",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const getFranchisePerformanceFlags =
+  async (): Promise<FranchisePerformanceFlag[]> => {
+    try {
+      const res = await api.get<FranchisePerformanceFlag[]>(
+        "/franchise/performance/flags",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const getFranchiseProfile = async (): Promise<FranchiseProfile> => {
+  try {
+    const res = await api.get<FranchiseProfile>("/franchise/profile");
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const updateFranchiseProfile = async (
+  payload: FranchiseProfilePayload,
+): Promise<FranchiseProfile> => {
+  try {
+    const res = await api.put<FranchiseProfile>("/franchise/profile", payload);
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseBankAccount =
+  async (): Promise<FranchiseBankAccount> => {
+    try {
+      const res = await api.get<FranchiseBankAccount>(
+        "/franchise/bank-account",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const updateFranchiseBankAccount = async (
+  payload: FranchiseBankAccountPayload,
+): Promise<FranchiseBankAccount> => {
+  try {
+    const res = await api.put<FranchiseBankAccount>(
+      "/franchise/bank-account",
+      payload,
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseVehicleCapabilities =
+  async (): Promise<FranchiseVehicleCapabilities> => {
+    try {
+      const res = await api.get<FranchiseVehicleCapabilities>(
+        "/franchise/vehicle-capabilities",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const updateFranchiseVehicleCapabilities = async (
+  payload: FranchiseVehicleCapabilitiesPayload,
+): Promise<FranchiseVehicleCapabilities> => {
+  try {
+    const res = await api.put<FranchiseVehicleCapabilities>(
+      "/franchise/vehicle-capabilities",
+      payload,
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseAlertPreferences =
+  async (): Promise<FranchiseAlertPreferences> => {
+    try {
+      const res = await api.get<FranchiseAlertPreferences>(
+        "/franchise/alert-preferences",
+      );
+      return res.data;
+    } catch (error: unknown) {
+      return throwApiError(error);
+    }
+  };
+
+export const updateFranchiseAlertPreferences = async (
+  payload: FranchiseAlertPreferences,
+): Promise<FranchiseAlertPreferences> => {
+  try {
+    const res = await api.put<FranchiseAlertPreferences>(
+      "/franchise/alert-preferences",
+      payload,
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchiseNotifications = async ({
+  page = 0,
+  size = 20,
+  status,
+}: {
+  page?: number;
+  size?: number;
+  status?: "read" | "unread";
+} = {}): Promise<PageResponse<FranchiseNotification>> => {
+  try {
+    const res = await api.get<PageResponse<FranchiseNotification>>(
+      "/franchise/notifications",
+      { params: cleanParams({ page, size, status }) },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const markAllFranchiseNotificationsRead = async () => {
+  try {
+    const res = await api.post("/franchise/notifications/mark-all-read");
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const markFranchiseNotificationRead = async (
+  id: string,
+): Promise<FranchiseNotification> => {
+  try {
+    const res = await api.post<FranchiseNotification>(
+      `/franchise/notifications/${id}/read`,
+    );
     return res.data;
   } catch (error: unknown) {
     return throwApiError(error);

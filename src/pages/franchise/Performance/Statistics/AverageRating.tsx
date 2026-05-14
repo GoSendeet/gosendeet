@@ -1,19 +1,29 @@
 import { FranchiseCardPerformance } from "@/components/ui/FranchiseCard";
 import { Star } from "lucide-react";
 
-const AverageRating = () => {
+const AverageRating = ({
+  rating = 0,
+  totalRatings = 0,
+  isLoading = false,
+}: {
+  rating?: number;
+  totalRatings?: number;
+  isLoading?: boolean;
+}) => {
+  const displayRating = isLoading ? "..." : rating.toFixed(1);
+
   return (
     <>
       <FranchiseCardPerformance
         variant="rating"
         title="Average Rating"
-        value="4.7"
+        value={displayRating}
         icon={Star}
         iconBg="#FFFBEB"
         iconColor="#F59E0B"
-        ratingValue={4.7}
+        ratingValue={rating}
         outOf={5}
-        totalRatings={142}
+        totalRatings={totalRatings}
       />
     </>
   );

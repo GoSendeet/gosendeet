@@ -14,7 +14,7 @@ export const vehicleCapabilitySchema = z.object({
   vehicle_type: z.string().min(1, "Please select a vehicle type"),
   plate_number: z.string().min(1, "Plate number is required"),
   package_weight: z.string().min(1, "Please select package type"),
+  package_capabilities: z.array(z.string()).min(1, "Select at least one package type"),
 })
-
 
 

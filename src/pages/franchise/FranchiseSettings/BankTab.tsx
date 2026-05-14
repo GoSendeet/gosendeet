@@ -1,10 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { acceptedBanks } from "@/constants";
 import { useForm, Controller } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
 import { bankAccountSchema } from "@/schema/franchise/settings";
 import { BankAccountFormData } from "@/schema/franchise/settings/type";
 import { Save, CheckCircle, Shield } from "lucide-react";
+import { useEffect } from "react";
+import {
+  useGetFranchiseBankAccount,
+  useUpdateFranchiseBankAccount,
+} from "@/queries/franchise/useFranchiseSettings";
 import {
   Select,
   SelectContent,
@@ -14,6 +18,12 @@ import {
 } from "@/components/ui/select";
 
 const BankTab = () => {
+  const { data: bankAccount } = useGetFranchiseBankAccount();
+  const {
+    mutate: saveBankAccount,
+    isPending,
+    isSuccess,
+  } = useUpdateFranchiseBankAccount();
   const {
     register,
     handleSubmit,
@@ -22,18 +32,21 @@ const BankTab = () => {
     formState: { errors },
   } = useForm<BankAccountFormData>({
     resolver: zodResolver(bankAccountSchema),
+    defaultValues: {
+      bankName: "",
+      accountNumber: "",
+      accountName: "",
+    },
   });
 
-  const {
-    mutate: saveBankAccount,
-    isPending,
-    isSuccess,
-  } = useMutation({
-    mutationFn: async (_data: BankAccountFormData) => {
-      // TODO: wire up to POST /franchise/bank-account API endpoint
-    },
-    onSuccess: () => reset(),
-  });
+  useEffect(() => {
+    if (!bankAccount) return;
+    reset({
+      bankName: bankAccount.bankName ?? "",
+      accountNumber: bankAccount.accountNumber ?? "",
+      accountName: bankAccount.accountName ?? "",
+    });
+  }, [bankAccount, reset]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,7 +64,12 @@ const BankTab = () => {
       </div>
 
       <form
-        onSubmit={handleSubmit((data) => saveBankAccount(data))}
+        onSubmit={handleSubmit((data) =>
+          saveBankAccount({
+            ...data,
+            bankCode: acceptedBanks.find((bank) => bank.bankname === data.bankName)?.id.toString(),
+          }),
+        )}
         className="flex flex-col gap-4"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -111,11 +129,9 @@ const BankTab = () => {
             </label>
             <input
               type="text"
-              inputMode="numeric"
               {...register("accountName")}
-              readOnly
-              value="KUNLE ADEWALE"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-400 bg-gray-100 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50 transition-al"
+              placeholder="Enter resolved account name"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50 transition-all placeholder-gray-300"
             />
             {errors.accountName && (
               <p className="text-xs text-red-500">

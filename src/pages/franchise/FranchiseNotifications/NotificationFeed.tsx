@@ -3,9 +3,10 @@ import NotificationRow, { type Notification } from "./NotificationRow";
 
 type NotificationFeedProps = {
   notifications?: Notification[];
+  onMarkRead?: (id: string) => void;
 };
 
-const NotificationFeed = ({ notifications }: NotificationFeedProps) => {
+const NotificationFeed = ({ notifications, onMarkRead }: NotificationFeedProps) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm max-h-100 overflow-y-scroll w-full [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-600">
       {/* List */}
@@ -17,7 +18,7 @@ const NotificationFeed = ({ notifications }: NotificationFeedProps) => {
           </div>
         ) : (
           notifications.map((item) => (
-            <NotificationRow key={item.id} item={item} />
+            <NotificationRow key={item.id} item={item} onMarkRead={onMarkRead} />
           ))
         )}
       </div>

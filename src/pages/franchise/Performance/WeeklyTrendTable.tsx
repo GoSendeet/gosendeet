@@ -11,21 +11,6 @@ export type WeeklyTrendRow = {
   status: WeekStatus;
 };
 
-//Mocked data for now, will be replaced with backend data later
-const MOCK_WEEKLY_TREND: WeeklyTrendRow[] = [
-  {
-    id: "w5",
-    week: "W5",
-    onTimePercent: 94,
-    rating: 4.6,
-    status: "Below Target",
-  },
-  { id: "w6", week: "W6", onTimePercent: 95, rating: 4.5, status: "Good" },
-  { id: "w7", week: "W7", onTimePercent: 97, rating: 4.8, status: "Good" },
-  { id: "w8", week: "W8", onTimePercent: 96, rating: 4.7, status: "Good" },
-  { id: "w9", week: "W9", onTimePercent: 96, rating: 4.7, status: "Good" },
-];
-
 const weekStatusStyles: Record<
   WeekStatus,
   { text: string; bg: string, icon: React.ReactNode }
@@ -53,9 +38,10 @@ const StarIcon = () => (
 
 type Props = {
     data?: WeeklyTrendRow[];
+    isLoading?: boolean;
 }
 
-const WeeklyTrendTable = ({ data = MOCK_WEEKLY_TREND }: Props) => {
+const WeeklyTrendTable = ({ data = [], isLoading = false }: Props) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-5 pt-5 pb-3">
@@ -78,6 +64,22 @@ const WeeklyTrendTable = ({ data = MOCK_WEEKLY_TREND }: Props) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
+            {isLoading && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-400">
+                  Loading weekly trend...
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && data.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-sm text-gray-400">
+                  No trend data yet
+                </td>
+              </tr>
+            )}
+
             {data.map((row) => {
               const s = weekStatusStyles[row.status];
               return (
@@ -116,6 +118,18 @@ const WeeklyTrendTable = ({ data = MOCK_WEEKLY_TREND }: Props) => {
 
       {/* Mobile cards */}
       <div className="sm:hidden divide-y divide-gray-50">
+        {isLoading && (
+          <div className="px-5 py-8 text-center text-sm text-gray-400">
+            Loading weekly trend...
+          </div>
+        )}
+
+        {!isLoading && data.length === 0 && (
+          <div className="px-5 py-8 text-center text-sm text-gray-400">
+            No trend data yet
+          </div>
+        )}
+
         {data.map((row) => {
           const s = weekStatusStyles[row.status];
           return (
