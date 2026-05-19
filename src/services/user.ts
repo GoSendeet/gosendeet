@@ -1,16 +1,11 @@
-import { AxiosError } from "axios";
 import { api, authApi } from "./axios";
-
-const throwApiError = (error: unknown): never => {
-  const axiosError = error as AxiosError<{ message: string }>;
-  throw axiosError?.response?.data || { message: (error as Error).message };
-};
+import { throwApiError } from "@/lib/errorHandling";
+import { hasAuthSession } from "@/lib/authSession";
 
 const ensureAuthenticated = () => {
-  const authToken = sessionStorage.getItem("authToken");
   const userId = sessionStorage.getItem("userId");
 
-  if (!authToken || !userId) {
+  if (!hasAuthSession() || !userId) {
     throw { message: "Please sign in to continue" };
   }
 };

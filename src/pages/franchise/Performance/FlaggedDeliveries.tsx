@@ -10,23 +10,6 @@ export type FlaggedDelivery = {
   date: string;
 };
 
-const MOCK_FLAGGED_DELIVERIES: FlaggedDelivery[] = [
-  {
-    id: "f1",
-    trackingId: "GS-LMN222",
-    flag: "ON HOLD",
-    reason: "Low customer rating (2/5)",
-    date: "Feb 26, 2026",
-  },
-  {
-    id: "f2",
-    trackingId: "GS-QRS444",
-    flag: "PENALTY",
-    reason: "Late delivery (45 min past window)",
-    date: "Feb 20, 2026",
-  },
-];
-
 const flagStyles: Record<
   FlagType,
   { pill: string; border: string; bg: string }
@@ -50,9 +33,20 @@ const flagStyles: Record<
 
 type Props = {
     data?: FlaggedDelivery[];
+    isLoading?: boolean;
 }
 
-const FlaggedDeliveries = ({ data = MOCK_FLAGGED_DELIVERIES }: Props) => {
+const formatDate = (value: string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+};
+
+const FlaggedDeliveries = ({ data = [], isLoading = false }: Props) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
       <div className="px-5 py-4 flex items-center gap-2 border-b border-gray-100">
@@ -61,6 +55,18 @@ const FlaggedDeliveries = ({ data = MOCK_FLAGGED_DELIVERIES }: Props) => {
       </div>
 
       <div className="p-4 flex flex-col gap-3">
+        {isLoading && (
+          <div className="py-8 text-center text-sm text-gray-400">
+            Loading flagged deliveries...
+          </div>
+        )}
+
+        {!isLoading && data.length === 0 && (
+          <div className="py-8 text-center text-sm text-gray-400">
+            No flagged deliveries
+          </div>
+        )}
+
         {data.map((item) => {
           const f = flagStyles[item.flag];
           return (
@@ -81,7 +87,7 @@ const FlaggedDeliveries = ({ data = MOCK_FLAGGED_DELIVERIES }: Props) => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">{item.reason}</p>
-                <p className="text-[11px] text-gray-400">{item.date}</p>
+                <p className="text-[11px] text-gray-400">{formatDate(item.date)}</p>
               </div>
             </div>
           );

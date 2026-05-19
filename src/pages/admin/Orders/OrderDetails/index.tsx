@@ -120,10 +120,10 @@ const OrderDetails = () => {
                   <span className="text-neutral600 text-xs">Subtotal</span>
                   <span className="text-neutral800 text-sm">₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}</span>
                 </div>
-                <div className="flex justify-between mb-1">
+                {/* <div className="flex justify-between mb-1">
                   <span className="text-neutral600 text-xs">Shipping Fee</span>
                   <span className="text-neutral800 text-sm">₦ {CurrencyFormatter(data?.data?.cost?.shippingFee)}</span>
-                </div>
+                </div> */}
                 <div className="flex justify-between mb-1">
                   <span className="text-neutral600 text-xs">Tax</span>
                   <span className="text-neutral800 text-sm">₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}</span>
@@ -171,10 +171,10 @@ const OrderDetails = () => {
                         <p className="text-neutral600">Subtotal</p>
                         <p className="text-neutral800">₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}</p>
                       </div>
-                      <div className="flex justify-between items-center mb-2 pr-6">
+                      {/* <div className="flex justify-between items-center mb-2 pr-6">
                         <p className="text-neutral600">Shipping Fee</p>
                         <p className="text-neutral800">₦ {CurrencyFormatter(data?.data?.cost?.shippingFee)}</p>
-                      </div>
+                      </div> */}
                       <div className="flex justify-between items-center mb-2 pr-6">
                         <p className="text-neutral600">Tax</p>
                         <p className="text-neutral800">₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}</p>

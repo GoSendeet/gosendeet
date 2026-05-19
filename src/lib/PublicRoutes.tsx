@@ -1,12 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom";
 
+import { hasAuthSession } from "./authSession";
 import { getDefaultRouteForRole } from "./roles";
 
 const PublicRoutes = () => {
-  const authToken = sessionStorage.getItem("authToken");
+  const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role");
 
-  if (authToken) {
+  if (isAuthenticated) {
     return <Navigate to={getDefaultRouteForRole(role)} replace />;
   }
 

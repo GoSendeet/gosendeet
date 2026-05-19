@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import AuthLayout from "@/layouts/AuthLayout";
 import { Spinner } from "@/components/Spinner";
 import { useMutation } from "@tanstack/react-query";
-import { resendVerification, validateEmail } from "@/services/auth";
+import { resendVerification } from "@/services/auth";
 import { toast } from "sonner";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
@@ -113,21 +113,7 @@ const VerifyEmail = () => {
       return;
     }
 
-    validateEmail(normalizedEmail)
-      .then((response) => {
-        const matchedEmail = response?.data?.email || normalizedEmail;
-        const alreadyVerified = Boolean(response?.data?.isVerified);
-
-        if (alreadyVerified) {
-          toast.error("This account has already been verified. Please sign in.");
-          return;
-        }
-
-        mutate(matchedEmail);
-      })
-      .catch((error: { message?: string }) => {
-        toast.error(error?.message || "We could not find that email address.");
-      });
+    mutate(normalizedEmail);
   };
 
   return (

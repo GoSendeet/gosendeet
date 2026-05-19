@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save, CheckCircle } from "lucide-react";
+import {
+  useGetFranchiseAlertPreferences,
+  useUpdateFranchiseAlertPreferences,
+} from "@/queries/franchise/useFranchiseSettings";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -7,31 +11,9 @@ type AlertsFormValues = {
   pushNotifications:  boolean;
   smsNotifications:   boolean;
   emailNotifications: boolean;
-  newAssignments:     boolean;
+  assignmentAlerts:   boolean;
   settlementUpdates:  boolean;
   qualityAlerts:      boolean;
-};
-
-
-// ─── Mock useMutation (swap with react-query when backend is ready) ───────────
-
-const useUpdateAlerts = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const mutate = async (data: AlertsFormValues) => {
-    setIsLoading(true);
-    // TODO: replace with real API call e.g:
-    // await axios.put("/api/partner/alert-preferences", data)
-    console.log("📤 Saving alert preferences:", data);
-    await new Promise((r) => setTimeout(r, 700));
-    console.log("✅ Alert preferences saved");
-    setIsLoading(false);
-    setIsSuccess(true);
-    setTimeout(() => setIsSuccess(false), 2500);
-  };
-
-  return { mutate, isLoading, isSuccess };
 };
 
 
@@ -105,21 +87,26 @@ export default function AlertTab({
     pushNotifications:  true,
     smsNotifications:   false,
     emailNotifications: true,
-    newAssignments:     true,
+    assignmentAlerts:   true,
     settlementUpdates:  true,
     qualityAlerts:      true,
   },
 }: AlertsTabProps) {
+  const { data: alertPreferences } = useGetFranchiseAlertPreferences();
+  const { mutate, isPending, isSuccess } = useUpdateFranchiseAlertPreferences();
   const [form, setForm] = useState<AlertsFormValues>({
     pushNotifications:  defaultValues.pushNotifications  ?? true,
     smsNotifications:   defaultValues.smsNotifications   ?? false,
     emailNotifications: defaultValues.emailNotifications ?? true,
-    newAssignments:     defaultValues.newAssignments      ?? true,
+    assignmentAlerts:   defaultValues.assignmentAlerts    ?? true,
     settlementUpdates:  defaultValues.settlementUpdates   ?? true,
     qualityAlerts:      defaultValues.qualityAlerts       ?? true,
   });
 
-  const { mutate, isLoading, isSuccess } = useUpdateAlerts();
+  useEffect(() => {
+    if (!alertPreferences) return;
+    setForm(alertPreferences);
+  }, [alertPreferences]);
 
   const toggle = (key: keyof AlertsFormValues) =>
     setForm((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -155,8 +142,8 @@ export default function AlertTab({
         <ToggleRow
           label="New Assignments"
           description="When new deliveries are assigned"
-          enabled={form.newAssignments}
-          onChange={() => toggle("newAssignments")}
+          enabled={form.assignmentAlerts}
+          onChange={() => toggle("assignmentAlerts")}
         />
         <ToggleRow
           label="Settlement Updates"
@@ -176,21 +163,21 @@ export default function AlertTab({
       <div>
         <button
           onClick={handleSave}
-          disabled={isLoading || isSuccess}
+          disabled={isPending || isSuccess}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200
             ${isSuccess
               ? "bg-emerald-400 cursor-default"
               : "bg-emerald-500 hover:bg-emerald-600 active:scale-95 disabled:opacity-60"
             }`}
         >
-          {isLoading ? (
+          {isPending ? (
             <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : isSuccess ? (
             <CheckCircle size={15} />
           ) : (
             <Save size={15} />
           )}
-          {isLoading ? "Saving…" : isSuccess ? "Saved!" : "Save Preferences"}
+          {isPending ? "Saving..." : isSuccess ? "Saved!" : "Save Preferences"}
         </button>
       </div>
     </div>

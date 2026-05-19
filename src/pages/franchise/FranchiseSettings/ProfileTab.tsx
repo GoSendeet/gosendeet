@@ -1,9 +1,8 @@
 import { CheckCircle, Save } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { updateUserProfile } from "@/services/user";
+import { useUpdateFranchiseProfile } from "@/queries/franchise/useFranchiseSettings";
+import { FranchiseProfile } from "@/services/franchise";
 
 export type ProfileData = {
   fullName: string;
@@ -30,20 +29,11 @@ export const MOCK_PROFILE: ProfileData = {
 type FormFields = Pick<ProfileData, "fullName" | "phoneNumber" | "email">;
 
 type Prop = {
-  data?: ProfileData | UserProfileResponse;
+  data?: ProfileData | FranchiseProfile;
 };
 
-type UserProfileResponse = {
+type UserProfileResponse = FranchiseProfile & {
   id?: string;
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  partnerId?: string;
-  franchiseId?: string;
-  status?: string;
 };
 
 const getInitials = (value: string) => {
@@ -55,8 +45,9 @@ const getInitials = (value: string) => {
     .join("");
 };
 
-const normalizeStatus = (status?: string): ProfileData["status"] => {
-  return status?.toLowerCase() === "active" ? "Active" : "Inactive";
+const normalizeStatus = (status?: string | null): ProfileData["status"] => {
+  const normalized = status?.toLowerCase();
+  return normalized === "active" || normalized === "published" ? "Active" : "Inactive";
 };
 
 const mapUserToProfileData = (data?: ProfileData | UserProfileResponse): ProfileData => {
@@ -73,20 +64,27 @@ const mapUserToProfileData = (data?: ProfileData | UserProfileResponse): Profile
 
   return {
     fullName,
-    phoneNumber: data.phone || "",
-    email: data.email || "",
+    phoneNumber: data.phone || data.companyPhone || "",
+    email: data.companyEmail || data.email || "",
     address: data.address || "",
-    partnerId: data.partnerId || data.franchiseId || data.id || "--",
+    partnerId: data.partnerId || data.franchiseId || data.companyId || data.id || "--",
     status: normalizeStatus(data.status),
     avatarInitials: getInitials(fullName),
     avatarBg: "bg-orange-400",
   };
 };
 
+const splitName = (fullName: string) => {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? "",
+    lastName: parts.slice(1).join(" "),
+  };
+};
+
 const ProfileTab = ({ data }: Prop) => {
   const profileData = useMemo(() => mapUserToProfileData(data), [data]);
-  const userId = "id" in (data || {}) ? (data as UserProfileResponse).id ?? "" : "";
-  const queryClient = useQueryClient();
+  const { mutate: updateProfile, isSuccess, isPending } = useUpdateFranchiseProfile();
   const {
     register,
     handleSubmit,
@@ -107,27 +105,6 @@ const ProfileTab = ({ data }: Prop) => {
       email: profileData.email,
     });
   }, [profileData, reset]);
-
-  const { mutate: updateProfile, isSuccess, isPending } = useMutation({
-    mutationFn: async (formData: FormFields) => {
-      if (!userId) {
-        throw new Error("Unable to update profile");
-      }
-
-      return updateUserProfile(userId, {
-        username: formData.fullName,
-        phone: formData.phoneNumber,
-        email: formData.email,
-      });
-    },
-    onSuccess: () => {
-      toast.success("Profile updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-    onError: (error: any) => {
-      toast.error(error?.message || "Something went wrong");
-    },
-  });
 
   const fields: { label: string; field: keyof FormFields; placeholder: string; type?: string }[] = [
     { label: "Full Name", field: "fullName", placeholder: "Enter full name" },
@@ -162,7 +139,17 @@ const ProfileTab = ({ data }: Prop) => {
       </div>
 
       {/* Form grid */}
-      <form onSubmit={handleSubmit((data) => updateProfile(data))}>
+      <form
+        onSubmit={handleSubmit((formData) => {
+          const names = splitName(formData.fullName);
+          updateProfile({
+            ...names,
+            companyEmail: formData.email,
+            phone: formData.phoneNumber,
+            companyPhone: formData.phoneNumber,
+          });
+        })}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {fields.map(({ label, field, placeholder, type }) => (
             <div key={field} className="flex flex-col gap-1.5">

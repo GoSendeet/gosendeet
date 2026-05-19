@@ -173,7 +173,7 @@ const DispatchPreviewDialog = ({
                   Dispatch Completed
                 </p>
                 <p className="text-sm text-green-700">
-                  {dispatchSummary.companiesNotified} {dispatchSummary.companiesNotified === 1 ? "partner" : "partners"} notified • {dispatchSummary.totalTasksDispatched} {dispatchSummary.totalTasksDispatched === 1 ? "task" : "tasks"} dispatched
+                  {dispatchSummary.totalCompaniesNotified} {dispatchSummary.totalCompaniesNotified === 1 ? "partner" : "partners"} notified • {dispatchSummary.totalTasksDispatched} {dispatchSummary.totalTasksDispatched === 1 ? "task" : "tasks"} dispatched
                 </p>
               </div>
             </div>
@@ -181,24 +181,23 @@ const DispatchPreviewDialog = ({
             <div className="bg-white rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-neutral800">
-                  Dispatch Links
+                  One-Time Dispatch Links
                 </p>
                 <p className="text-xs text-neutral500">
-                  Share these with your dispatch partners
+                  Share these with your dispatch partners. Each link is exchanged once for a secure session.
                 </p>
               </div>
               <div className="space-y-2">
-                {Object.entries(dispatchSummary.dispatchTokens || {}).map(
-                  ([companyId, token]) => {
-                    const dispatchLink = `${typeof window !== "undefined" ? window.location.origin : ""}/dispatch/${preview?.orderNumber || ""}/${token}`;
+                {Object.values(dispatchSummary.companies || {}).map((companyDispatch) => {
+                    const dispatchLink = `${typeof window !== "undefined" ? window.location.origin : ""}/dispatch/${preview?.trackingNumber || ""}?access=${encodeURIComponent(companyDispatch.token)}`;
                     return (
                       <div
-                        key={companyId}
+                        key={companyDispatch.companyId}
                         className="flex items-center gap-2 p-3 bg-neutral50 rounded-lg border border-neutral200"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-neutral800 truncate">
-                            {preview?.companyDetails?.[companyId]?.companyName || companyId}
+                            {companyDispatch.companyName}
                           </p>
                           <p className="text-xs text-neutral500 truncate">
                             {dispatchLink}
@@ -223,9 +222,9 @@ const DispatchPreviewDialog = ({
                     );
                   }
                 )}
-                {Object.keys(dispatchSummary.dispatchTokens || {}).length === 0 && (
+                {Object.keys(dispatchSummary.companies || {}).length === 0 && (
                   <p className="text-sm text-neutral500 text-center py-4">
-                    No dispatch tokens generated
+                    No dispatch links generated
                   </p>
                 )}
               </div>

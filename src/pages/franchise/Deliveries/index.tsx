@@ -16,8 +16,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import DateRangePicker from "@/components/ui/DateRangePicker";
-import { DeliveryType } from "@/schema/franchise/delivery/type";
+import { DeliveryTask, DeliveryType } from "@/schema/franchise/delivery/type";
 import DeliveryDrawer from "./DeliveryDrawer";
+import {
+  useAcceptFranchiseDelivery,
+  useCompleteFranchiseTask,
+  useDeclineFranchiseDelivery,
+  useGetFranchiseDeliveries,
+  useStartFranchiseTask,
+} from "@/queries/franchise/useFranchiseDeliveries";
+import { useGetFranchiseDashboardSummary } from "@/queries/franchise/useFranchiseDashboard";
+import { toast } from "sonner";
 
 //Lets create an array of data
 
@@ -431,7 +440,7 @@ const deliveries: DeliveryType[] = [
         completedAt: "2026-03-08T15:55:00",
         createdAt: "2026-03-08T13:00:00",
         updatedAt: "2026-03-08T15:55:00",
-        completionProofs: ["photo_proof_jkl012.jpg"],
+        completionProofs: [{ url: "/proofs/photo_proof_jkl012.jpg", fileName: "photo_proof_jkl012.jpg" }],
         previewToken: "",
       },
     ],
@@ -499,7 +508,7 @@ const deliveries: DeliveryType[] = [
         completedAt: "2026-03-07T12:30:00",
         createdAt: "2026-03-07T09:00:00",
         updatedAt: "2026-03-07T12:30:00",
-        completionProofs: ["photo_proof_mno345.jpg"],
+        completionProofs: [{ url: "/proofs/photo_proof_mno345.jpg", fileName: "photo_proof_mno345.jpg" }],
         previewToken: "",
       },
     ],
@@ -567,7 +576,7 @@ const deliveries: DeliveryType[] = [
         completedAt: "2026-03-06T11:50:00",
         createdAt: "2026-03-06T08:00:00",
         updatedAt: "2026-03-06T11:50:00",
-        completionProofs: ["photo_proof_pqr678.jpg"],
+        completionProofs: [{ url: "/proofs/photo_proof_pqr678.jpg", fileName: "photo_proof_pqr678.jpg" }],
         previewToken: "",
       },
     ],
@@ -739,25 +748,6 @@ const statusStyles: Record<string, statusStyleProps> = {
   Declined: { text: "text-red-500", bg: "bg-red-50", border: "border-red-200" },
 };
 
-const statusTabs = [
-  { label: "All Status", status: "", count: 10 },
-  {
-    label: "Pending",
-    status: "PENDING",
-    count: 2,
-  },
-  {
-    label: "Active",
-    status: ["IN_TRANSIT", "ACCEPTED", "PICKED_UP"],
-    count: 4,
-  },
-  {
-    label: "Completed",
-    status: "DELIVERED",
-    count: 4,
-  },
-];
-
 const statusOptions = [
   "All Status",
   "Pending",
@@ -774,6 +764,21 @@ const tabStatusMap: Record<string, string[]> = {
   Active: ["In Transit", "Accepted", "Picked Up"],
   Completed: ["Delivered"],
 };
+
+const apiStatusMap: Record<string, string | undefined> = {
+  "All Status": undefined,
+  Pending: "pending",
+  Active: "active",
+  Completed: "delivered",
+  "In Transit": "in_transit",
+  Accepted: "accepted",
+  "Picked Up": "picked_up",
+  Delivered: "delivered",
+  Declined: "declined",
+};
+
+const getBookingId = (delivery: DeliveryType) =>
+  delivery.bookingId ?? delivery.tasks?.[0]?.bookingId;
 
 const Deliveries = ({
   initialStatusTab = "All Status",
@@ -793,6 +798,39 @@ const Deliveries = ({
     null,
   );
 
+  const selectedStatus = statusFilter !== "All Status" ? statusFilter : activeTab;
+  const apiStatus = apiStatusMap[selectedStatus];
+  const deliveriesQuery = useGetFranchiseDeliveries({
+    page: 0,
+    size: 50,
+    status: apiStatus,
+    search: debouncedSearch,
+    startDate: dateRange.from,
+    endDate: dateRange.to,
+  });
+  const { data: summary } = useGetFranchiseDashboardSummary(7);
+  const acceptDelivery = useAcceptFranchiseDelivery();
+  const declineDelivery = useDeclineFranchiseDelivery();
+  const startTask = useStartFranchiseTask();
+  const completeTask = useCompleteFranchiseTask();
+
+  const apiDeliveries = deliveriesQuery.data?.content ?? [];
+  const statusTabs = useMemo(() => {
+    const pending = summary?.pendingAssignments ?? 0;
+    const active = summary?.activeDeliveries ?? 0;
+    const completed = summary?.completedDeliveries ?? 0;
+    const total =
+      deliveriesQuery.data?.totalElements ??
+      (deliveriesQuery.isError ? deliveries.length : pending + active + completed);
+
+    return [
+      { label: "All Status", count: total },
+      { label: "Pending", count: pending },
+      { label: "Active", count: active },
+      { label: "Completed", count: completed },
+    ];
+  }, [deliveriesQuery.data?.totalElements, deliveriesQuery.isError, summary]);
+
   const openDrawer = (delivery: DeliveryType) => {
     setSelectedDelivery(delivery);
     setDrawerOpen(true);
@@ -803,32 +841,68 @@ const Deliveries = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (!selectedDelivery) return;
+    const refreshed = apiDeliveries.find((delivery) => delivery.id === selectedDelivery.id);
+    if (refreshed) setSelectedDelivery(refreshed);
+  }, [apiDeliveries, selectedDelivery]);
+
   const handleStatus = (option: string) => {
     setStatusFilter(option);
     setActiveTab("All Status");
     setDropdownOpen(false);
   };
 
-  // Replace `deliveries` with API data (e.g. from useQuery) when backend is ready
   const filteredDeliveries: DeliveryType[] = useMemo(() => {
-    const q = debouncedSearch.toLowerCase().trim();
-    return deliveries.filter((row) => {
+    return apiDeliveries.filter((row) => {
       const tabStatuses = tabStatusMap[activeTab] ?? [];
       const matchesTab =
         tabStatuses.length === 0 || tabStatuses.includes(row.status);
       const matchesDropdown =
         statusFilter === "All Status" || row.status === statusFilter;
-      const matchesSearch =
-        !q ||
-        row.id.toLowerCase().includes(q) ||
-        row.from.toLowerCase().includes(q) ||
-        row.to.toLowerCase().includes(q);
-      const matchesDate =
-        (!dateRange.from || row.date >= dateRange.from) &&
-        (!dateRange.to || row.date <= dateRange.to);
-      return matchesTab && matchesDropdown && matchesSearch && matchesDate;
+      return matchesTab && matchesDropdown;
     });
-  }, [activeTab, statusFilter, debouncedSearch, dateRange]);
+  }, [activeTab, statusFilter, apiDeliveries]);
+
+  const handleAcceptDelivery = (delivery: DeliveryType) => {
+    const bookingId = getBookingId(delivery);
+    if (!bookingId) {
+      toast.error("Booking ID is missing for this delivery");
+      return;
+    }
+
+    acceptDelivery.mutate(bookingId, {
+      onSuccess: () => setDrawerOpen(false),
+    });
+  };
+
+  const handleDeclineDelivery = (delivery: DeliveryType) => {
+    const bookingId = getBookingId(delivery);
+    if (!bookingId) {
+      toast.error("Booking ID is missing for this delivery");
+      return;
+    }
+
+    const reason = window.prompt("Reason for declining this dispatch?");
+    if (!reason?.trim()) return;
+
+    declineDelivery.mutate(
+      { bookingId, reason: reason.trim() },
+      { onSuccess: () => setDrawerOpen(false) },
+    );
+  };
+
+  const handleStartTask = (task: DeliveryTask) => {
+    startTask.mutate(task.id);
+  };
+
+  const handleCompleteTask = (task: DeliveryTask, proofPhotos: File[]) => {
+    completeTask.mutate({
+      taskId: task.id,
+      proofPhotos,
+      message: `${task.taskType.toLowerCase()} completed from franchise dashboard`,
+    });
+  };
 
   const allSelected =
     selected.length === filteredDeliveries.length &&
@@ -945,6 +1019,18 @@ const Deliveries = ({
 
       {/* card showing deliveries for mobile version */}
       <div className="flex flex-col gap-4 md:hidden mt-6">
+        {deliveriesQuery.isPending && (
+          <div className="py-8 text-center text-sm text-gray-400">
+            Loading deliveries...
+          </div>
+        )}
+
+        {!deliveriesQuery.isPending && filteredDeliveries.length === 0 && (
+          <div className="py-8 text-center text-sm text-gray-400">
+            No deliveries found
+          </div>
+        )}
+
         {filteredDeliveries.map((row) => {
           const style = statusStyles[row.status] ?? statusStyles.Pending;
 
@@ -982,7 +1068,10 @@ const Deliveries = ({
                 return (
                   <div className="flex gap-2 mt-1">
                     {viewDetails}
-                    <button className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-emerald-600 border border-emerald-400 bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                    <button
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-emerald-600 border border-emerald-400 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                      onClick={() => openDrawer(row)}
+                    >
                       Start Pickup
                     </button>
                   </div>
@@ -992,7 +1081,10 @@ const Deliveries = ({
                 return (
                   <div className="flex gap-2 mt-1">
                     {viewDetails}
-                    <button className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors">
+                    <button
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors"
+                      onClick={() => openDrawer(row)}
+                    >
                       Complete Delivery
                     </button>
                   </div>
@@ -1107,6 +1199,22 @@ const Deliveries = ({
             </thead>
 
             <tbody className="divide-y divide-gray-50">
+              {deliveriesQuery.isPending && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-400">
+                    Loading deliveries...
+                  </td>
+                </tr>
+              )}
+
+              {!deliveriesQuery.isPending && filteredDeliveries.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-400">
+                    No deliveries found
+                  </td>
+                </tr>
+              )}
+
               {filteredDeliveries.map((row) => {
                 const style = statusStyles[row.status] ?? statusStyles.Pending;
                 const isChecked = selected.includes(row.id);
@@ -1213,8 +1321,18 @@ const Deliveries = ({
         delivery={selectedDelivery}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onAccept={(d) => console.log("✅ Accepted:", d.id)}
-        onDecline={(d) => console.log("❌ Declined:", d.id)}
+        onAccept={handleAcceptDelivery}
+        onDecline={handleDeclineDelivery}
+        onStartTask={handleStartTask}
+        onCompleteTask={handleCompleteTask}
+        actionPending={acceptDelivery.isPending || declineDelivery.isPending}
+        taskActionPendingId={
+          startTask.isPending
+            ? startTask.variables
+            : completeTask.isPending
+              ? completeTask.variables?.taskId
+              : null
+        }
       />
     </>
   );

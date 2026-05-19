@@ -1,25 +1,26 @@
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
+import { hasAuthSession } from "./authSession";
 import { getDefaultRouteForRole, isAdminRole } from "./roles";
 
 const AdminRoutes = () => {
   const navigate = useNavigate();
-  const authToken = sessionStorage.getItem("authToken");
+  const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role");
 
   useEffect(() => {
-    if (!authToken) {
+    if (!isAuthenticated) {
       navigate("/signin", { replace: true });
       return;
     }
 
-    if (authToken && !isAdminRole(role)) {
+    if (isAuthenticated && !isAdminRole(role)) {
       navigate(getDefaultRouteForRole(role), { replace: true });
     }
-  }, [authToken, role, navigate]);
+  }, [isAuthenticated, role, navigate]);
 
-  if (authToken && isAdminRole(role)) {
+  if (isAuthenticated && isAdminRole(role)) {
     return <Outlet />;
   }
 

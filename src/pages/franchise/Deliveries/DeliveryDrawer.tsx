@@ -8,7 +8,7 @@ import {
   Phone,
   FileText,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { formatDateTime } from "@/utils/date";
 import {
   DeliveryType,
@@ -24,6 +24,10 @@ type DeliveryDrawerProps = {
   onClose: () => void;
   onAccept?: (delivery: DeliveryType) => void;
   onDecline?: (delivery: DeliveryType) => void;
+  onStartTask?: (task: DeliveryTask) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  actionPending?: boolean;
+  taskActionPendingId?: string | null;
 };
 
 
@@ -90,7 +94,7 @@ const taskStatusConfig: Record<
     icon: <Circle size={14} className="text-gray-300" />,
   },
   DISPATCHED: {
-    label: "Dispatched",
+    label: "Accepted",
     icon: <Truck size={14} className="text-blue-400" />,
   },
   STARTED: {
@@ -248,8 +252,22 @@ const TasksSummary = ({ tasks }: { tasks: DeliveryTask[] }) => (
   </div>
 );
 
-const TaskCard = ({ task }: { task: DeliveryTask }) => {
+const TaskCard = ({
+  task,
+  actionsEnabled,
+  onStartTask,
+  onCompleteTask,
+  pending,
+}: {
+  task: DeliveryTask;
+  actionsEnabled: boolean;
+  onStartTask?: (task: DeliveryTask) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  pending?: boolean;
+}) => {
+  const [proofPhotos, setProofPhotos] = useState<File[]>([]);
   const typeStyle = taskTypeStyles[task.taskType];
+  const status = taskStatusConfig[task.status];
   const afterDt = formatDateTime(task.completeAfter);
   const beforeDt = formatDateTime(task.completeBefore);
   const summary = buildWindowSummary(task.completeAfter, task.completeBefore);
@@ -274,8 +292,8 @@ const TaskCard = ({ task }: { task: DeliveryTask }) => {
           )}
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
-          <Circle size={14} className="text-gray-300" />
-          <span>Not Started</span>
+          {status.icon}
+          <span>{status.label}</span>
         </div>
       </div>
 
@@ -317,6 +335,46 @@ const TaskCard = ({ task }: { task: DeliveryTask }) => {
           <p className="text-xs text-emerald-700 font-medium">{summary}</p>
         </div>
       </div>
+
+      {actionsEnabled && task.status === "DISPATCHED" && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => onStartTask?.(task)}
+          className="w-full py-2.5 rounded-xl text-sm font-bold text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-60"
+        >
+          {pending ? "Starting..." : `Start ${typeStyle.label.toLowerCase()}`}
+        </button>
+      )}
+
+      {actionsEnabled && task.status === "STARTED" && (
+        <div className="flex flex-col gap-3">
+          {needsPhoto && (
+            <label className="flex flex-col gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3">
+              <span className="text-xs font-semibold text-gray-500">
+                Upload proof photo
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(event) =>
+                  setProofPhotos(Array.from(event.target.files ?? []))
+                }
+                className="text-xs text-gray-500"
+              />
+            </label>
+          )}
+          <button
+            type="button"
+            disabled={pending || (needsPhoto && proofPhotos.length === 0)}
+            onClick={() => onCompleteTask?.(task, proofPhotos)}
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60"
+          >
+            {pending ? "Completing..." : `Complete ${typeStyle.label.toLowerCase()}`}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -327,6 +385,10 @@ const DeliveryDrawer = ({
   onClose,
   onAccept,
   onDecline,
+  onStartTask,
+  onCompleteTask,
+  actionPending = false,
+  taskActionPendingId,
 }: DeliveryDrawerProps) => {
   const tasks = delivery?.tasks ?? [];
   const totalTasks = tasks.length;
@@ -334,9 +396,14 @@ const DeliveryDrawer = ({
   const ongoing = tasks.filter(
     (t) => t.status === "STARTED" || t.status === "DISPATCHED",
   ).length;
-  const toReview = tasks.filter((t) => t.status === "DRAFT").length;
+  const toReview = tasks.filter(
+    (t) => t.status === "DRAFT" || t.status === "DISPATCHED",
+  ).length;
 
   const isPending = delivery?.status === "Pending";
+  const taskActionsEnabled =
+    !!delivery &&
+    !["Pending", "Declined", "Delivered"].includes(delivery.status);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -457,7 +524,14 @@ const DeliveryDrawer = ({
             </div>
           ) : (
             tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard
+                key={task.id}
+                task={task}
+                actionsEnabled={taskActionsEnabled}
+                onStartTask={onStartTask}
+                onCompleteTask={onCompleteTask}
+                pending={taskActionPendingId === task.id}
+              />
             ))
           )}
           {/* Package Details */}
@@ -483,12 +557,14 @@ const DeliveryDrawer = ({
             <div className="flex gap-3">
               <button
                 onClick={() => delivery && onAccept?.(delivery)}
+                disabled={actionPending}
                 className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
               >
-                Accept Tasks
+                {actionPending ? "Working..." : "Accept Tasks"}
               </button>
               <button
                 onClick={() => delivery && onDecline?.(delivery)}
+                disabled={actionPending}
                 className="flex-1 py-3 rounded-xl bg-white hover:bg-red-600 text-red-600 border border-red-600 text-sm font-bold transition-colors"
               >
                 Decline Dispatch

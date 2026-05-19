@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "sonner";
+import { clearAuthSession } from "@/lib/authSession";
 
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -17,21 +18,6 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Request interceptor to add authorization header if access token exists
-api.interceptors.request.use(
-  (config) => {
-    const accessToken = sessionStorage.getItem("authToken");
-    if (accessToken) {
-      config.headers["Authorization"] = `Bearer ${accessToken}`;
-    }
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
 let redirected = false;
 api.interceptors.response.use(
   (response) => response,
@@ -40,7 +26,7 @@ api.interceptors.response.use(
 
     if (status === 401 && !redirected) {
       redirected = true; // Prevent repeat redirects
-      sessionStorage.clear(); // clear all session data
+      clearAuthSession();
       sessionStorage.setItem("sessionExpired", "true");
       // Check if user is on the  dashboard
       const isDashboard = window.location.pathname.includes("dashboard");

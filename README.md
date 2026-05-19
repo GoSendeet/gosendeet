@@ -170,3 +170,35 @@ Development dependencies include:
 - Production builds are created with `npm run build`
 - Vercel rewrites all routes to `/` so client-side routing works correctly
 - `npm install --legacy-peer-deps` is configured as the Vercel install command
+
+## CI/CD and Security
+
+The repository includes a GitHub Actions workflow at `.github/workflows/deploy-security.yml`.
+
+The frontend app also includes local security and SonarQube scripts:
+
+```bash
+npm run security:audit
+npm run security:audit:summary
+npm run sonar
+npm run ci:security
+```
+
+`npm run security:audit` writes a JSON report to `audit-results/npm-audit.json`. `npm run sonar` uses `sonar-project.properties` and expects `SONAR_TOKEN` and `SONAR_HOST_URL` to be available in the environment.
+
+On pull requests to `dev` or `main`, it runs:
+
+- dependency installation with `npm ci --legacy-peer-deps`
+- linting as an advisory check
+- unit tests
+- production build
+- `npm audit --audit-level=moderate`
+- CodeQL JavaScript/TypeScript security analysis
+
+On pushes to `dev` or `main`, successful tests, build, security audit, and CodeQL checks are required before deploying to Vercel.
+
+Required GitHub repository secrets:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`

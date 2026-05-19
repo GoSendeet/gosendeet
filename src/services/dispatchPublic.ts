@@ -18,10 +18,24 @@ export interface DispatchActionResponse {
   message: string;
 }
 
-export const viewDispatch = async (token: string): Promise<DispatchView> => {
+export const exchangeDispatchAccess = async (
+  accessToken: string
+): Promise<DispatchView> => {
+  try {
+    const res = await api.post<DispatchView | { data: DispatchView }>(
+      "/dispatch/access",
+      { accessToken }
+    );
+    return "data" in res.data ? res.data.data : res.data;
+  } catch (error) {
+    return throwApiError(error, "Unable to validate dispatch access");
+  }
+};
+
+export const viewDispatch = async (): Promise<DispatchView> => {
   try {
     const res = await api.get<DispatchView | { data: DispatchView }>(
-      `/dispatch/${token}`
+      "/dispatch/session"
     );
     return "data" in res.data ? res.data.data : res.data;
   } catch (error) {
@@ -30,12 +44,11 @@ export const viewDispatch = async (token: string): Promise<DispatchView> => {
 };
 
 export const acceptDispatch = async (
-  token: string,
   message?: string
 ): Promise<DispatchActionResponse> => {
   try {
     const res = await api.post<DispatchActionResponse>(
-      `/dispatch/${token}/accept`,
+      "/dispatch/session/accept",
       message ? { message } : {}
     );
     return res.data;
@@ -45,12 +58,11 @@ export const acceptDispatch = async (
 };
 
 export const declineDispatch = async (
-  token: string,
   reason: string
 ): Promise<DispatchActionResponse> => {
   try {
     const res = await api.post<DispatchActionResponse>(
-      `/dispatch/${token}/decline`,
+      "/dispatch/session/decline",
       { reason }
     );
     return res.data;
@@ -60,13 +72,12 @@ export const declineDispatch = async (
 };
 
 export const startTask = async (
-  token: string,
   taskId: string,
   message?: string
 ): Promise<DispatchActionResponse> => {
   try {
     const res = await api.post<DispatchActionResponse>(
-      `/dispatch/${token}/tasks/${taskId}/start`,
+      `/dispatch/session/tasks/${taskId}/start`,
       message ? { message } : {}
     );
     return res.data;
@@ -76,13 +87,11 @@ export const startTask = async (
 };
 
 export const completeTask = async (
-  token: string,
   taskId: string,
   payload: { message?: string; notes?: string; proofPhotos?: File[] }
 ): Promise<DispatchActionResponse> => {
   const form = new FormData();
 
-  // Create request JSON object for message and notes
   const requestData: { message?: string; notes?: string } = {};
   if (payload.message?.trim()) {
     requestData.message = payload.message.trim();
@@ -91,7 +100,6 @@ export const completeTask = async (
     requestData.notes = payload.notes.trim();
   }
 
-  // Always add request field, even if empty (backend expects it)
   form.append(
     "request",
     new Blob([JSON.stringify(requestData)], {
@@ -99,7 +107,6 @@ export const completeTask = async (
     })
   );
 
-  // Add proof photos
   if (payload.proofPhotos && payload.proofPhotos.length > 0) {
     payload.proofPhotos.forEach((file) => {
       form.append("proofPhotos", file);
@@ -108,7 +115,7 @@ export const completeTask = async (
 
   try {
     const res = await api.post<DispatchActionResponse>(
-      `/dispatch/${token}/tasks/${taskId}/complete`,
+      `/dispatch/session/tasks/${taskId}/complete`,
       form,
       {
         headers: {
@@ -123,14 +130,13 @@ export const completeTask = async (
 };
 
 export const updateTaskEtaWindow = async (
-  token: string,
   taskId: string,
   estimatedTimeWindowStart: string,
   estimatedTimeWindowEnd: string
 ): Promise<DispatchActionResponse> => {
   try {
     const res = await api.put<DispatchActionResponse>(
-      `/dispatch/${token}/tasks/${taskId}/eta`,
+      `/dispatch/session/tasks/${taskId}/eta`,
       { estimatedTimeWindowStart, estimatedTimeWindowEnd }
     );
     return res.data;
@@ -140,13 +146,12 @@ export const updateTaskEtaWindow = async (
 };
 
 export const terminateTask = async (
-  token: string,
   taskId: string,
   reason: string
 ): Promise<DispatchActionResponse> => {
   try {
     const res = await api.post<DispatchActionResponse>(
-      `/dispatch/${token}/tasks/${taskId}/terminate`,
+      `/dispatch/session/tasks/${taskId}/terminate`,
       { reason }
     );
     return res.data;

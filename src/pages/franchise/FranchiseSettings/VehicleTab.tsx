@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { vehicleTypes, packageWeight, packageType } from "@/constants";
 import { useForm, Controller } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
 import { vehicleCapabilitySchema } from "@/schema/franchise/settings";
 import { VehicleCapabilityFormData } from "@/schema/franchise/settings/type";
 import {
@@ -12,8 +11,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CheckCircle, Save } from "lucide-react";
+import { useEffect } from "react";
+import {
+  useGetFranchiseVehicleCapabilities,
+  useUpdateFranchiseVehicleCapabilities,
+} from "@/queries/franchise/useFranchiseSettings";
+
+const weightLabelToKg = (value: string) => Number(value.replace(/[^\d.]/g, ""));
+
+const kgToWeightLabel = (value?: number | string | null) => {
+  if (value === undefined || value === null || value === "") return "";
+  const numeric = Number(value);
+  return packageWeight.find((weight) => weightLabelToKg(weight.type) === numeric)?.type ?? "";
+};
 
 const VehicleTab = () => {
+  const { data: vehicleCapabilities } = useGetFranchiseVehicleCapabilities();
+  const {
+    mutate: saveVehicle,
+    isPending,
+    isSuccess,
+  } = useUpdateFranchiseVehicleCapabilities();
   const {
     register,
     handleSubmit,
@@ -22,18 +40,23 @@ const VehicleTab = () => {
     formState: { errors },
   } = useForm<VehicleCapabilityFormData>({
     resolver: zodResolver(vehicleCapabilitySchema),
+    defaultValues: {
+      vehicle_type: "",
+      plate_number: "",
+      package_weight: "",
+      package_capabilities: [],
+    },
   });
 
-  const {
-    mutate: saveVehicle,
-    isPending,
-    isSuccess,
-  } = useMutation({
-    mutationFn: async (data: VehicleCapabilityFormData) => {
-      console.log("Payload: ", data);
-    },
-    onSuccess: () => reset(),
-  });
+  useEffect(() => {
+    if (!vehicleCapabilities) return;
+    reset({
+      vehicle_type: vehicleCapabilities.vehicleType ?? "",
+      plate_number: vehicleCapabilities.plateNumber ?? "",
+      package_weight: kgToWeightLabel(vehicleCapabilities.maxPackageWeightKg),
+      package_capabilities: vehicleCapabilities.packageCapabilities ?? [],
+    });
+  }, [vehicleCapabilities, reset]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +67,14 @@ const VehicleTab = () => {
       </div>
 
       <form
-        onSubmit={handleSubmit((data) => saveVehicle(data))}
+        onSubmit={handleSubmit((data) =>
+          saveVehicle({
+            vehicleType: data.vehicle_type,
+            plateNumber: data.plate_number,
+            maxPackageWeightKg: weightLabelToKg(data.package_weight),
+            packageCapabilities: data.package_capabilities,
+          }),
+        )}
         className="flex flex-col gap-4"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -131,16 +161,42 @@ const VehicleTab = () => {
             <label className="text-xs font-medium text-gray-500">
               Package Types
             </label>
-            <div className="flex items-center gap-2">
-            {packageType.map((items) => (
-              <span
-                key={items.id}
-                className="bg-emerald-100 py-1 px-2 rounded-full text-xs text-emerald-600"
-              >
-                {items.type}
-              </span>
-            ))}
-            </div>
+            <Controller
+              name="package_capabilities"
+              control={control}
+              render={({ field }) => (
+                <div className="flex flex-wrap items-center gap-2">
+                  {packageType.map((items) => {
+                    const selected = field.value?.includes(items.type);
+                    return (
+                      <button
+                        type="button"
+                        key={items.id}
+                        onClick={() =>
+                          field.onChange(
+                            selected
+                              ? field.value.filter((value) => value !== items.type)
+                              : [...(field.value ?? []), items.type],
+                          )
+                        }
+                        className={`py-1 px-2 rounded-full text-xs transition-colors ${
+                          selected
+                            ? "bg-emerald-500 text-white"
+                            : "bg-emerald-100 text-emerald-600"
+                        }`}
+                      >
+                        {items.type}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            />
+            {errors.package_capabilities && (
+              <p className="text-xs text-red-500">
+                {errors.package_capabilities.message}
+              </p>
+            )}
           </div>
 
           <div>

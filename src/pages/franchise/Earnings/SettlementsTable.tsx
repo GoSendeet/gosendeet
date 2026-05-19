@@ -1,4 +1,4 @@
-import { Eye, Download, AlertCircle, FileText } from "lucide-react";
+import { Eye, Download, AlertCircle, FileText, ReceiptText } from "lucide-react";
 
 export type SettlementStatus = "Draft" | "Pending Approval" | "Paid";
 
@@ -13,15 +13,6 @@ export type Settlement = {
   status: SettlementStatus;
 };
 
-// TODO: i will remove once backend is connected
-const MOCK_SETTLEMENTS: Settlement[] = [
-  { id: "s1", period: "Week 9", dateRange: "Feb 24 – Feb 28, 2026", deliveries: 18, gross: "₦86,400",  adjustments: "-₦2,500", netPayout: "₦83,900",  status: "Draft" },
-  { id: "s2", period: "Week 8", dateRange: "Feb 17 – Feb 23, 2026", deliveries: 22, gross: "₦105,600", adjustments: "-₦1,800", netPayout: "₦103,800", status: "Pending Approval" },
-  { id: "s3", period: "Week 7", dateRange: "Feb 10 – Feb 16, 2026", deliveries: 20, gross: "₦96,000",  adjustments: "-₦3,200", netPayout: "₦92,800",  status: "Paid" },
-  { id: "s4", period: "Week 6", dateRange: "Feb 3 – Feb 9, 2026",   deliveries: 19, gross: "₦91,200",  adjustments: "-₦1,500", netPayout: "₦89,700",  status: "Paid" },
-  { id: "s5", period: "Week 5", dateRange: "Jan 27 – Feb 2, 2026",  deliveries: 21, gross: "₦100,800", adjustments: "-₦2,100", netPayout: "₦98,700",  status: "Paid" },
-];
-
 const statusStyles: Record<SettlementStatus, string> = {
   Draft:              "bg-gray-100 text-gray-500 border border-gray-200",
   "Pending Approval": "bg-amber-50 text-amber-600 border border-amber-200",
@@ -34,12 +25,29 @@ const showDispute = (status: SettlementStatus) => status !== "Draft";
 
 type Props = {
   data?: Settlement[];
+  isLoading?: boolean;
+  onView?: (settlement: Settlement) => void;
+  onDownload?: (settlement: Settlement) => void;
+  onDispute?: (settlement: Settlement) => void;
+  actionPending?: boolean;
 };
 
 
 // ─── Mobile Card ──────────
 
-const SettlementCard = ({ row }: { row: Settlement }) => (
+const SettlementCard = ({
+  row,
+  onView,
+  onDownload,
+  onDispute,
+  actionPending,
+}: {
+  row: Settlement;
+  onView?: (settlement: Settlement) => void;
+  onDownload?: (settlement: Settlement) => void;
+  onDispute?: (settlement: Settlement) => void;
+  actionPending?: boolean;
+}) => (
   <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 flex flex-col gap-4">
     {/* Header: period + status */}
     <div className="flex items-start justify-between">
@@ -70,16 +78,28 @@ const SettlementCard = ({ row }: { row: Settlement }) => (
 
     {/* Action buttons */}
     <div className={`grid gap-2 ${showDispute(row.status) ? "grid-cols-3" : "grid-cols-2"}`}>
-      <button className="flex items-center justify-center gap-1.5 border border-gray-200 rounded-xl py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+      <button
+        disabled={actionPending}
+        onClick={() => onView?.(row)}
+        className="flex items-center justify-center gap-1.5 border border-gray-200 rounded-xl py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-60"
+      >
         <FileText size={13} />
         View PDF
       </button>
-      <button className="flex items-center justify-center gap-1.5 border border-gray-200 rounded-xl py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+      <button
+        disabled={actionPending}
+        onClick={() => onDownload?.(row)}
+        className="flex items-center justify-center gap-1.5 border border-gray-200 rounded-xl py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-60"
+      >
         <Download size={13} />
         Download
       </button>
       {showDispute(row.status) && (
-        <button className="flex items-center justify-center gap-1.5 border border-amber-300 rounded-xl py-2.5 text-xs font-medium text-amber-500 hover:bg-amber-50 transition-colors">
+        <button
+          disabled={actionPending}
+          onClick={() => onDispute?.(row)}
+          className="flex items-center justify-center gap-1.5 border border-amber-300 rounded-xl py-2.5 text-xs font-medium text-amber-500 hover:bg-amber-50 transition-colors disabled:opacity-60"
+        >
           <AlertCircle size={13} />
           Dispute
         </button>
@@ -88,13 +108,44 @@ const SettlementCard = ({ row }: { row: Settlement }) => (
   </div>
 );
 
-const SettlementsTable = ({ data = MOCK_SETTLEMENTS }: Props) => {
+const SettlementsTable = ({
+  data = [],
+  isLoading = false,
+  onView,
+  onDownload,
+  onDispute,
+  actionPending = false,
+}: Props) => {
+  if (isLoading) {
+    return (
+      <div className="px-4 py-12 text-sm text-gray-400 text-center">
+        Loading settlements...
+      </div>
+    );
+  }
+
+  if (!data.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 gap-2">
+        <ReceiptText size={28} className="text-gray-200" />
+        <p className="text-sm text-gray-400">No settlements yet</p>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* ── Mobile: cards (hidden on md+) ── */}
       <div className="flex flex-col gap-3 md:hidden">
         {data.map((row) => (
-          <SettlementCard key={row.id} row={row} />
+          <SettlementCard
+            key={row.id}
+            row={row}
+            onView={onView}
+            onDownload={onDownload}
+            onDispute={onDispute}
+            actionPending={actionPending}
+          />
         ))}
       </div>
 
@@ -127,14 +178,29 @@ const SettlementsTable = ({ data = MOCK_SETTLEMENTS }: Props) => {
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-2 text-gray-400">
-                    <button className="hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors" title="View">
+                    <button
+                      disabled={actionPending}
+                      onClick={() => onView?.(row)}
+                      className="hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-60"
+                      title="View"
+                    >
                       <Eye size={15} />
                     </button>
-                    <button className="hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors" title="Download">
+                    <button
+                      disabled={actionPending}
+                      onClick={() => onDownload?.(row)}
+                      className="hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors disabled:opacity-60"
+                      title="Download"
+                    >
                       <Download size={15} />
                     </button>
                     {row.status !== "Draft" && (
-                      <button className="hover:text-amber-500 p-1 rounded hover:bg-amber-50 transition-colors text-amber-400" title="Info">
+                      <button
+                        disabled={actionPending}
+                        onClick={() => onDispute?.(row)}
+                        className="hover:text-amber-500 p-1 rounded hover:bg-amber-50 transition-colors text-amber-400 disabled:opacity-60"
+                        title="Dispute"
+                      >
                         <AlertCircle size={15} />
                       </button>
                     )}

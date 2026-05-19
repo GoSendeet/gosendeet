@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { TWClassNames } from "./types";
-import CryptoJS from "crypto-js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -241,53 +240,3 @@ export const formatToDatetimeLocal = (date: Date): string => {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
-
-function normalizeBase64Ciphertext(value: string) {
-  const normalized = value.trim().replace(/ /g, "+").replace(/-/g, "+").replace(/_/g, "/");
-  const padding = normalized.length % 4;
-
-  if (padding === 0) return normalized;
-
-  return normalized.padEnd(normalized.length + (4 - padding), "=");
-}
-
-export function decryptAES256(encryptedText: string, key?: string | null) {
-  const normalizedKey = key?.trim();
-
-  if (!normalizedKey) {
-    throw new Error("AES-256 key is missing");
-  }
-
-  if (normalizedKey.length !== 32) {
-    throw new Error("AES-256 key must be exactly 32 characters long");
-  }
-
-  if (!encryptedText?.trim()) {
-    throw new Error("Encrypted value is missing");
-  }
-
-  try {
-    const normalizedCiphertext = normalizeBase64Ciphertext(encryptedText);
-    const ciphertext = CryptoJS.enc.Base64.parse(normalizedCiphertext);
-    const cipherParams = CryptoJS.lib.CipherParams.create({ ciphertext });
-    const decrypted = CryptoJS.AES.decrypt(
-      cipherParams,
-      CryptoJS.enc.Utf8.parse(normalizedKey),
-      {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      }
-    );
-    const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-
-    if (!decryptedText) {
-      throw new Error("Unable to decrypt payload");
-    }
-
-    return decryptedText;
-  } catch (error) {
-    throw new Error(
-      error instanceof Error ? `Unable to decrypt payload: ${error.message}` : "Unable to decrypt payload"
-    );
-  }
-}

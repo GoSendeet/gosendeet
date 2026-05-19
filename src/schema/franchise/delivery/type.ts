@@ -7,6 +7,14 @@ export type TaskStatus =
   | "CANCELLED";
 export type CompletionRequirement = "NONE" | "PHOTO" | "SIGNATURE";
 
+export type DeliveryProof = {
+  id?: string;
+  url: string;
+  fileName?: string;
+  contentType?: string;
+  uploadedAt?: string;
+};
+
 export type DeliveryTask = {
   id: string;
   bookingId: string;
@@ -29,7 +37,7 @@ export type DeliveryTask = {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  completionProofs: string[];
+  completionProofs: DeliveryProof[];
   previewToken: string;
 };
 
@@ -43,6 +51,7 @@ export type DeliveryStatus =
 
 export type DeliveryType = {
   id: string;
+  bookingId?: string;
   isNew: boolean;
   status: DeliveryStatus;
   from: string;

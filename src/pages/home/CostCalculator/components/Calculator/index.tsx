@@ -25,6 +25,7 @@ import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
 import logo from "@/assets/images/gosendeet-black-logo.png";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
+import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
@@ -163,6 +164,18 @@ const Calculator = () => {
   const resultsSectionRef = useRef<HTMLDivElement | null>(null);
   const quoteDetailsRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledToResultsRef = useRef(false);
+  const hasTrackedResultViewRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasQuotes || hasTrackedResultViewRef.current) return;
+    hasTrackedResultViewRef.current = true;
+    track(EVENT.QUOTE_RESULT_VIEWED, {
+      mode,
+      quote_count: quoteContent.length,
+      pickup_location: bookingRequest?.pickupLocation,
+      drop_off_location: bookingRequest?.dropOffLocation,
+    });
+  }, [hasQuotes]);
 
   const maxPriceInitializedRef = useRef(false);
   useEffect(() => {
@@ -638,6 +651,13 @@ const Calculator = () => {
         navigate("/signin");
       }, 1000);
     } else {
+      track(EVENT.COURIER_SELECTED, {
+        courier_name: data?.courier?.name,
+        courier_id: data?.courier?.id,
+        price: parsePrice(data?.price),
+        pudo_mode: data?.pudoMode,
+        estimated_delivery_date: data?.estimatedDeliveryDate,
+      });
       navigate("/delivery", {
         state: { bookingDetails: data, bookingRequest: bookingRequest },
       });

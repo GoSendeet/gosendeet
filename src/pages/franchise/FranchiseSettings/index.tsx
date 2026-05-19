@@ -5,6 +5,8 @@ import CusstomerSupportCard from "@/components/ui/CusstomerSupportCard";
 import BankTab from "./BankTab";
 import VehicleTab from "./VehicleTab";
 import AlertTab from "./AlertTab";
+import { useGetFranchiseProfile } from "@/queries/franchise/useFranchiseSettings";
+import { FranchiseProfile } from "@/services/franchise";
 
 type Tab = "profile" | "bank" | "vehicle" | "alerts";
 
@@ -16,22 +18,13 @@ const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
 ];
 
 type SettingsPageProps = {
-  profile?: ProfileData | {
-    id?: string;
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    partnerId?: string;
-    franchiseId?: string;
-    status?: string;
-  };
+  profile?: ProfileData | FranchiseProfile;
 };
 
 const FranchiseSettings = ({ profile = MOCK_PROFILE }: SettingsPageProps) => {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const { data: franchiseProfile } = useGetFranchiseProfile();
+
   return (
     <>
       <div
@@ -71,7 +64,7 @@ const FranchiseSettings = ({ profile = MOCK_PROFILE }: SettingsPageProps) => {
 
           {/* Panel */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            {activeTab === "profile" && <ProfileTab data={profile} />}
+            {activeTab === "profile" && <ProfileTab data={franchiseProfile ?? profile} />}
             {activeTab === "bank" && <BankTab /> }
             {activeTab === "vehicle" && <VehicleTab />}
             {activeTab === "alerts" && <AlertTab />}

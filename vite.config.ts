@@ -12,6 +12,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: false, // using our own public/manifest.json
+      workbox: {
+        // Raise default 2 MiB precache limit to allow current main bundle.
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+      },
       devOptions: {
         enabled: true,
       },

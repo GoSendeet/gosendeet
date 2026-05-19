@@ -1,8 +1,5 @@
-import { AxiosError } from "axios";
-
 import { api } from "./axios";
-
-type ApiError = { message?: string };
+import { throwApiError } from "@/lib/errorHandling";
 
 export type ApprovedClient = {
   id: string;
@@ -21,11 +18,6 @@ export type CreateApprovedClientPayload = {
   name: string;
   email: string;
   description?: string;
-};
-
-const throwApiError = (error: unknown): never => {
-  const axiosError = error as AxiosError<ApiError>;
-  throw axiosError?.response?.data || { message: (error as Error).message };
 };
 
 const normalizeStatus = (value: unknown) =>

@@ -9,10 +9,15 @@ import { MdOutlineMailOutline } from "react-icons/md";
 import { useMutation } from "@tanstack/react-query";
 import { googleLogin, validateEmail } from "@/services/auth";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { track, EVENT } from "@/lib/analytics";
 
 const Signin = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    track(EVENT.LOGIN_STARTED);
+  }, []);
   // const showGoogleAuth =
   //   import.meta.env.DEV ||
   //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
@@ -34,28 +39,16 @@ const Signin = () => {
 
   const { mutate, isPending } = useMutation({
     mutationFn: validateEmail,
-    onSuccess: (data) => {
-      if (data?.data?.isVerified === false) {
-        toast.warning("User not verified");
-        navigate(`/verify-account?email=${encodeURIComponent(data?.data?.email || "")}&status=error`, {
-          replace: true,
-        });
-        return;
-      }
-
+    onSuccess: (_response, submittedEmail) => {
       toast.success("Successful");
       navigate("/login", {
         state: {
-          username: data?.data?.username,
-          email: data?.data?.email,
+          email: submittedEmail,
         },
       });
     },
     onError: (data) => {
-      toast.error(data?.message);
-      if (data?.message.endsWith(`not found`)) {
-        navigate("/login");
-      }
+      toast.error(data?.message || "Unable to continue");
     },
   });
 

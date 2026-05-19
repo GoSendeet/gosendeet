@@ -14,11 +14,61 @@ import { statusClasses } from "@/constants";
 import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
+import { toast } from "sonner";
+import { downloadBookingInvoicePdf } from "@/lib/pdf/bookingInvoice";
+import { useState } from "react";
+import openChatwootChat from "@/lib/openChatwootChat";
 
-export function BookingDetails({ bookingData }: any) {
+type BookingData = {
+  id?: string;
+  trackingNumber?: string;
+  status?: string;
+  senderName?: string;
+  receiverName?: string;
+  packageType?: string;
+  bookingDate?: string;
+  companyName?: string;
+  weight?: string | number;
+  weightUnit?: string;
+  length?: string | number;
+  width?: string | number;
+  height?: string | number;
+  dimensionsUnit?: string;
+  [key: string]: unknown;
+};
+
+type BookingDetailsProps = {
+  bookingData: BookingData;
+};
+
+export function BookingDetails({ bookingData }: BookingDetailsProps) {
+  const bookingId = bookingData.id ?? "";
+  const bookingStatus = bookingData.status ?? "";
+  const bookingDate = bookingData.bookingDate ?? "";
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
-    bookingData.id
+    bookingId,
   );
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadInvoice = async () => {
+    setIsDownloading(true);
+    const loadingToast = toast.loading("Generating invoice PDF...");
+    try {
+      await downloadBookingInvoicePdf({
+        booking: bookingData,
+        details: data?.data,
+      });
+      toast.success("Invoice downloaded", { id: loadingToast });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to download invoice";
+      toast.error(message, {
+        id: loadingToast,
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -41,7 +91,7 @@ export function BookingDetails({ bookingData }: any) {
           </div>
         )}
 
-        {!isLoading && isSuccess && data && data?.data?.length > 0 && (
+        {!isLoading && isSuccess && data?.data && (
           <>
             <DialogHeader>
               <DialogTitle>
@@ -53,18 +103,23 @@ export function BookingDetails({ bookingData }: any) {
             </DialogHeader>
             <div>
               <div className="flex justify-between items-center gap-2">
-                <p className="flex items-center gap-2 w-fit border-offset-1 font-medium text-brand border-b-[1.5px] border-b-brand cursor-pointer">
+                <button
+                  type="button"
+                  disabled={isDownloading}
+                  onClick={handleDownloadInvoice}
+                  className="flex items-center gap-2 w-fit border-offset-1 font-medium text-brand border-b-[1.5px] border-b-brand cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   <FiDownloadCloud />
-                  Download
-                </p>
+                  {isDownloading ? "Generating..." : "Download"}
+                </button>
                 <p
                   className={cn(
-                    statusClasses[bookingData?.status] ??
+                    statusClasses[bookingStatus] ??
                       "bg-gray-100 text-gray-800", // fallback if status not found
-                    "px-2 py-1 w-fit font-medium rounded-2xl text-xs"
+                    "px-2 py-1 w-fit font-medium rounded-2xl text-xs",
                   )}
                 >
-                  {formatStatus(bookingData?.status)}
+                  {formatStatus(bookingStatus)}
                 </p>
                 {/* <p className="px-4 py-1 w-fit font-medium rounded-2xl bg-[#FEF2F2] text-[#EC2D30]">
               Canceled
@@ -89,23 +144,31 @@ export function BookingDetails({ bookingData }: any) {
                   <p className="text-neutral600">{data?.data?.destination}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold text-brand">Category</p>
+                  <p className="font-clash font-semibold text-brand">
+                    Category
+                  </p>
                   <p className="text-sm">{bookingData?.packageType}</p>
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-5">
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold text-brand">Pickup Created</p>
+                  <p className="font-clash font-semibold text-brand">
+                    Pickup Created
+                  </p>
                   <p className="text-sm">
-                    {formatDateTime(bookingData?.bookingDate)}
+                    {formatDateTime(bookingDate)}
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold text-brand">Logistics</p>
+                  <p className="font-clash font-semibold text-brand">
+                    Logistics
+                  </p>
                   <p className="text-sm">{bookingData?.companyName}</p>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <p className="font-clash font-semibold text-brand">Parcel Weight</p>
+                  <p className="font-clash font-semibold text-brand">
+                    Parcel Weight
+                  </p>
                   <p className="text-sm">{`${bookingData?.weight} ${bookingData?.weightUnit} | ${bookingData?.length}x${bookingData?.width}x${bookingData?.height} ${bookingData?.dimensionsUnit}`}</p>
                 </div>
               </div>
@@ -117,12 +180,12 @@ export function BookingDetails({ bookingData }: any) {
                     ₦ {data?.data?.cost?.subTotal}
                   </span>
                 </p>
-                <p className="flex justify-between items-center md:px-8 px-4 text-brand">
+                {/* <p className="flex justify-between items-center md:px-8 px-4 text-brand">
                   Shipping Fee
                   <span className="font-clash font-semibold">
                     ₦ {CurrencyFormatter(data?.data?.cost?.shippingFee)}
                   </span>
-                </p>
+                </p> */}
                 <p className="flex justify-between items-center md:px-8 px-4 text-brand">
                   Tax
                   <span className="font-clash font-semibold">
@@ -131,12 +194,17 @@ export function BookingDetails({ bookingData }: any) {
                 </p>
                 <p className="flex justify-between  items-center md:px-8 px-4 py-4 font-clash font-semibold bg-brand-light rounded-full">
                   TOTAL COSTS + VAT
-                  <span className="text-brand">₦ {CurrencyFormatter(data?.data?.cost?.total)}</span>
+                  <span className="text-brand">
+                    ₦ {CurrencyFormatter(data?.data?.cost?.total)}
+                  </span>
                 </p>
               </div>
               <div className="flex md:flex-row flex-col justify-center gap-2 items-center mb-10">
                 <p className="font-medium text-brand">Need help?</p>
-                <button className="flex items-center gap-2 font-medium bg-brand border border-neutral300 rounded-full px-4 py-3 outline-neutral300">
+                <button
+                  onClick={openChatwootChat}
+                  className="flex items-center cursor-pointer gap-2 font-medium bg-brand border border-neutral300 rounded-full px-4 py-3 outline-neutral300"
+                >
                   <RxExternalLink className="text-white text-xl" />
                   <span className="text-white">Contact GoSendeet help</span>
                 </button>

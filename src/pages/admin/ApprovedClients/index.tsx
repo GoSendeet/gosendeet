@@ -176,7 +176,7 @@ const ApprovedClients = () => {
           </p>
         </div>
 
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button className="bg-brand" onClick={() => setCreateOpen(true)}>
           <Plus size={16} />
           Create client
         </Button>
@@ -382,7 +382,7 @@ const ApprovedClients = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleCreate} loading={createMutation.isPending}>
+            <Button className="bg-brand" onClick={handleCreate} loading={createMutation.isPending}>
               Create client
             </Button>
           </div>

@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,11 @@ import { useMutation } from "@tanstack/react-query";
 export function ChangePassword() {
   const [toggle, setToggle] = useState(false);
   const [open, setOpen] = useState(false);
+  const emptyValues = {
+    currentPassword: "",
+    password: "",
+    confirmPassword: "",
+  };
 
   const schema = z
     .object({
@@ -44,14 +49,27 @@ export function ChangePassword() {
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
+    defaultValues: emptyValues,
   });
+
+  useEffect(() => {
+    reset(emptyValues);
+    setToggle(false);
+  }, [reset]);
+
+  useEffect(() => {
+    if (open) {
+      reset(emptyValues);
+      setToggle(false);
+    }
+  }, [open, reset]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: changePassword,
     onSuccess: () => {
       toast.success("Successful");
       setOpen(false);
-      reset();
+      reset(emptyValues);
     },
     onError: (data) => {
       toast.error(data?.message);

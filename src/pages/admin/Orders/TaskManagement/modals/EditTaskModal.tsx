@@ -33,6 +33,14 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+type EditableCompletionRequirement = NonNullable<
+  FormValues["completionRequirement"]
+>;
+
+const toEditableCompletionRequirement = (
+  value: TaskDto["completionRequirement"],
+): EditableCompletionRequirement | undefined =>
+  value === "PHOTO" || value === "NONE" ? value : undefined;
 
 interface EditTaskModalProps {
   task: TaskDto | null;
@@ -68,7 +76,9 @@ const EditTaskModal = ({ task, allTasks, onOpenChange, onSuccess }: EditTaskModa
       reset({
         taskType: task.taskType,
         destinationAddress: task.destinationAddress || "",
-        completionRequirement: task.completionRequirement ?? undefined,
+        completionRequirement: toEditableCompletionRequirement(
+          task.completionRequirement,
+        ),
         completeAfter: toDateTimeLocalInput(task.completeAfter),
         completeBefore: toDateTimeLocalInput(task.completeBefore),
         notes: task.notes ?? "",

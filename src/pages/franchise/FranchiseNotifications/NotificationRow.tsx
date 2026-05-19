@@ -1,13 +1,8 @@
-import { Truck, DollarSign, XCircle, TriangleAlert, Settings } from "lucide-react";
+import { Truck, DollarSign, XCircle, TriangleAlert, Settings, CheckCircle2 } from "lucide-react";
+import type { FranchiseNotificationType } from "@/services/franchise";
 
 
-export type NotificationType =
-  | "new_assignment"
-  | "settlement_ready"
-  | "decline_confirmed"
-  | "quality_flag"
-  | "payment_received"
-  | "system_update";
+export type NotificationType = FranchiseNotificationType;
 
 export type Notification = {
   id: string;
@@ -16,6 +11,8 @@ export type Notification = {
   message: string;
   time: string;
   isUnread?: boolean;
+  actionLabel?: string | null;
+  actionUrl?: string | null;
 };
 
 export const MOCK_NOTIFICATIONS: Notification[] = [
@@ -77,8 +74,15 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
   },
 ];
 
-const typeConfig: Record <NotificationType, { icon: React.ElementType; iconColor: string; iconBg: string }> = {
+const defaultTypeConfig = { icon: Settings, iconColor: "text-gray-400", iconBg: "bg-gray-100" };
+
+const typeConfig: Partial<Record <NotificationType, { icon: React.ElementType; iconColor: string; iconBg: string }>> = {
   new_assignment:   { icon: Truck,          iconColor: "text-blue-500",    iconBg: "bg-blue-50" },
+  dispatch_accepted:{ icon: CheckCircle2,   iconColor: "text-emerald-500", iconBg: "bg-emerald-50" },
+  task_started:     { icon: Truck,          iconColor: "text-blue-500",    iconBg: "bg-blue-50" },
+  task_completed:   { icon: CheckCircle2,   iconColor: "text-emerald-500", iconBg: "bg-emerald-50" },
+  task_terminated:  { icon: XCircle,        iconColor: "text-red-400",     iconBg: "bg-red-50" },
+  dispute_update:   { icon: DollarSign,     iconColor: "text-emerald-500", iconBg: "bg-emerald-50" },
   settlement_ready: { icon: DollarSign,     iconColor: "text-emerald-500", iconBg: "bg-emerald-50" },
   decline_confirmed:{ icon: XCircle,        iconColor: "text-red-400",     iconBg: "bg-red-50" },
   quality_flag:     { icon: TriangleAlert,  iconColor: "text-amber-500",   iconBg: "bg-amber-50" },
@@ -88,13 +92,18 @@ const typeConfig: Record <NotificationType, { icon: React.ElementType; iconColor
 
 type Props = {
     item?: Notification;
+    onMarkRead?: (id: string) => void;
 }
 
 
-const NotificationRow = ({ item = MOCK_NOTIFICATIONS[0] }: Props) => {
-     const { icon: Icon, iconColor, iconBg } = typeConfig[item.type];
+const NotificationRow = ({ item = MOCK_NOTIFICATIONS[0], onMarkRead }: Props) => {
+     const { icon: Icon, iconColor, iconBg } = typeConfig[item.type] ?? defaultTypeConfig;
   return (
-    <div className={`flex items-start gap-3.5 px-4 py-4 transition-colors hover:bg-gray-50/70 ${item.isUnread ? "bg-brand-light" : "bg-white"}`}>
+    <button
+      type="button"
+      onClick={() => item.isUnread && onMarkRead?.(item.id)}
+      className={`flex items-start gap-3.5 px-4 py-4 text-left w-full transition-colors hover:bg-gray-50/70 ${item.isUnread ? "bg-brand-light" : "bg-white"}`}
+    >
       {/* Icon */}
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
         <Icon size={16} className={iconColor} />
@@ -109,11 +118,16 @@ const NotificationRow = ({ item = MOCK_NOTIFICATIONS[0] }: Props) => {
           )}
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">{item.message}</p>
+        {item.actionLabel && (
+          <span className="text-xs text-emerald-600 font-semibold mt-1">
+            {item.actionLabel}
+          </span>
+        )}
       </div>
 
       {/* Time */}
       <span className="text-xs text-gray-400 whitespace-nowrap shrink-0 pt-0.5">{item.time}</span>
-    </div>
+    </button>
   )
 }
 

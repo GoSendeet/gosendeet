@@ -243,7 +243,7 @@ const Credentials = () => {
           </p>
         </div>
 
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button className="bg-brand" onClick={() => setCreateOpen(true)}>
           <Plus size={16} />
           Create credential
         </Button>
@@ -446,7 +446,7 @@ const Credentials = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleCreateCredential} loading={createMutation.isPending}>
+            <Button className="bg-brand" onClick={handleCreateCredential} loading={createMutation.isPending}>
               Create key
             </Button>
           </div>
@@ -531,6 +531,7 @@ const Credentials = () => {
               Cancel
             </Button>
             <Button
+              className="bg-brand"
               onClick={handleUpdateScopes}
               loading={updateScopesMutation.isPending}
             >

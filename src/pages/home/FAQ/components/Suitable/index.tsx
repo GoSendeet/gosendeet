@@ -7,7 +7,7 @@ const Suitable = () => {
       <div className="lg:w-[40%]">
         <img src={faq} alt="faq" className="mx-auto" />
       </div>
-      <div className="lg:w-[60%] bg-orange-50 flex flex-col justify-center p-8 min-h-[350px]">
+      <div className="lg:w-[60%] bg-brand-light flex flex-col justify-center p-8 min-h-[350px]">
         <p className="font-clash font-semibold md:text-[32px] text-2xl leading-[130%] mb-2">
           Couldn’t find a suitable answer?
         </p>

@@ -5,16 +5,25 @@ import TransactionsTable, { type Transaction } from "./TransactionsTable";
 type Tab = "settlements" | "transactions";
 
 type Props = {
-  // TODO: Pass real data from backend here — SettlementsTable falls back to mock data if undefined; TransactionsTable shows a loading/empty state
   settlements?: Settlement[];
+  settlementsLoading?: boolean;
   transactions?: Transaction[];
   transactionsLoading?: boolean;
+  onViewSettlement?: (settlement: Settlement) => void;
+  onDownloadSettlement?: (settlement: Settlement) => void;
+  onDisputeSettlement?: (settlement: Settlement) => void;
+  settlementActionPending?: boolean;
 };
 
 export default function SettlementsEarningTable({
   settlements,
+  settlementsLoading = false,
   transactions,
   transactionsLoading = false,
+  onViewSettlement,
+  onDownloadSettlement,
+  onDisputeSettlement,
+  settlementActionPending = false,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("settlements");
 
@@ -41,7 +50,14 @@ export default function SettlementsEarningTable({
       <div className="md:bg-white rounded-2xl md:border md:border-gray-100 md:shadow-sm overflow-hidden w-full">
         {/* Table */}
         {activeTab === "settlements" ? (
-          <SettlementsTable data={settlements} />
+          <SettlementsTable
+            data={settlements}
+            isLoading={settlementsLoading}
+            onView={onViewSettlement}
+            onDownload={onDownloadSettlement}
+            onDispute={onDisputeSettlement}
+            actionPending={settlementActionPending}
+          />
         ) : (
           <TransactionsTable data={transactions} isLoading={transactionsLoading} />
         )}

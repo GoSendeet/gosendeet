@@ -10,6 +10,9 @@ import { useGetTrackBookings } from "@/queries/user/useGetUserBookings";
 import { statusClasses } from "@/constants";
 import { Spinner } from "@/components/Spinner";
 import RatingModal from "./components/RatingModal";
+import openChatwootChat from "@/lib/openChatwootChat";
+import openWhatsAppSupport from "@/lib/openWhatsAppSupport";
+import { track, EVENT } from "@/lib/analytics";
 
 const Tracking = () => {
   const [activeTab, setActiveTab] = useState("history");
@@ -23,6 +26,12 @@ const Tracking = () => {
   );
 
   const [openRatingModal, setOpenRatingModal] = useState(false);
+
+  useEffect(() => {
+    track(EVENT.TRACKING_VIEWED, {
+      tracking_number: result?.data?.trackingNumber,
+    });
+  }, [result?.data?.trackingNumber]);
 
   useEffect(() => {
     if (
@@ -159,10 +168,25 @@ const Tracking = () => {
                 )}
               </div>
 
-              <div className="flex md:flex-row flex-col gap-4 items-center justify-center mt-5">
-                <p className="font-medium">Need help with delivery</p>
-                <Button variant="secondary">Contact Support</Button>
-              </div>
+                <div className="flex flex-col gap-4 items-center justify-center mt-18">
+                    <p className="font-medium">Need help with delivery?</p>
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+                      <Button
+                        variant="secondary"
+                        className="bg-green-500"
+                        onClick={(e) => { track(EVENT.SUPPORT_OPENED, { channel: "chat", source: "tracking" }); openChatwootChat(e); }}
+                      >
+                        Live Chat
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        className="bg-brand"
+                        onClick={() => { track(EVENT.SUPPORT_OPENED, { channel: "whatsapp", source: "tracking" }); openWhatsAppSupport(); }}
+                      >
+                        WhatsApp Support
+                      </Button>
+                    </div>
+                  </div>
 
               <RatingModal
                 open={openRatingModal}

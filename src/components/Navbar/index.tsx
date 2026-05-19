@@ -7,6 +7,7 @@ import { GoX } from "react-icons/go";
 // import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 import { ArrowUpRight, Home } from "lucide-react";
 import { Button } from "../ui/button";
+import { hasAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 
 const Navbar = () => {
@@ -20,7 +21,7 @@ const Navbar = () => {
 
   const location = useLocation(); // Get current location
 
-  const authToken = sessionStorage.getItem("authToken");
+  const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role") || "";
 
   // const userId = sessionStorage.getItem("userId") || "";
@@ -45,7 +46,7 @@ const Navbar = () => {
 
         {/* Hamburger Icon (mobile view) */}
         <div className="lg:hidden flex items-center gap-4">
-          {authToken === null ? (
+          {!isAuthenticated ? (
             location.pathname === "/signin" ? (
               <Link to="/signup">
                 <Button size={"sm"} className="bg-green100">
@@ -97,7 +98,7 @@ const Navbar = () => {
           })}
         </ul>
 
-        {authToken === null ? (
+        {!isAuthenticated ? (
           <div className="hidden lg:flex lg:flex-row gap-8 flex-col">
             <Link to="/signup">
               <Button size={"sm"} variant="outline">
@@ -159,7 +160,7 @@ const Navbar = () => {
             })}
           </ul>
 
-          {authToken === null && (
+          {!isAuthenticated && (
             <>
               <Link to="/signin">
                 <button className="border-2 w-full font-semibold px-4 py-4 text-white bg-black rounded mb-4">

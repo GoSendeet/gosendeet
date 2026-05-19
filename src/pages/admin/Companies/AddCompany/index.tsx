@@ -50,7 +50,10 @@ const AddCompany = () => {
     name: z
       .string({ required_error: "Company name is required" })
       .min(3, { message: "Please enter company name" }),
-    logo: z.string().url({ message: "Please provide a valid logo URL" }).optional(),
+    logo: z
+      .string({ required_error: "Company logo is required" })
+      .min(1, { message: "Company logo is required" })
+      .url({ message: "Please provide a valid logo URL" }),
     website: z
       .string({ required_error: "Company website is required" })
       .url({ message: "Please enter valid url with https://" })
@@ -92,6 +95,10 @@ const AddCompany = () => {
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    register("logo");
+  }, [register]);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -148,7 +155,7 @@ const AddCompany = () => {
       navigate(`?${new URLSearchParams({ id }).toString()}`);
       queryClient.invalidateQueries({ queryKey: ["companies"] });
     },
-    onError: (data: any) => toast.error(data?.message),
+    onError: (data: any) => toast.error(data?.message || "Something went wrong"),
   });
 
   const { mutate: deleteService, isPending: pendingDeleteService } = useMutation({
@@ -199,7 +206,13 @@ const AddCompany = () => {
                 <ImageUpload
                   label="Company Logo"
                   imageUrl={watch("logo")}
-                  onUrlChange={(url) => setValue("logo", url, { shouldValidate: true })}
+                  onUrlChange={(url) =>
+                    setValue("logo", url, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                      shouldTouch: true,
+                    })
+                  }
                   error={errors.logo?.message}
                 />
               </div>
@@ -211,7 +224,7 @@ const AddCompany = () => {
                     type="text"
                     {...register("website")}
                     disabled={companyId !== ""}
-                    placeholder="Enter company website"
+                    placeholder="https://www.companywebsite.com"
                     className="w-full outline-0 border-b-0 py-2 px-4"
                   />
                 </div>
@@ -349,13 +362,13 @@ const AddCompany = () => {
                   key={index}
                   className="flex md:flex-row flex-col md:items-center md:gap-4 gap-2 justify-between mb-4"
                 >
-                  <div className="bg-purple100 py-3 px-4 rounded-lg flex-1">
+                  <div className="bg-brand-light py-3 px-4 rounded-lg flex-1">
                     <p className="font-medium">
                       {item?.crossAreaRoute
                         ? `${item.crossAreaRoute.areaA} - ${item.crossAreaRoute.areaB}`
                         : "Route config"}
                     </p>
-                    <div className="text-sm text-neutral700 mt-2 space-y-1">
+                    <div className="text-sm mt-2 space-y-1 text-brand">
                       <p>
                         <span className="font-medium">Base Price:</span> ₦{item?.basePrice ?? "-"}
                       </p>
@@ -408,7 +421,7 @@ const AddCompany = () => {
             <Button
               variant={companyServices?.length > 0 ? "ghost" : "secondary"}
               size={companyServices?.length > 0 ? "ghost" : undefined}
-              className={companyServices?.length > 0 ? "text-purple500" : ""}
+              className={companyServices?.length > 0 ? "text-brand p-2 bg-brand-light" : ""}
               onClick={() => { setType("create"); setOpenRoutesModal(true); }}
               disabled={companyId === ""}
             >

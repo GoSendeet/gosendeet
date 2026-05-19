@@ -1,4 +1,5 @@
 import { api } from "./axios";
+import { throwApiError } from "@/lib/errorHandling";
 
 export const uploadImage = async (imageBase64: string, name?: string) => {
   try {
@@ -8,7 +9,7 @@ export const uploadImage = async (imageBase64: string, name?: string) => {
       expiration: undefined, // No expiration
     });
     return res.data;
-  } catch (error: any) {
-    throw error?.response?.data || { message: error.message };
+  } catch (error: unknown) {
+    throwApiError(error);
   }
 };

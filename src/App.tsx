@@ -8,6 +8,7 @@ import CostCalculator from "./pages/home/CostCalculator";
 import FAQ from "./pages/home/FAQ";
 import Track from "./pages/home/Track";
 import Delivery from "./pages/home/CostCalculator/components/Calculator/Booking/Delivery";
+import PickupTime from "./pages/home/CostCalculator/components/Calculator/Booking/PickupTime";
 import Checkout from "./pages/home/CostCalculator/components/Calculator/Booking/Checkout";
 import Confirmation from "./pages/home/CostCalculator/components/Calculator/Booking/Confirmation";
 import Tracking from "./pages/home/Track/Tracking";
@@ -34,12 +35,14 @@ import FranchiseLayout from "./layouts/FranchiseLayout";
 import Franchise from "./pages/franchise";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
+import PageTracker from "./components/PageTracker";
 
 function App() {
   return (
     <>
     <ChatwootWidget />
     <Router>
+      <PageTracker />
       <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -47,13 +50,14 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
           <Route path="/delivery" element={<Delivery />} />
+          <Route path="/pickup-time" element={<PickupTime />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/success-page" element={<Confirmation />} />
           <Route path="/error-page" element={<ErrorPage />} />
           <Route path="/track-booking" element={<Tracking />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
-          <Route path="/dispatch/:trackingId/:token" element={<PublicDispatchPage />} />
+          <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/signup" element={<Signup />} />
@@ -62,6 +66,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-account" element={<VerifyEmail />} />
           <Route path="/:id/verify-email" element={<VerifyEmail />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/:id/reset-password" element={<ResetPassword />} />
           <Route path="/oauth2/callback" element={<ValidateGoogleLogin />} />
         </Route>

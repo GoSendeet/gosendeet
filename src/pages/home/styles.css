@@ -12,6 +12,42 @@
   position: relative;
 }
 
+.hero-delivery-flow {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.42;
+}
+
+.hero-delivery-illustration {
+  display: block;
+  width: min(100vw, 96rem);
+  height: auto;
+  margin-inline: auto;
+  user-select: none;
+}
+
+@media (max-width: 900px) {
+  .hero-delivery-flow {
+    opacity: 0.38;
+  }
+
+  .hero-delivery-illustration {
+    width: 120vw;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-delivery-illustration {
+    width: 140vw;
+  }
+}
+
 /* Bold Decorative Shapes */
 .v3-blob {
   border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;

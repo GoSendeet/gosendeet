@@ -2,8 +2,20 @@ import OntimeDelivery from "./Statistics/OntimeDelivery";
 import AverageRating from "./Statistics/AverageRating";
 import Complaints from "./Statistics/Complaints";
 import PerformanceInsights from "./PerformanceInsights";
+import {
+  useGetFranchisePerformanceFlags,
+  useGetFranchisePerformanceSummary,
+  useGetFranchisePerformanceWeeklyTrend,
+} from "@/queries/franchise/useFranchisePerformance";
 
 const Performance = () => {
+  const { data: summary, isPending: summaryLoading } =
+    useGetFranchisePerformanceSummary();
+  const { data: weeklyTrend, isPending: weeklyTrendLoading } =
+    useGetFranchisePerformanceWeeklyTrend();
+  const { data: flags, isPending: flagsLoading } =
+    useGetFranchisePerformanceFlags();
+
   return (
     <>
       <div
@@ -19,13 +31,30 @@ const Performance = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row items-center gap-3 mt-6">
-        <OntimeDelivery />
-        <AverageRating />
-        <Complaints />
+        <OntimeDelivery
+          value={summary?.onTimePercent ?? 0}
+          isLoading={summaryLoading}
+        />
+        <AverageRating
+          rating={summary?.averageRating ?? 0}
+          totalRatings={summary?.totalRatings ?? 0}
+          isLoading={summaryLoading}
+        />
+        <Complaints
+          complaints={summary?.complaints ?? 0}
+          totalDeliveries={summary?.totalDeliveries ?? 0}
+          periodDays={summary?.periodDays ?? 30}
+          isLoading={summaryLoading}
+        />
       </div>
 
       <div className="mt-5">
-        <PerformanceInsights />
+        <PerformanceInsights
+          weeklyTrend={weeklyTrend}
+          weeklyTrendLoading={weeklyTrendLoading}
+          flaggedDeliveries={flags}
+          flaggedDeliveriesLoading={flagsLoading}
+        />
       </div>
     </>
   );

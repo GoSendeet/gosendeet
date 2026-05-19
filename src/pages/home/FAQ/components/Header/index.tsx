@@ -4,7 +4,7 @@
 // import billing from "@/assets/icons/credit-card.png";
 const Header = () => {
   return (
-    <div className="md:px-20 px-6 py-20 bg-orange-50 flex flex-col justify-center items-center ">
+    <div className="md:px-20 px-6 py-20 bg-brand-light flex flex-col justify-center items-center ">
       <h1 className="lg:text-[46px] md:text-[36px] text-[30px] text-center font-clash font-semibold leading-[130%] mb-2">
         Frequently Asked{" "}
         <span className="font-tiempos font-normal italic">Questions</span>{" "}

@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { viewDispatch } from "@/services/dispatchPublic";
 
-export const usePublicDispatch = (token: string, enabled: boolean) => {
+export const usePublicDispatch = (enabled: boolean) => {
   return useQuery({
-    queryKey: ["public-dispatch", token],
-    queryFn: () => viewDispatch(token),
-    enabled: enabled && !!token,
+    queryKey: ["public-dispatch-session"],
+    queryFn: () => viewDispatch(),
+    enabled,
   });
 };

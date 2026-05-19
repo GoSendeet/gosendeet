@@ -11,7 +11,8 @@ export type TaskStatus =
   | "COMPLETED"
   | "CANCELLED"
   | "TERMINATED";
-export type TaskCompletionRequirement = "PHOTO" | "NONE";
+export type TaskCompletionRequirement = "PHOTO" | "NONE" | "SIGNATURE";
+export type TaskInputCompletionRequirement = "PHOTO" | "NONE";
 
 export interface TaskDto {
   id: string;
@@ -50,7 +51,7 @@ export interface TaskDto {
 export interface TaskInput {
   taskType: TaskType;
   destinationAddress: string;
-  completionRequirement?: TaskCompletionRequirement;
+  completionRequirement?: TaskInputCompletionRequirement;
   completeBefore?: string;
   completeAfter?: string;
   estimatedTime?: string;
@@ -68,7 +69,7 @@ export interface CreateTasksPayload {
 export interface UpdateTaskPayload {
   taskType?: TaskType;
   destinationAddress?: string;
-  completionRequirement?: TaskCompletionRequirement;
+  completionRequirement?: TaskInputCompletionRequirement;
   completeBefore?: string;
   completeAfter?: string;
   estimatedTime?: string;
@@ -95,6 +96,7 @@ export interface DispatchPreviewCompanyDetail {
 export interface DispatchPreviewData {
   bookingId: string;
   orderNumber: string;
+  trackingNumber: string;
   companiesAffected: number;
   draftTasksReady: number;
   tasksPerCompany: Record<string, number>;
@@ -104,12 +106,19 @@ export interface DispatchPreviewData {
 }
 
 export interface DispatchSummary {
-  bookingId: string;
-  orderNumber: string;
   dispatchedAt: string;
+  totalCompaniesNotified: number;
   totalTasksDispatched: number;
-  companiesNotified: number;
-  dispatchTokens: Record<string, string>;
+  companies: Record<
+    string,
+    {
+      companyId: string;
+      companyName: string;
+      email: string;
+      taskCount: number;
+      token: string;
+    }
+  >;
 }
 
 export interface DispatchResponse {
