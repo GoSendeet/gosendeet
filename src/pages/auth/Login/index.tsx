@@ -62,7 +62,7 @@ const Login = () => {
       }
 
       storeAuthSession(user);
-      identifyUser(String(user.id), { role: user.role, email });
+      identifyUser(String(user.id), { role: user.role, $email: email, $name: user.username });
       track(EVENT.LOGIN_COMPLETED, { method: "email", role: user.role });
 
       toast.success("Login Successful");
