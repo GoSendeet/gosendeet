@@ -36,7 +36,7 @@ const Checkout = () => {
   const successUrl = `${APP_BASE_URL}/success-page`;
   const errorUrl = `${APP_BASE_URL}/error-page`;
 
-  const [isChecked, setIsChecked] = useState(false);
+  //const [isChecked, setIsChecked] = useState(false);
   const { data: packageTypes } = useGetPackageType({ minimize: true });
   const packages = Array.isArray(packageTypes?.data)
     ? packageTypes.data
