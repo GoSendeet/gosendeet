@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { FiUserX } from "react-icons/fi";
 import { activateAccount } from "@/services/auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -13,17 +14,14 @@ import { toast } from "sonner";
 
 export function DeactivateAccount() {
   const [open, setOpen] = useState(false);
-
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
     mutationFn: activateAccount,
     onSuccess: () => {
-      toast.success("Successful");
+      toast.success("Account deactivated");
       setOpen(false);
-      queryClient.invalidateQueries({
-        queryKey: ["user"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (data) => {
       toast.error(data?.message);
@@ -33,34 +31,46 @@ export function DeactivateAccount() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"secondary"} className="w-fit bg-brand">Deactivate my account</Button>
+        <Button variant="outline" className="border-amber-400 text-amber-600 hover:bg-amber-50 text-sm">
+          Deactivate
+        </Button>
       </DialogTrigger>
-      <DialogContent className="gap-0">
-        <DialogTitle className="text-[20px] font-semibold font-clash mb-2">
-          Deactivate Account?
-        </DialogTitle>
-        <DialogDescription className="font-medium text-sm text-neutral600">
-          Removes your account giving you a chance to reactivate it when you
-          want{" "}
-        </DialogDescription>
-        <>
-          <div className="py-4 text-sm">
-            <p className="text-neutral600 mt-2 mb-8">
-              By clicking “Deactivate”, you agree with GoSendeet{" "}
-              <span className="text-purple500">terms</span> for account
-              deactivation
-            </p>
 
-            <Button
-              variant={"secondary"}
-              className=" w-fit"
-              loading={isPending}
-              onClick={() => mutate("inactive")}
-            >
-              Deactivate
-            </Button>
-          </div>
-        </>
+      <DialogContent className="gap-0 max-w-md">
+        <div className="flex items-center gap-3 mb-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
+            <FiUserX size={18} />
+          </span>
+          <DialogTitle className="text-lg font-bold font-clash text-neutral800">
+            Deactivate Account?
+          </DialogTitle>
+        </div>
+        <DialogDescription className="text-sm text-neutral500 mb-4">
+          Your account will be paused. You can log back in and reactivate it at any time — your data stays intact.
+        </DialogDescription>
+
+        <p className="text-xs text-neutral400 mb-6">
+          By confirming, you agree to GoSendeet's{" "}
+          <span className="text-brand underline cursor-pointer">terms</span> for account deactivation.
+        </p>
+
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1"
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1 bg-amber-500 hover:bg-amber-600 text-white"
+            loading={isPending}
+            onClick={() => mutate("inactive")}
+          >
+            Yes, Deactivate
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

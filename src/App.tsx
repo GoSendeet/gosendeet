@@ -44,8 +44,7 @@ function App() {
     <Router>
       <PageTracker />
       <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
+            <Route path="/about" element={<About />} />
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
@@ -60,6 +59,7 @@ function App() {
           <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
 
         <Route element={<PublicRoutes />}>
+          <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
           <Route path="/login" element={<Login />} />

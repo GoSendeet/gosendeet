@@ -1,80 +1,109 @@
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { FiEdit } from "react-icons/fi";
+import { FiEdit2, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
 import { UpdateProfileModal } from "./UpdateProfileModal";
+
+const Field = ({ label, value }: { label: string; value?: string }) => (
+  <div className="flex flex-col gap-1">
+    <p className="text-[11px] uppercase tracking-widest text-neutral500 font-medium">
+      {label}
+    </p>
+    <p className="text-sm font-medium text-neutral800">{value || "—"}</p>
+  </div>
+);
 
 const PersonalDetails = ({ data }: { data: any }) => {
   const userData = data?.data;
   const [open, setOpen] = useState(false);
+
+  const initials = userData?.username
+    ? userData.username.slice(0, 2).toUpperCase()
+    : "U";
+
   return (
-    <div className="flex lg:flex-row flex-col gap-8 mb-8">
-      <div className="lg:w-[40%] md:px-4">
-        <h2 className="font-clash font-semibold text-[20px] text-brand mb-2">
-          Profile Settings
-        </h2>
-        <p className="text-neutral600 text-sm">Information about yourself</p>
-      </div>
-      <div className="lg:w-[60%] md:px-4">
-        <div className="flex mt-2 gap-4">
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Username</h2>
-            <p className="text-neutral800 text-sm">
-              {userData?.username ?? "--"}
-            </p>
+    <>
+      <div className="bg-white rounded-2xl border border-neutral200 overflow-hidden mb-6">
+        {/* Header band */}
+        <div className="h-20 bg-gradient-to-r from-brand to-[#065f46]" />
+
+        {/* Avatar + name row */}
+        <div className="px-6 pb-6">
+          <div className="flex items-end justify-between -mt-10 mb-6">
+            <div className="w-20 h-20 rounded-full bg-brand border-4 border-white flex items-center justify-center text-white text-2xl font-bold font-clash shadow-md shrink-0">
+              {initials}
+            </div>
+            <button
+              onClick={() => setOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-brand text-brand text-sm font-semibold hover:bg-brand hover:text-white transition-colors"
+            >
+              <FiEdit2 size={14} />
+              Edit Profile
+            </button>
           </div>
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
-              Email Address
-            </h2>
-            <p className="text-neutral800 text-sm">{userData?.email ?? "--"}</p>
-          </div>
-        </div>
-        <div className="flex mt-2 gap-4">
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
-              Phone number
-            </h2>
-            <p className="text-neutral800 text-sm">{userData?.phone ?? "--"}</p>
-          </div>
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">
-              Postal code
-            </h2>
-            <p className="text-neutral800 text-sm">
-              {userData?.postalCode ?? "--"}
-            </p>
-          </div>
-        </div>
-        <div className="flex mt-2 gap-4">
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">State</h2>
-            <p className="text-neutral800 text-sm">{userData?.state ?? "--"}</p>
-          </div>
-          <div className="w-1/2 mb-8">
-            <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Country</h2>
-            <p className="text-neutral800 text-sm">
-              {userData?.country ?? "--"}
-            </p>
-          </div>
-        </div>
-        <div className="mb-8 w-1/2">
-          <h2 className="font-clash font-semibold text-sm mb-2 text-brand">Address</h2>
-          <p className="text-neutral800 text-sm">{userData?.address ?? "--"}</p>
+
+          <h2 className="font-clash font-bold text-xl text-neutral800 mb-0.5">
+            {userData?.username || "—"}
+          </h2>
+          <p className="text-sm text-neutral500">{userData?.email || "—"}</p>
         </div>
 
-        <Button
-          className="w-fit bg-brand text-white py-2 px-3"
-          variant={"secondary"}
-          size={"ghost"}
-          onClick={() => setOpen(true)}
-        >
-          <FiEdit />
-          Edit
-        </Button>
+        {/* Divider */}
+        <div className="border-t border-neutral100 mx-6" />
+
+        {/* Fields grid */}
+        <div className="px-6 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiUser size={15} />
+            </span>
+            <Field label="Username" value={userData?.username} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiMail size={15} />
+            </span>
+            <Field label="Email Address" value={userData?.email} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiPhone size={15} />
+            </span>
+            <Field label="Phone Number" value={userData?.phone} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiMapPin size={15} />
+            </span>
+            <Field label="Address" value={userData?.address} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiMapPin size={15} />
+            </span>
+            <Field label="State" value={userData?.state} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiMapPin size={15} />
+            </span>
+            <Field label="Country" value={userData?.country} />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0FDF4] text-brand">
+              <FiMapPin size={15} />
+            </span>
+            <Field label="Postal Code" value={userData?.postalCode} />
+          </div>
+        </div>
       </div>
 
       <UpdateProfileModal open={open} setOpen={setOpen} data={userData} />
-    </div>
+    </>
   );
 };
 
