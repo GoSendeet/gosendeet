@@ -5,9 +5,12 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 import { XCircle } from "lucide-react";
 
+const CHECKOUT_BOOKING_STORAGE_KEY = "checkoutBookingData";
+
 const ErrorPage = () => {
   const userId = sessionStorage.getItem("userId") || "";
   const navigate = useNavigate();
+
   useEffect(() => {
     if (!userId) {
       toast.error("Please sign in to continue");
@@ -15,7 +18,27 @@ const ErrorPage = () => {
         navigate("/signin");
       }, 1000);
     }
-  }, [userId]);
+  }, [navigate, userId]);
+
+  const retryOrder = () => {
+    const savedBookingData = sessionStorage.getItem(CHECKOUT_BOOKING_STORAGE_KEY);
+
+    if (!savedBookingData) {
+      toast.error("Booking details are missing. Please start again.");
+      navigate("/");
+      return;
+    }
+
+    try {
+      navigate("/checkout", {
+        state: { bookingData: JSON.parse(savedBookingData) },
+      });
+    } catch {
+      toast.error("Booking details are unavailable. Please start again.");
+      navigate("/");
+    }
+  };
+
   return (
     <Layout>
       <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
@@ -36,7 +59,7 @@ const ErrorPage = () => {
                     Please try again or contact our support team for assistance.
                   </p>
                 </div>
-                <Button>Retry Order</Button>
+                <Button onClick={retryOrder}>Retry Order</Button>
               </div>
 
               <div className="flex md:flex-row flex-col gap-4 items-center justify-center mt-20">

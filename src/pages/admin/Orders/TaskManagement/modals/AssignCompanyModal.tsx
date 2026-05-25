@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Select, { type SingleValue, type StylesConfig } from "react-select";
 import { Button } from "@/components/ui/button";
 import { getCompanyList } from "@/services/companies";
 import { assignTasks } from "@/services/tasks";
@@ -12,6 +11,12 @@ import { getErrorMessage } from "@/lib/utils";
 type CompanyListItem = {
   id: string;
   name: string;
+  email?: string;
+};
+
+type CompanyOption = {
+  value: string;
+  label: string;
   email?: string;
 };
 
@@ -29,7 +34,7 @@ const AssignCompanyModal = ({
   onSuccess,
 }: AssignCompanyModalProps) => {
   const [search, setSearch] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(null);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["companies", "assign", search],
@@ -38,6 +43,50 @@ const AssignCompanyModal = ({
   });
 
   const companies = (data?.data?.content ?? []) as CompanyListItem[];
+  const companyOptions = useMemo(
+    () =>
+      companies.map((company) => ({
+        value: company.id,
+        label: company.name,
+        email: company.email,
+      })),
+    [companies]
+  );
+
+  const selectStyles: StylesConfig<CompanyOption, false> = {
+    control: (base, state) => ({
+      ...base,
+      minHeight: "48px",
+      borderColor: state.isFocused ? "#C4B5FD" : "#D0D5DD",
+      borderRadius: "0.5rem",
+      boxShadow: state.isFocused ? "0 0 0 3px rgba(196, 181, 253, 0.45)" : "none",
+      "&:hover": {
+        borderColor: state.isFocused ? "#C4B5FD" : "#98A2B3",
+      },
+    }),
+    menu: (base) => ({
+      ...base,
+      zIndex: 60,
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 60,
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#F2F4F7"
+        : state.isFocused
+          ? "#F9FAFB"
+          : "#FFFFFF",
+      color: "#111827",
+      cursor: "pointer",
+    }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#667085",
+    }),
+  };
 
   const { mutate, isPending } = useMutation({
     mutationFn: (payload: { taskIds: string[]; companyId?: string | null }) =>
@@ -48,7 +97,7 @@ const AssignCompanyModal = ({
           ? "Tasks assigned successfully"
           : "Tasks were unassigned"
       );
-      setSelectedCompany("");
+      setSelectedCompany(null);
       onSuccess();
     },
     onError: (error) => {
@@ -59,7 +108,7 @@ const AssignCompanyModal = ({
   useEffect(() => {
     if (!open) {
       setSearch("");
-      setSelectedCompany("");
+      setSelectedCompany(null);
     } else {
       refetch();
     }
@@ -70,7 +119,7 @@ const AssignCompanyModal = ({
       toast.error("Select a company");
       return;
     }
-    mutate({ taskIds, companyId: selectedCompany });
+    mutate({ taskIds, companyId: selectedCompany.value });
   };
 
   const handleUnassign = () => {
@@ -96,19 +145,6 @@ const AssignCompanyModal = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Search Company</label>
-            <Input
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              autoFocus
-            />
-            <p className="text-xs text-neutral500">
-              Type to filter the list below
-            </p>
-          </div>
-
-          <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Select Company</label>
               {isLoading && (
@@ -117,32 +153,36 @@ const AssignCompanyModal = ({
             </div>
             <Select
               value={selectedCompany}
-              onValueChange={(value) => setSelectedCompany(value)}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="h-auto min-h-[2.5rem]">
-                <SelectValue placeholder="Choose a dispatch partner" />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {companies.map((company) => (
-                  <SelectItem value={company.id} key={company.id}>
-                    <div className="flex flex-col py-1">
-                      <span className="font-medium">{company.name}</span>
-                      {company.email && (
-                        <span className="text-xs text-neutral500">
-                          {company.email}
-                        </span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-                {!isLoading && companies.length === 0 && (
-                  <SelectItem value="__no_companies" disabled>
-                    {search ? "No companies match your search" : "No companies available"}
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+              options={companyOptions}
+              onChange={(option: SingleValue<CompanyOption>) =>
+                setSelectedCompany(option)
+              }
+              onInputChange={(value, actionMeta) => {
+                if (actionMeta.action === "input-change") {
+                  setSearch(value);
+                }
+              }}
+              inputValue={search}
+              placeholder="Search by name or email..."
+              isClearable
+              isDisabled={isLoading}
+              isLoading={isLoading}
+              autoFocus
+              filterOption={null}
+              noOptionsMessage={() =>
+                search ? "No companies match your search" : "No companies available"
+              }
+              formatOptionLabel={(option) => (
+                <div className="flex flex-col py-1">
+                  <span className="font-medium">{option.label}</span>
+                  {option.email && (
+                    <span className="text-xs text-neutral500">{option.email}</span>
+                  )}
+                </div>
+              )}
+              styles={selectStyles}
+              menuPortalTarget={document.body}
+            />
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-4 border-t border-neutral200">
@@ -158,7 +198,7 @@ const AssignCompanyModal = ({
             <Button
               type="button"
               onClick={handleAssign}
-              disabled={!selectedCompany || taskIds.length === 0}
+              disabled={!selectedCompany || taskIds.length === 0 || isPending}
               loading={isPending}
               className="sm:min-w-[120px]"
             >
