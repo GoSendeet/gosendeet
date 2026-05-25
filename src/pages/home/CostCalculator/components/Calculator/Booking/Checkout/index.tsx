@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Layout from "@/layouts/HomePageLayout";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
@@ -339,7 +339,6 @@ const Checkout = () => {
                 <Button
                   type="submit"
                   className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-                  disabled={!isChecked}
                   onClick={submit}
                   loading={isPending}
                 >
