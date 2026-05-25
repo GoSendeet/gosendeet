@@ -21,8 +21,8 @@ const DASHBOARD_TABS = [
 ];
 
 interface DashboardNavbarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
 }
 
 const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
@@ -83,7 +83,7 @@ const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
   });
 
   const handleTabClick = (key: string) => {
-    onTabChange(key);
+    onTabChange?.(key);
     setNavOpen(false);
   };
 
@@ -108,25 +108,27 @@ const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
         </div>
 
         {/* Desktop: tab links */}
-        <ul className="hidden lg:flex xl:space-x-10 lg:space-x-5">
-          {DASHBOARD_TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <li key={tab.key} className="text-center cursor-pointer">
-                <button
-                  onClick={() => handleTabClick(tab.key)}
-                  className={`block py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "border-b-2 border-darkGreen text-[#064E3B]"
-                      : "text-neutral600 hover:border-b-2 hover:border-darkGreen"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        {onTabChange && (
+          <ul className="hidden lg:flex xl:space-x-10 lg:space-x-5">
+            {DASHBOARD_TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <li key={tab.key} className="text-center cursor-pointer">
+                  <button
+                    onClick={() => handleTabClick(tab.key)}
+                    className={`block py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "border-b-2 border-darkGreen text-[#064E3B]"
+                        : "text-neutral600 hover:border-b-2 hover:border-darkGreen"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         {/* Desktop: avatar + logout */}
         <div className="hidden lg:flex lg:flex-row items-center gap-2">
@@ -158,22 +160,24 @@ const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
             </button>
           </div>
 
-          <ul className="flex flex-col my-10">
-            {DASHBOARD_TABS.map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <li
-                  key={tab.key}
-                  onClick={() => handleTabClick(tab.key)}
-                  className={`w-full cursor-pointer py-3 text-base font-medium border-b border-neutral100 ${
-                    isActive ? "text-[#064E3B]" : "text-neutral600"
-                  }`}
-                >
-                  {tab.label}
-                </li>
-              );
-            })}
-          </ul>
+          {onTabChange && (
+            <ul className="flex flex-col my-10">
+              {DASHBOARD_TABS.map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
+                  <li
+                    key={tab.key}
+                    onClick={() => handleTabClick(tab.key)}
+                    className={`w-full cursor-pointer py-3 text-base font-medium border-b border-neutral100 ${
+                      isActive ? "text-[#064E3B]" : "text-neutral600"
+                    }`}
+                  >
+                    {tab.label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
           <Button
             className="border-2 w-full font-semibold px-4 py-4 bg-black text-white rounded"
