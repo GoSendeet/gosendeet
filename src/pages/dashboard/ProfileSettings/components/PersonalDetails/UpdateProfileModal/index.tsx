@@ -8,19 +8,34 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { countries } from "@/constants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { updateUserProfile } from "@/services/user";
 import { allowOnlyNumbers } from "@/lib/utils";
+
+const schema = z.object({
+  username: z
+    .string({ required_error: "Username is required" })
+    .min(1, { message: "Please enter username" }),
+  phone: z
+    .string({ required_error: "Phone number is required" })
+    .regex(/^\+?[0-9]{11,15}$/, {
+      message: "Invalid phone number",
+    }),
+  address: z
+    .string({ required_error: "Address is required" })
+    .min(1, { message: "Please enter address" }),
+  postalCode: z
+    .string({ required_error: "Postal code is required" })
+    .min(1, { message: "Please enter postal code" }),
+  state: z
+    .string({ required_error: "State is required" })
+    .min(1, { message: "Please enter state" }),
+  country: z
+    .string({ required_error: "Country is required" })
+    .min(1, { message: "Please enter country" }),
+});
 
 export function UpdateProfileModal({
   open,
@@ -32,35 +47,11 @@ export function UpdateProfileModal({
   data: any;
 }) {
   const userId = data?.id ?? "";
-  const schema = z.object({
-    username: z
-      .string({ required_error: "Username is required" })
-      .min(1, { message: "Please enter username" }),
-    phone: z
-      .string({ required_error: "Phone number is required" })
-      .regex(/^\+?[0-9]{11,15}$/, {
-        message: "Invalid phone number",
-      }),
-    address: z
-      .string({ required_error: "Address is required" })
-      .min(1, { message: "Please enter address" }),
-    postalCode: z
-      .string({ required_error: "Postal code is required" })
-      .min(1, { message: "Please enter postal code" }),
-    state: z
-      .string({ required_error: "State is required" })
-      .min(1, { message: "Please enter state" }),
-    country: z
-      .string({ required_error: "Country is required" })
-      .min(1, { message: "Please enter country" }),
-  });
 
   const {
     register,
     handleSubmit,
     reset,
-    setValue,
-    watch,
     formState: { errors },
   } = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -235,22 +226,13 @@ export function UpdateProfileModal({
                     Country
                   </label>
                   <div className="flex justify-between items-center gap-2 border-b">
-                    <Select
-                      onValueChange={(val) => setValue("country", val)}
-                      value={watch("country")}
-                      // defaultValue={data?.country}
-                    >
-                      <SelectTrigger className="outline-0 focus-visible:border-transparent focus-visible:ring-transparent border-0 w-full py-2 px-0 mt-0">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {countries.map((country) => (
-                          <SelectItem value={country.label} key={country.key}>
-                            {country.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <input
+                      id="country"
+                      type="text"
+                      {...register("country")}
+                      placeholder="Enter country"
+                      className="w-full outline-0 border-b-0 py-2"
+                    />
                   </div>
                   {errors.country && (
                     <p className="error text-xs text-[#FF0000]">
