@@ -437,13 +437,13 @@ const FormHorizontalBar = ({
 
   // Determine if form should be vertical (dashboard route)
   const containerClass = isDashboard
-    ? `space-y-2`
-    : "grid grid-cols-1 gap-y-2 lg:gap-6 items-end lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_auto]";
+    ? `space-y-4`
+    : "grid grid-cols-1 gap-y-4 lg:gap-6 items-end lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_auto]";
 
   // Compare mode has 3 cards + button, so use a different grid
   const compareContainerClass = isDashboard
-    ? `space-y-2`
-    : "grid grid-cols-1 gap-y-2 items-end  lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] ";
+    ? `space-y-4`
+    : "grid grid-cols-1 gap-y-4 lg:gap-6 items-end lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto] ";
 
   // Show loading skeleton while hydrating
   if (!isHydrated) {
@@ -836,7 +836,7 @@ const FormHorizontalBar = ({
 
               {/* Buttons */}
               <div
-                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
+                className={isDashboard ? "mt-5 w-full" : "flex gap-3 items-end"}
               >
                 <Button
                   type="button"
@@ -1171,7 +1171,7 @@ const FormHorizontalBar = ({
 
               {/* Compare Button */}
               <div
-                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
+                className={isDashboard ? "mt-5 w-full" : "flex gap-3 items-end"}
               >
                 <Button
                   type="button"
