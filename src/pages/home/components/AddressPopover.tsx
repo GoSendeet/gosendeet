@@ -22,7 +22,7 @@ import { FiEdit3, FiMapPin, FiNavigation, FiSearch } from "react-icons/fi";
 import usePlacesAutocomplete, { getDetails } from "use-places-autocomplete";
 
 interface AddressPopoverProps {
-  type: "pickup" | "destination";
+  type?: "pickup" | "destination";
   open: boolean;
   query: string;
   otherAddress?: string;
@@ -221,7 +221,6 @@ const getCityOptions = (state?: string) => {
 };
 
 export function AddressPopover({
-  type,
   open,
   query,
   otherAddress,
@@ -259,7 +258,6 @@ export function AddressPopover({
     }
   }, [open, query]);
 
-  const title = type === "pickup" ? "Pickup address" : "Destination address";
   const cityOptions = useMemo(
     () => getCityOptions(manualAddress.state),
     [manualAddress.state],
@@ -475,7 +473,7 @@ export function AddressPopover({
       className="w-[min(420px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
     >
       <div className="p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
+        {/* <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-[#0F172A]">{title}</h3>
             <p className="mt-0.5 text-xs text-[#64748B]">
@@ -483,7 +481,7 @@ export function AddressPopover({
             </p>
           </div>
           <FiSearch className="h-4 w-4 text-brand" />
-        </div>
+        </div> */}
 
         {!showManual && (
           <div className="space-y-2">
