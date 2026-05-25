@@ -27,7 +27,12 @@ const bookingSteps = [
 const schema = z.object({
   sender_name: z
     .string({ required_error: "Sender’s name is required" })
-    .min(1, { message: "Name cannot be empty" }),
+    .min(1, { message: "Name cannot be empty" })
+    .max(100, { message: "Name cannot exceed 100 characters" })
+    .regex(/^[a-zA-Z\s'.-]+$/, {
+    message: "Name can only contain letters, spaces, hyphens, apostrophes, and periods",
+  })
+  .transform((val) => val.trim()),
   sender_phone: z
     .string({ required_error: "Sender’s number is required" })
     .regex(/^(\+234|0)[7-9][0-9]{9}$/, {
@@ -42,7 +47,8 @@ const schema = z.object({
     .string({ required_error: "Receiver’s name is required" })
     .trim()
     .min(1, { message: "Receiver's Name cannot be empty" })
-    .regex(/^[A-Za-z\s'-]+$/, { message: "Name must contain only letters" }),
+    .max(100, { message: "Name cannot exceed 100 characters" })
+    .regex(/^[A-Za-z\s'.-]+$/, { message: "Name can only contain letters, spaces, hyphens, apostrophes, and periods" }),
   receiver_phone: z
     .string({ required_error: "Receiver’s number is required" })
     .regex(/^(\+234|0)[7-9][0-9]{9}$/, {
