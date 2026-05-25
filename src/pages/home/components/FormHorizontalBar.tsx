@@ -155,6 +155,7 @@ const FormHorizontalBar = ({
   const [inputData, setInputData] = useState<any>({});
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isHydrated, setIsHydrated] = useState(false);
+  const [showCursorHint, setShowCursorHint] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -169,6 +170,7 @@ const FormHorizontalBar = ({
       setCurrentMode(activeMode);
     }
   }, [activeMode, isDashboard]);
+
 
   // Modal states for Direct mode
   const [activeCard, setActiveCard] = useState<"pickup" | "destination" | null>(
@@ -503,6 +505,7 @@ const FormHorizontalBar = ({
 
   return (
     <div className="relative w-full mx-auto max-w-[354px] lg:max-w-[1120px]">
+      <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px] 
@@ -616,28 +619,38 @@ const FormHorizontalBar = ({
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
                         <FiMapPin size={18} />
                       </span>
-                      <input
-                        ref={pickupInputRef}
-                        id="pickup-location-input"
-                        type="text"
-                        value={pickupSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("pickup");
-                          setPickupModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("pickup");
-                          setPickupSearchQuery(event.target.value);
-                          setPickupModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
+                      <div className="relative min-w-0 flex-1">
+                        <input
+                          ref={pickupInputRef}
+                          id="pickup-location-input"
+                          type="text"
+                          value={pickupSearchQuery}
+                          onFocus={() => {
+                            setActiveCard("pickup");
+                            setPickupModalOpen(true);
+                          }}
+                          onChange={(event) => {
+                            setShowCursorHint(false);
+                            setActiveCard("pickup");
+                            setPickupSearchQuery(event.target.value);
+                            setPickupModalOpen(true);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                            }
+                          }}
+                          placeholder="Enter street, area, or landmark"
+                          className="w-full bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                        />
+                        {showCursorHint && !pickupSearchQuery && (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-px bg-gray-400"
+                            style={{ animation: "blink 1s step-end infinite" }}
+                          />
+                        )}
+                      </div>
                     </div>
                     {errors.pickupLocation && (
                       <p className="w-fit text-xs text-red-500 mt-1">
@@ -696,27 +709,37 @@ const FormHorizontalBar = ({
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
                         <FiFlag size={18} />
                       </span>
-                      <input
-                        id="destination-location-input"
-                        type="text"
-                        value={destinationSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("destination");
-                          setDestinationModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("destination");
-                          setDestinationSearchQuery(event.target.value);
-                          setDestinationModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
+                      <div className="relative min-w-0 flex-1">
+                        <input
+                          id="destination-location-input"
+                          type="text"
+                          value={destinationSearchQuery}
+                          onFocus={() => {
+                            setActiveCard("destination");
+                            setDestinationModalOpen(true);
+                          }}
+                          onChange={(event) => {
+                            setShowCursorHint(false);
+                            setActiveCard("destination");
+                            setDestinationSearchQuery(event.target.value);
+                            setDestinationModalOpen(true);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                            }
+                          }}
+                          placeholder="Enter street, area, or landmark"
+                          className="w-full bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                        />
+                        {showCursorHint && !destinationSearchQuery && (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-px bg-gray-400"
+                            style={{ animation: "blink 1s step-end infinite" }}
+                          />
+                        )}
+                      </div>
                     </div>
                     {errors.dropOffLocation && (
                       <p className="text-xs text-red-500 mt-1">
@@ -949,28 +972,38 @@ const FormHorizontalBar = ({
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
                         <FiMapPin size={18} />
                       </span>
-                      <input
-                        ref={pickupInputRef}
-                        id="compare-pickup-location-input"
-                        type="text"
-                        value={pickupSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("pickup");
-                          setPickupModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("pickup");
-                          setPickupSearchQuery(event.target.value);
-                          setPickupModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
+                      <div className="relative min-w-0 flex-1">
+                        <input
+                          ref={pickupInputRef}
+                          id="compare-pickup-location-input"
+                          type="text"
+                          value={pickupSearchQuery}
+                          onFocus={() => {
+                            setActiveCard("pickup");
+                            setPickupModalOpen(true);
+                          }}
+                          onChange={(event) => {
+                            setShowCursorHint(false);
+                            setActiveCard("pickup");
+                            setPickupSearchQuery(event.target.value);
+                            setPickupModalOpen(true);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                            }
+                          }}
+                          placeholder="Enter street, area, or landmark"
+                          className="w-full bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                        />
+                        {showCursorHint && !pickupSearchQuery && (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-px bg-gray-400"
+                            style={{ animation: "blink 1s step-end infinite" }}
+                          />
+                        )}
+                      </div>
                     </div>
                     {errors.pickupLocation && (
                       <p className="text-xs text-red-500 mt-1">
@@ -1030,27 +1063,37 @@ const FormHorizontalBar = ({
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
                         <FiFlag size={18} />
                       </span>
-                      <input
-                        id="compare-destination-location-input"
-                        type="text"
-                        value={destinationSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("destination");
-                          setDestinationModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("destination");
-                          setDestinationSearchQuery(event.target.value);
-                          setDestinationModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
+                      <div className="relative min-w-0 flex-1">
+                        <input
+                          id="compare-destination-location-input"
+                          type="text"
+                          value={destinationSearchQuery}
+                          onFocus={() => {
+                            setActiveCard("destination");
+                            setDestinationModalOpen(true);
+                          }}
+                          onChange={(event) => {
+                            setShowCursorHint(false);
+                            setActiveCard("destination");
+                            setDestinationSearchQuery(event.target.value);
+                            setDestinationModalOpen(true);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                            }
+                          }}
+                          placeholder="Enter street, area, or landmark"
+                          className="w-full bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
+                        />
+                        {showCursorHint && !destinationSearchQuery && (
+                          <span
+                            aria-hidden="true"
+                            className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-px bg-gray-400"
+                            style={{ animation: "blink 1s step-end infinite" }}
+                          />
+                        )}
+                      </div>
                     </div>
 
                     {errors.dropOffLocation && (

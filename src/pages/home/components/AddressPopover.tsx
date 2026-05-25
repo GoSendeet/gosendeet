@@ -475,7 +475,7 @@ export function AddressPopover({
       className="w-[min(420px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
     >
       <div className="p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
+        {/* <div className="mb-3 flex items-center justify-between gap-3">
           <div>
             <h3 className="text-sm font-bold text-[#0F172A]">{title}</h3>
             <p className="mt-0.5 text-xs text-[#64748B]">
@@ -483,7 +483,7 @@ export function AddressPopover({
             </p>
           </div>
           <FiSearch className="h-4 w-4 text-brand" />
-        </div>
+        </div> */}
 
         {!showManual && (
           <div className="space-y-2">
