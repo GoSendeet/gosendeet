@@ -19,9 +19,15 @@ export const getCompanyList = async (
   search: string
 ) => {
   try {
-    const res = await api.get(
-      `/companies?page=${page}&size=${size}&status=${companyStatus}&serviceLevelId=${serviceLevelId}&search=${search}`
-    );
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      status: companyStatus,
+      serviceLevelId,
+      search,
+    });
+
+    const res = await api.get(`/companies?${params.toString()}`);
     return res.data;
   } catch (error: unknown) {
     throwApiError(error);

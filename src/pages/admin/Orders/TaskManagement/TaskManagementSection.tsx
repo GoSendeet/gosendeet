@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTasksByBooking } from "@/queries/tasks/useTasks";
-import { TaskDto, deleteTask } from "@/services/tasks";
+import { TaskDto, assignTasks, deleteTask } from "@/services/tasks";
 import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,6 +42,9 @@ const TASK_TYPE_LABELS: Record<string, string> = {
   IN_HUB: "In Hub",
 };
 
+const isTaskAssigned = (task: TaskDto) =>
+  Boolean(task.companyId || (task.companyName && task.companyName !== "Unassigned"));
+
 interface TaskManagementSectionProps {
   bookingId: string;
   pickupAddress?: string;
@@ -60,6 +63,7 @@ const TaskManagementSection = ({
   const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
   const [assignOpen, setAssignOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDisabledPopoverOpen, setPreviewDisabledPopoverOpen] = useState(false);
   const [activePopoverId, setActivePopoverId] = useState<string | null>(null);
 
   const { data, isLoading, isError, refetch } = useTasksByBooking(bookingId, {
@@ -85,6 +89,17 @@ const TaskManagementSection = ({
 
   const selectableIds = useMemo(
     () => tasks.filter((task) => task.status === "DRAFT").map((task) => task.id),
+    [tasks]
+  );
+  const selectedTasks = useMemo(
+    () => tasks.filter((task) => selectedTaskIds.includes(task.id)),
+    [selectedTaskIds, tasks]
+  );
+  const canRemoveAssignment =
+    selectedTasks.length > 0 && selectedTasks.every(isTaskAssigned);
+  const hasSelectedAssignedTask = selectedTasks.some(isTaskAssigned);
+  const hasAssignedDraftTask = useMemo(
+    () => tasks.some((task) => task.status === "DRAFT" && isTaskAssigned(task)),
     [tasks]
   );
 
@@ -120,6 +135,18 @@ const TaskManagementSection = ({
     },
   });
 
+  const { mutate: removeAssignment, isPending: isRemovingAssignment } = useMutation({
+    mutationFn: (taskIds: string[]) => assignTasks({ taskIds, companyId: null }),
+    onSuccess: () => {
+      toast.success("Assignment removed");
+      setSelectedTaskIds([]);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Unable to remove assignment"));
+    },
+  });
+
   const handleDelete = (task: TaskDto) => {
     if (task.status !== "DRAFT") {
       toast.error("Only draft tasks can be deleted");
@@ -141,6 +168,11 @@ const TaskManagementSection = ({
     }
     setSelectedTaskIds(taskIds);
     setAssignOpen(true);
+  };
+
+  const handleRemoveAssignment = () => {
+    if (!canRemoveAssignment) return;
+    removeAssignment(selectedTaskIds);
   };
 
   const handleEdit = (task: TaskDto) => {
@@ -182,11 +214,32 @@ const TaskManagementSection = ({
             <RefreshCw className="size-4" />
             Refresh
           </Button>
-          <Button variant="outline" className="border-brand text-brand" 
-            onClick={() => setPreviewOpen(true)}>
-            <Eye className="size-4 text-brand" />
-            Preview Dispatch
-          </Button>
+          <Popover open={!hasAssignedDraftTask && previewDisabledPopoverOpen}>
+            <PopoverTrigger asChild>
+              <div
+                onMouseEnter={() => setPreviewDisabledPopoverOpen(true)}
+                onMouseLeave={() => setPreviewDisabledPopoverOpen(false)}
+                onFocus={() => setPreviewDisabledPopoverOpen(true)}
+                onBlur={() => setPreviewDisabledPopoverOpen(false)}
+              >
+                <Button
+                  variant="outline"
+                  className="border-brand text-brand disabled:cursor-not-allowed disabled:opacity-60"
+                  onClick={() => {
+                    if (!hasAssignedDraftTask) return;
+                    setPreviewOpen(true);
+                  }}
+                  disabled={!hasAssignedDraftTask}
+                >
+                  <Eye className="size-4 text-brand" />
+                  Preview Dispatch
+                </Button>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-3 text-xs text-neutral700" align="center">
+              Assign at least one draft task to partner to dispatch
+            </PopoverContent>
+          </Popover>
           <Button className="border-brand text-white bg-brand" onClick={() => setIsCreateOpen(true)}>
             + Create Tasks
           </Button>
@@ -232,19 +285,23 @@ const TaskManagementSection = ({
                 size="sm"
                 className="border-neutral300 text-neutral800"
                 onClick={() => handleAssign(selectedTaskIds)}
-                disabled={selectedTaskIds.length === 0}
+                disabled={selectedTaskIds.length === 0 || isRemovingAssignment}
               >
                 <UserPlus className="size-4" />
-                Assign Selected ({selectedTaskIds.length})
+                {hasSelectedAssignedTask ? "Change Assignment" : "Assign Selected"} ({selectedTaskIds.length})
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleAssign(selectableIds)}
-                disabled={selectableIds.length === 0}
-              >
-                Assign All Draft Tasks
-              </Button>
+              {canRemoveAssignment && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                  onClick={handleRemoveAssignment}
+                  disabled={isRemovingAssignment}
+                  loading={isRemovingAssignment}
+                >
+                  Remove Assignment
+                </Button>
+              )}
             </div>
           </div>
 
@@ -268,6 +325,7 @@ const TaskManagementSection = ({
                 {tasks.map((task) => {
                   const isSelectable = task.status === "DRAFT";
                   const isChecked = selectedTaskIds.includes(task.id);
+                  const assigned = isTaskAssigned(task);
 
                   return (
                     <div
@@ -305,6 +363,16 @@ const TaskManagementSection = ({
                         <p className="font-medium">
                           {task.companyName ?? "Unassigned"}
                         </p>
+                        <span
+                          className={cn(
+                            "mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
+                            assigned
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-100 text-slate-600"
+                          )}
+                        >
+                          {assigned ? "Assigned" : "Unassigned"}
+                        </span>
                       </div>
                       <div className="text-sm text-neutral700">
                         {task.completeAfter && (
@@ -414,7 +482,7 @@ const TaskManagementSection = ({
                             <button
                               className="p-1.5 rounded-md hover:bg-neutral200 text-neutral700"
                               onClick={() => handleAssign([task.id])}
-                              title="Assign company"
+                              title={assigned ? "Change assignment" : "Assign company"}
                             >
                               <UserPlus className="size-3.5" />
                             </button>
@@ -466,7 +534,7 @@ const TaskManagementSection = ({
                               }}
                             >
                               <UserPlus className="size-4" />
-                              Assign
+                              {assigned ? "Change Assignment" : "Assign"}
                             </button>
                             <button
                               className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-neutral100 text-red-500"
@@ -494,6 +562,7 @@ const TaskManagementSection = ({
             {tasks.map((task) => {
               const isSelectable = task.status === "DRAFT";
               const isChecked = selectedTaskIds.includes(task.id);
+              const assigned = isTaskAssigned(task);
 
               return (
                 <div
@@ -530,6 +599,16 @@ const TaskManagementSection = ({
                     <div>
                       <p className="text-xs text-neutral500 uppercase">Company</p>
                       <p className="font-medium">{task.companyName ?? "Unassigned"}</p>
+                      <span
+                        className={cn(
+                          "mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium",
+                          assigned
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-slate-100 text-slate-600"
+                        )}
+                      >
+                        {assigned ? "Assigned" : "Unassigned"}
+                      </span>
                     </div>
                     <div>
                       <p className="text-xs text-neutral500 uppercase">Requirement</p>
@@ -614,7 +693,7 @@ const TaskManagementSection = ({
                         className="flex-1"
                       >
                         <UserPlus className="size-3.5" />
-                        Assign
+                        {assigned ? "Change" : "Assign"}
                       </Button>
                       <Button
                         variant="outline"
@@ -639,6 +718,7 @@ const TaskManagementSection = ({
         bookingId={bookingId}
         pickupAddress={pickupAddress}
         dropoffAddress={dropoffAddress}
+        existingTasks={tasks}
         onSuccess={() => {
           refetch();
           setSelectedTaskIds([]);

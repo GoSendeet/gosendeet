@@ -19,14 +19,13 @@ import DateRangePicker from "@/components/ui/DateRangePicker";
 import { DeliveryTask, DeliveryType } from "@/schema/franchise/delivery/type";
 import DeliveryDrawer from "./DeliveryDrawer";
 import {
-  useAcceptFranchiseDelivery,
+  useAcceptFranchiseTask,
   useCompleteFranchiseTask,
-  useDeclineFranchiseDelivery,
+  useDeclineFranchiseTask,
   useGetFranchiseDeliveries,
   useStartFranchiseTask,
 } from "@/queries/franchise/useFranchiseDeliveries";
 import { useGetFranchiseDashboardSummary } from "@/queries/franchise/useFranchiseDashboard";
-import { toast } from "sonner";
 
 //Lets create an array of data
 
@@ -777,9 +776,6 @@ const apiStatusMap: Record<string, string | undefined> = {
   Declined: "declined",
 };
 
-const getBookingId = (delivery: DeliveryType) =>
-  delivery.bookingId ?? delivery.tasks?.[0]?.bookingId;
-
 const Deliveries = ({
   initialStatusTab = "All Status",
 }: {
@@ -809,8 +805,8 @@ const Deliveries = ({
     endDate: dateRange.to,
   });
   const { data: summary } = useGetFranchiseDashboardSummary(7);
-  const acceptDelivery = useAcceptFranchiseDelivery();
-  const declineDelivery = useDeclineFranchiseDelivery();
+  const acceptTask = useAcceptFranchiseTask();
+  const declineTask = useDeclineFranchiseTask();
   const startTask = useStartFranchiseTask();
   const completeTask = useCompleteFranchiseTask();
 
@@ -864,32 +860,15 @@ const Deliveries = ({
     });
   }, [activeTab, statusFilter, apiDeliveries]);
 
-  const handleAcceptDelivery = (delivery: DeliveryType) => {
-    const bookingId = getBookingId(delivery);
-    if (!bookingId) {
-      toast.error("Booking ID is missing for this delivery");
-      return;
-    }
-
-    acceptDelivery.mutate(bookingId, {
-      onSuccess: () => setDrawerOpen(false),
-    });
+  const handleAcceptTask = (task: DeliveryTask) => {
+    acceptTask.mutate(task.id);
   };
 
-  const handleDeclineDelivery = (delivery: DeliveryType) => {
-    const bookingId = getBookingId(delivery);
-    if (!bookingId) {
-      toast.error("Booking ID is missing for this delivery");
-      return;
-    }
-
-    const reason = window.prompt("Reason for declining this dispatch?");
+  const handleDeclineTask = (task: DeliveryTask) => {
+    const reason = window.prompt("Reason for declining this task?");
     if (!reason?.trim()) return;
 
-    declineDelivery.mutate(
-      { bookingId, reason: reason.trim() },
-      { onSuccess: () => setDrawerOpen(false) },
-    );
+    declineTask.mutate({ taskId: task.id, reason: reason.trim() });
   };
 
   const handleStartTask = (task: DeliveryTask) => {
@@ -1321,17 +1300,20 @@ const Deliveries = ({
         delivery={selectedDelivery}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        onAccept={handleAcceptDelivery}
-        onDecline={handleDeclineDelivery}
+        onAcceptTask={handleAcceptTask}
+        onDeclineTask={handleDeclineTask}
         onStartTask={handleStartTask}
         onCompleteTask={handleCompleteTask}
-        actionPending={acceptDelivery.isPending || declineDelivery.isPending}
         taskActionPendingId={
-          startTask.isPending
-            ? startTask.variables
-            : completeTask.isPending
-              ? completeTask.variables?.taskId
-              : null
+          acceptTask.isPending
+            ? acceptTask.variables
+            : declineTask.isPending
+              ? declineTask.variables?.taskId
+              : startTask.isPending
+                ? startTask.variables
+                : completeTask.isPending
+                  ? completeTask.variables?.taskId
+                  : null
         }
       />
     </>

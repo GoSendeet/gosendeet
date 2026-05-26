@@ -62,13 +62,33 @@ const formatTransactionDate = (value: string) =>
     year: "numeric",
   }).format(new Date(value));
 
+const formatOptionalDate = (value?: string | null) =>
+  value ? formatTransactionDate(value) : undefined;
+
+const formatPeriod = (date: Date) =>
+  new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+
+const formatDateRange = (start: Date, end: Date) =>
+  `${formatTransactionDate(start.toISOString())} - ${formatTransactionDate(end.toISOString())}`;
+
+const formatAdjustments = (value?: number | string) => {
+  const amount = Number(value ?? 0);
+  if (amount === 0) return formatCurrency(0);
+  return amount < 0
+    ? formatCurrency(amount)
+    : `-${formatCurrency(Math.abs(amount))}`;
+};
+
 const Earnings = () => {
   const { data: summary, isPending: isSummaryLoading } =
     useGetFranchiseEarningsSummary();
   const { data: transactionsResponse, isPending: isTransactionsLoading } =
-    useGetFranchiseEarningsTransactions({ page: 0, size: 50 });
+    useGetFranchiseEarningsTransactions({ page: 1, size: 50 });
   const { data: settlementsResponse, isPending: isSettlementsLoading } =
-    useGetFranchiseSettlements({ page: 0, size: 50 });
+    useGetFranchiseSettlements({ page: 1, size: 50 });
   const downloadSettlement = useDownloadFranchiseSettlementPdf();
   const createDispute = useCreateFranchiseSettlementDispute();
 
@@ -107,21 +127,74 @@ const Earnings = () => {
     }),
   );
 
-  const settlements: Settlement[] = (settlementsResponse?.content ?? []).map(
+  const apiSettlements: Settlement[] = (settlementsResponse?.content ?? []).map(
     (settlement) => ({
       id: settlement.id,
       period: settlement.period,
       dateRange: settlement.dateRange,
       deliveries: settlement.deliveries,
       gross: formatCurrency(settlement.gross),
-      adjustments:
-        Number(settlement.adjustments) < 0
-          ? formatCurrency(settlement.adjustments)
-          : `-${formatCurrency(Math.abs(Number(settlement.adjustments ?? 0)))}`,
+      adjustments: formatAdjustments(settlement.adjustments),
       netPayout: formatCurrency(settlement.netPayout),
       status: settlement.status,
+      paymentReference: settlement.paymentReference ?? undefined,
+      paymentMethod: settlement.paymentMethod ?? undefined,
+      paidAt: formatOptionalDate(settlement.paidAt),
     }),
   );
+
+  const generatedSettlements: Settlement[] = React.useMemo(() => {
+    const grouped = new Map<
+      string,
+      {
+        start: Date;
+        end: Date;
+        deliveries: number;
+        gross: number;
+        netPayout: number;
+      }
+    >();
+
+    for (const transaction of transactionsResponse?.content ?? []) {
+      const createdAt = new Date(transaction.dateCreated);
+      if (Number.isNaN(createdAt.getTime())) continue;
+
+      const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, "0")}`;
+      const existing = grouped.get(key);
+
+      if (existing) {
+        existing.start = createdAt < existing.start ? createdAt : existing.start;
+        existing.end = createdAt > existing.end ? createdAt : existing.end;
+        existing.deliveries += 1;
+        existing.gross += Number(transaction.amountPaid ?? 0);
+        existing.netPayout += Number(transaction.feePaid ?? 0);
+      } else {
+        grouped.set(key, {
+          start: createdAt,
+          end: createdAt,
+          deliveries: 1,
+          gross: Number(transaction.amountPaid ?? 0),
+          netPayout: Number(transaction.feePaid ?? 0),
+        });
+      }
+    }
+
+    return Array.from(grouped.entries())
+      .sort(([, a], [, b]) => b.end.getTime() - a.end.getTime())
+      .map(([key, group]) => ({
+        id: `generated-settlement-${key}`,
+        period: formatPeriod(group.start),
+        dateRange: formatDateRange(group.start, group.end),
+        deliveries: group.deliveries,
+        gross: formatCurrency(group.gross),
+        adjustments: formatCurrency(0),
+        netPayout: formatCurrency(group.netPayout),
+        status: "Draft",
+        generated: true,
+      }));
+  }, [transactionsResponse?.content]);
+
+  const settlements = apiSettlements.length ? apiSettlements : generatedSettlements;
 
   const saveBlob = (blob: Blob, settlementId: string) => {
     const url = URL.createObjectURL(blob);

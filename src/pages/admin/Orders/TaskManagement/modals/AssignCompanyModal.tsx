@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import Select, { type SingleValue, type StylesConfig } from "react-select";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { getCompanyList } from "@/services/companies";
 import { assignTasks } from "@/services/tasks";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
+import { Check, ChevronDown } from "lucide-react";
 
 type CompanyListItem = {
   id: string;
@@ -34,11 +36,21 @@ const AssignCompanyModal = ({
   onSuccess,
 }: AssignCompanyModalProps) => {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(null);
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ["companies", "assign", search],
-    queryFn: () => getCompanyList(1, 50, "", "", search),
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [search]);
+
+  const { data, isFetching, refetch } = useQuery({
+    queryKey: ["companies", "assign", debouncedSearch],
+    queryFn: () => getCompanyList(1, 50, "", "", debouncedSearch),
     enabled: open,
   });
 
@@ -52,41 +64,6 @@ const AssignCompanyModal = ({
       })),
     [companies]
   );
-
-  const selectStyles: StylesConfig<CompanyOption, false> = {
-    control: (base, state) => ({
-      ...base,
-      minHeight: "48px",
-      borderColor: state.isFocused ? "#C4B5FD" : "#D0D5DD",
-      borderRadius: "0.5rem",
-      boxShadow: state.isFocused ? "0 0 0 3px rgba(196, 181, 253, 0.45)" : "none",
-      "&:hover": {
-        borderColor: state.isFocused ? "#C4B5FD" : "#98A2B3",
-      },
-    }),
-    menu: (base) => ({
-      ...base,
-      zIndex: 60,
-    }),
-    menuPortal: (base) => ({
-      ...base,
-      zIndex: 60,
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? "#F2F4F7"
-        : state.isFocused
-          ? "#F9FAFB"
-          : "#FFFFFF",
-      color: "#111827",
-      cursor: "pointer",
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#667085",
-    }),
-  };
 
   const { mutate, isPending } = useMutation({
     mutationFn: (payload: { taskIds: string[]; companyId?: string | null }) =>
@@ -108,7 +85,9 @@ const AssignCompanyModal = ({
   useEffect(() => {
     if (!open) {
       setSearch("");
+      setDebouncedSearch("");
       setSelectedCompany(null);
+      setCompanyDropdownOpen(false);
     } else {
       refetch();
     }
@@ -122,8 +101,11 @@ const AssignCompanyModal = ({
     mutate({ taskIds, companyId: selectedCompany.value });
   };
 
-  const handleUnassign = () => {
-    mutate({ taskIds, companyId: null });
+  const handleSelectCompany = (company: CompanyOption) => {
+    setSelectedCompany(company);
+    setSearch("");
+    setDebouncedSearch("");
+    setCompanyDropdownOpen(false);
   };
 
   return (
@@ -147,54 +129,83 @@ const AssignCompanyModal = ({
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Select Company</label>
-              {isLoading && (
+              {isFetching && (
                 <span className="text-xs text-neutral500">Loading...</span>
               )}
             </div>
-            <Select
-              value={selectedCompany}
-              options={companyOptions}
-              onChange={(option: SingleValue<CompanyOption>) =>
-                setSelectedCompany(option)
-              }
-              onInputChange={(value, actionMeta) => {
-                if (actionMeta.action === "input-change") {
-                  setSearch(value);
-                }
-              }}
-              inputValue={search}
-              placeholder="Search by name or email..."
-              isClearable
-              isDisabled={isLoading}
-              isLoading={isLoading}
-              autoFocus
-              filterOption={null}
-              noOptionsMessage={() =>
-                search ? "No companies match your search" : "No companies available"
-              }
-              formatOptionLabel={(option) => (
-                <div className="flex flex-col py-1">
-                  <span className="font-medium">{option.label}</span>
-                  {option.email && (
-                    <span className="text-xs text-neutral500">{option.email}</span>
+            <Popover open={companyDropdownOpen} onOpenChange={setCompanyDropdownOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex min-h-12 w-full items-center justify-between gap-3 rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-left text-sm outline-none transition focus:border-purple300 focus:ring-3 focus:ring-purple200/50"
+                >
+                  {selectedCompany ? (
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium text-[#111827]">
+                        {selectedCompany.label}
+                      </span>
+                      {selectedCompany.email && (
+                        <span className="block truncate text-xs text-neutral500">
+                          {selectedCompany.email}
+                        </span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-[#667085]">Choose a dispatch partner</span>
+                  )}
+                  <ChevronDown className="h-4 w-4 shrink-0 text-neutral500" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                className="z-[70] w-[var(--radix-popover-trigger-width)] p-2"
+              >
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search by name or email..."
+                  autoFocus
+                  className="h-10"
+                />
+
+                <div className="mt-2 max-h-64 overflow-y-auto">
+                  {companyOptions.map((company) => (
+                    <button
+                      type="button"
+                      key={company.value}
+                      onClick={() => handleSelectCompany(company)}
+                      className={cn(
+                        "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-[#F9FAFB]",
+                        selectedCompany?.value === company.value && "bg-[#F2F4F7]"
+                      )}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium text-[#111827]">
+                          {company.label}
+                        </span>
+                        {company.email && (
+                          <span className="block truncate text-xs text-neutral500">
+                            {company.email}
+                          </span>
+                        )}
+                      </span>
+                      {selectedCompany?.value === company.value && (
+                        <Check className="h-4 w-4 shrink-0 text-green100" />
+                      )}
+                    </button>
+                  ))}
+
+                  {!isFetching && companyOptions.length === 0 && (
+                    <p className="px-3 py-4 text-center text-sm text-neutral500">
+                      {search ? "No companies match your search" : "No companies available"}
+                    </p>
                   )}
                 </div>
-              )}
-              styles={selectStyles}
-              menuPortalTarget={document.body}
-            />
+              </PopoverContent>
+            </Popover>
           </div>
 
-          <div className="flex flex-col-reverse sm:flex-row justify-between gap-2 pt-4 border-t border-neutral200">
-            <Button
-              type="button"
-              variant="outline"
-              className="border-neutral300 text-neutral800"
-              onClick={handleUnassign}
-              disabled={taskIds.length === 0 || isPending}
-            >
-              Remove Assignment
-            </Button>
+          <div className="flex justify-end gap-2 pt-4 border-t border-neutral200">
             <Button
               type="button"
               onClick={handleAssign}

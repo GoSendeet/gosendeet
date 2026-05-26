@@ -38,7 +38,7 @@ const mapNotification = (item: FranchiseNotification): Notification => ({
 });
 
 const FranchiseNotifications = () => {
-  const page = 0;
+  const page = 1;
   const size = 20;
   const { data: notificationPage, isLoading } = useGetFranchiseNotifications(page, size);
   const { mutate: markAllRead, isPending: isMarkingAllRead } =

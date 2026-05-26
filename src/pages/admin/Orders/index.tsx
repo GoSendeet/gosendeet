@@ -71,7 +71,6 @@ const Orders = () => {
   const [bookingData, setBookingData] = useState({});
   const [bookingId, setBookingId] = useState("");
   const [orderProgress, setOrderProgress] = useState("");
-  const [orderStatus, setOrderStatus] = useState("");
 
   const savedLabel = sessionStorage.getItem("savedLabel") || "All";
   const [activeStatusTab, setActiveStatusTab] = useState(savedLabel);
@@ -270,7 +269,6 @@ const Orders = () => {
                           setOpen(true);
                           setBookingId(item?.id);
                           setOrderProgress(item?.currentProgress);
-                          setOrderStatus(item.status);
                         }}
                       >
                         Update progress
@@ -434,7 +432,6 @@ const Orders = () => {
                               setOpen(true);
                               setBookingId(item?.id);
                               setOrderProgress(item?.currentProgress);
-                              setOrderStatus(item.status);
                             }}
                           >
                             Update progress
@@ -468,7 +465,6 @@ const Orders = () => {
         setOpen={setOpen}
         bookingId={bookingId}
         progress={orderProgress}
-        status={orderStatus}
       />
     </div>
   );

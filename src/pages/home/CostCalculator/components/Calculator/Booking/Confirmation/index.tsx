@@ -1,7 +1,7 @@
 import Layout from "@/layouts/HomePageLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
@@ -21,6 +21,7 @@ const Confirmation = () => {
     searchParams.get("reference") || searchParams.get("trxref") || "";
   const [bookingId, setBookingId] = useState("");
   const [verificationComplete, setVerificationComplete] = useState(false);
+  const verifiedReferenceRef = useRef<string | null>(null);
 
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(bookingId);
 
@@ -74,6 +75,8 @@ const Confirmation = () => {
       return;
     }
 
+    if (verifiedReferenceRef.current === reference) return;
+    verifiedReferenceRef.current = reference;
     verifyPayment(reference);
   }, [navigate, reference, verifyPayment]);
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,6 +9,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,13 +25,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { MultiSelect } from "@/components/ui/multi";
-import { createTasks, TaskType } from "@/services/tasks";
+import { createTasks, TaskDto, TaskType } from "@/services/tasks";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   getErrorMessage,
   toISOFromLocalInput,
   formatToDatetimeLocal,
+  cn,
 } from "@/lib/utils";
 import { ArrowUp, ArrowDown, Plus, Trash2 } from "lucide-react";
 
@@ -62,6 +68,7 @@ interface CreateTasksModalProps {
   onSuccess: () => void;
   pickupAddress?: string;
   dropoffAddress?: string;
+  existingTasks?: TaskDto[];
 }
 
 const CreateTasksModal = ({
@@ -71,10 +78,41 @@ const CreateTasksModal = ({
   onSuccess,
   pickupAddress,
   dropoffAddress,
+  existingTasks = [],
 }: CreateTasksModalProps) => {
+  const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  const hasExistingPickup = existingTasks.some(
+    (task) => task.taskType === "PICKUP"
+  );
+  const hasExistingDropoff = existingTasks.some(
+    (task) => task.taskType === "DROPOFF"
+  );
+
+  const getDuplicateTaskMessage = (taskType: "PICKUP" | "DROPOFF") =>
+    `You already have a pending ${taskType === "PICKUP" ? "pickup" : "drop off"} task created`;
+
+  const getTemplateDisabledMessage = (
+    templateType: "pickup-dropoff" | "pickup" | "dropoff",
+  ) => {
+    if (templateType === "pickup" && hasExistingPickup) {
+      return getDuplicateTaskMessage("PICKUP");
+    }
+    if (templateType === "dropoff" && hasExistingDropoff) {
+      return getDuplicateTaskMessage("DROPOFF");
+    }
+    if (templateType === "pickup-dropoff") {
+      if (hasExistingPickup && hasExistingDropoff) {
+        return "You already have pending pickup and drop off tasks created";
+      }
+      if (hasExistingPickup) return getDuplicateTaskMessage("PICKUP");
+      if (hasExistingDropoff) return getDuplicateTaskMessage("DROPOFF");
+    }
+    return "";
+  };
+
   const buildDefaultTask = useCallback(
     (
-      type: TaskType = "PICKUP",
+      type?: TaskType,
     ): {
       taskType: TaskType;
       destinationAddress: string;
@@ -84,19 +122,26 @@ const CreateTasksModal = ({
       notes: string;
       dependsOn: string[];
     } => {
+      const resolvedType =
+        type ??
+        (hasExistingPickup
+          ? hasExistingDropoff
+            ? "IN_HUB"
+            : "DROPOFF"
+          : "PICKUP");
       const now = new Date();
 
       // Smart dispatch window based on task type
       let completeAfter = "";
       let completeBefore = "";
 
-      if (type === "PICKUP") {
+      if (resolvedType === "PICKUP") {
         // Pickup: Start in 2 hours, 2 hour window
         const start = new Date(now.getTime() + 2 * 60 * 60 * 1000);
         const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
         completeAfter = formatToDatetimeLocal(start);
         completeBefore = formatToDatetimeLocal(end);
-      } else if (type === "DROPOFF") {
+      } else if (resolvedType === "DROPOFF") {
         // Dropoff: Start in 4 hours (after pickup), 4 hour window
         const start = new Date(now.getTime() + 4 * 60 * 60 * 1000);
         const end = new Date(start.getTime() + 4 * 60 * 60 * 1000);
@@ -105,24 +150,24 @@ const CreateTasksModal = ({
       }
 
       return {
-        taskType: type,
+        taskType: resolvedType,
         destinationAddress: "", // Empty - let useEffect handle address filling
         // Smart default: PHOTO proof for dropoffs, NONE for others
-        completionRequirement: (type === "DROPOFF" ? "PHOTO" : "NONE") as
+        completionRequirement: (resolvedType === "DROPOFF" ? "PHOTO" : "NONE") as
           | "PHOTO"
           | "NONE",
         completeAfter,
         completeBefore,
         notes:
-          type === "PICKUP"
+          resolvedType === "PICKUP"
             ? "Collect package from sender"
-            : type === "DROPOFF"
+            : resolvedType === "DROPOFF"
               ? "Deliver to recipient and collect signature/photo"
               : "",
         dependsOn: [] as string[],
       };
     },
-    [], // No dependencies - useEffect handles address
+    [hasExistingDropoff, hasExistingPickup], // useEffect handles address
   );
 
   const {
@@ -161,9 +206,7 @@ const CreateTasksModal = ({
   });
 
   useEffect(() => {
-    if (!open) {
-      reset({ tasks: [buildDefaultTask()] });
-    }
+    reset({ tasks: [buildDefaultTask()] });
   }, [open, reset, buildDefaultTask]);
 
   useEffect(() => {
@@ -186,6 +229,31 @@ const CreateTasksModal = ({
   }, [watchedTasks, pickupAddress, dropoffAddress, setValue]);
 
   const onSubmit = (values: FormValues) => {
+    const pickupCount = values.tasks.filter((task) => task.taskType === "PICKUP").length;
+    const dropoffCount = values.tasks.filter((task) => task.taskType === "DROPOFF").length;
+    const hasNewPickup = pickupCount > 0;
+    const hasNewDropoff = dropoffCount > 0;
+
+    if (hasExistingPickup && hasNewPickup) {
+      toast.error(getDuplicateTaskMessage("PICKUP"));
+      return;
+    }
+
+    if (hasExistingDropoff && hasNewDropoff) {
+      toast.error(getDuplicateTaskMessage("DROPOFF"));
+      return;
+    }
+
+    if (pickupCount > 1) {
+      toast.error("Only one pickup task can be created for an order");
+      return;
+    }
+
+    if (dropoffCount > 1) {
+      toast.error("Only one drop off task can be created for an order");
+      return;
+    }
+
     const payload = {
       bookingId,
       tasks: values.tasks.map((task, index) => ({
@@ -209,6 +277,12 @@ const CreateTasksModal = ({
   const applyTemplate = (
     templateType: "pickup-dropoff" | "pickup" | "dropoff",
   ) => {
+    const disabledMessage = getTemplateDisabledMessage(templateType);
+    if (disabledMessage) {
+      toast.error(disabledMessage);
+      return;
+    }
+
     if (templateType === "pickup-dropoff") {
       const pickup = buildDefaultTask("PICKUP");
       const dropoff = buildDefaultTask("DROPOFF");
@@ -223,6 +297,72 @@ const CreateTasksModal = ({
       reset({ tasks: [buildDefaultTask("DROPOFF")] });
       toast.success("Dropoff template applied");
     }
+  };
+
+  const renderTemplateButton = ({
+    templateType,
+    label,
+    icon,
+  }: {
+    templateType: "pickup-dropoff" | "pickup" | "dropoff";
+    label: string;
+    icon: ReactNode;
+  }) => {
+    const disabledMessage = getTemplateDisabledMessage(templateType);
+    const disabled = Boolean(disabledMessage);
+
+    const button = (
+      <button
+        type="button"
+        onClick={() => applyTemplate(templateType)}
+        disabled={disabled}
+        className={cn(
+          "group bg-white border-2 border-neutral-300 rounded-md p-2.5 text-center transition-all",
+          disabled
+            ? "cursor-not-allowed opacity-60"
+            : "hover:border-brand hover:shadow-md active:shadow-sm"
+        )}
+      >
+        <div className="flex flex-col items-center gap-1.5">
+          <div
+            className={cn(
+              "size-7 rounded-full bg-neutral-100 flex items-center justify-center transition-colors",
+              !disabled && "group-hover:bg-brand"
+            )}
+          >
+            {icon}
+          </div>
+          <p
+            className={cn(
+              "font-medium text-xs text-brand",
+              !disabled && "group-hover:font-semibold"
+            )}
+          >
+            {label}
+          </p>
+        </div>
+      </button>
+    );
+
+    if (!disabledMessage) return button;
+
+    return (
+      <Popover open={hoveredTemplate === templateType}>
+        <PopoverTrigger asChild>
+          <div
+            onMouseEnter={() => setHoveredTemplate(templateType)}
+            onMouseLeave={() => setHoveredTemplate(null)}
+            onFocus={() => setHoveredTemplate(templateType)}
+            onBlur={() => setHoveredTemplate(null)}
+          >
+            {button}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-3 text-xs text-neutral700" align="center">
+          {disabledMessage}
+        </PopoverContent>
+      </Popover>
+    );
   };
 
   return (
@@ -240,56 +380,32 @@ const CreateTasksModal = ({
           <p className="text-xs font-medium text-brand">Quick Templates</p>
 
           <div className="grid grid-cols-3 gap-2">
-            {/* Pickup + Dropoff */}
-            <button
-              type="button"
-              onClick={() => applyTemplate("pickup-dropoff")}
-              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
-            >
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
-                  <div className="flex gap-0.5">
-                    <ArrowUp className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
-                    <ArrowDown className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
-                  </div>
+            {renderTemplateButton({
+              templateType: "pickup-dropoff",
+              label: "Pickup + Dropoff",
+              icon: (
+                <div className="flex gap-0.5">
+                  <ArrowUp className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
+                  <ArrowDown className="size-3 text-neutral-700 group-hover:text-white transition-colors" />
                 </div>
-                <p className="font-medium text-xs text-brand group-hover:font-semibold">
-                  Pickup + Dropoff
-                </p>
-              </div>
-            </button>
+              ),
+            })}
 
-            {/* Pickup Only */}
-            <button
-              type="button"
-              onClick={() => applyTemplate("pickup")}
-              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
-            >
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
-                  <ArrowUp className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
-                </div>
-                <p className="font-medium text-xs text-brand group-hover:font-semibold">
-                  Pickup Only
-                </p>
-              </div>
-            </button>
+            {renderTemplateButton({
+              templateType: "pickup",
+              label: "Pickup Only",
+              icon: (
+                <ArrowUp className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
+              ),
+            })}
 
-            {/* Dropoff Only */}
-            <button
-              type="button"
-              onClick={() => applyTemplate("dropoff")}
-              className="group bg-white border-2 border-neutral-300 hover:border-brand rounded-md p-2.5 text-center transition-all hover:shadow-md active:shadow-sm"
-            >
-              <div className="flex flex-col items-center gap-1.5">
-                <div className="size-7 rounded-full bg-neutral-100 group-hover:bg-brand flex items-center justify-center transition-colors">
-                  <ArrowDown className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
-                </div>
-                <p className="font-medium text-xs text-brand group-hover:font-semibold">
-                  Dropoff Only
-                </p>
-              </div>
-            </button>
+            {renderTemplateButton({
+              templateType: "dropoff",
+              label: "Dropoff Only",
+              icon: (
+                <ArrowDown className="size-3.5 text-neutral-700 group-hover:text-white transition-colors" />
+              ),
+            })}
           </div>
         </div>
 
@@ -340,7 +456,17 @@ const CreateTasksModal = ({
                         name={`tasks.${index}.taskType`}
                         render={({ field }) => (
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value: TaskType) => {
+                              if (value === "PICKUP" && hasExistingPickup) {
+                                toast.error(getDuplicateTaskMessage("PICKUP"));
+                                return;
+                              }
+                              if (value === "DROPOFF" && hasExistingDropoff) {
+                                toast.error(getDuplicateTaskMessage("DROPOFF"));
+                                return;
+                              }
+                              field.onChange(value);
+                            }}
                             value={field.value}
                           >
                             <SelectTrigger>
@@ -350,12 +476,14 @@ const CreateTasksModal = ({
                               <SelectItem
                                 value="PICKUP"
                                 className="focus:bg-brand-light"
+                                disabled={hasExistingPickup}
                               >
                                 Pickup
                               </SelectItem>
                               <SelectItem
                                 value="DROPOFF"
                                 className="focus:bg-brand-light"
+                                disabled={hasExistingDropoff}
                               >
                                 Drop-off
                               </SelectItem>
