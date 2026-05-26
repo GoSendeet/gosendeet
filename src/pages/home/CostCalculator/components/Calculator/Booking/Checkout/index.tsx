@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Layout from "@/layouts/HomePageLayout";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ const Checkout = () => {
   const successUrl = `${APP_BASE_URL}/success-page`;
   const errorUrl = `${APP_BASE_URL}/error-page`;
 
-  const [isChecked, setIsChecked] = useState(false);
+  //const [isChecked, setIsChecked] = useState(false);
   const { data: packageTypes } = useGetPackageType({ minimize: true });
   const packages = Array.isArray(packageTypes?.data)
     ? packageTypes.data
@@ -168,10 +168,10 @@ const Checkout = () => {
                     <Navigation className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Pickup
                     </p>
-                    <p className="mt-2 break-words text-base font-medium text-[#111827]">
+                    <p className="mt-2 wrap-break-words text-sm font-light text-[#35383e]">
                       {bookingData?.pickupLocation}
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -193,10 +193,10 @@ const Checkout = () => {
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Destination
                     </p>
-                    <p className="mt-2 break-words text-base font-medium text-[#111827]">
+                    <p className="mt-2 break-words text-sm font-light text-[#35383e]">
                       {bookingData?.destination}
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -218,7 +218,7 @@ const Checkout = () => {
                     <Package className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Package, pickup & instruction
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -317,7 +317,7 @@ const Checkout = () => {
 
               {/* Desktop-only: inline T&C + button */}
               <div className="mt-4 hidden lg:block">
-                <label className="mb-4 flex cursor-pointer gap-3 rounded-lg border border-[#EAECF0] bg-[#FCFCFD] p-3">
+                {/* <label className="mb-4 flex cursor-pointer gap-3 rounded-lg border border-[#EAECF0] bg-[#FCFCFD] p-3">
                   <input
                     type="checkbox"
                     className="mt-0.5 h-5 w-5 shrink-0 rounded
@@ -337,12 +337,11 @@ const Checkout = () => {
                   <span className="text-sm leading-5 text-[#111827]">
                     I have reviewed this booking and agree with Sendeet Terms and Conditions.
                   </span>
-                </label>
+                </label> */}
 
                 <Button
                   type="submit"
                   className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-                  disabled={!isChecked}
                   onClick={submit}
                   loading={isPending}
                 >
@@ -381,7 +380,7 @@ const Checkout = () => {
             <PencilLine className="h-4 w-4" />
             Back to pickup time
           </Button>
-          <label className="mb-3 flex cursor-pointer gap-3">
+          {/* <label className="mb-3 flex cursor-pointer gap-3">
             <input
               type="checkbox"
               className="mt-0.5 h-5 w-5 shrink-0 rounded
@@ -398,11 +397,11 @@ const Checkout = () => {
             <span className="text-xs leading-4 text-[#111827]">
               I agree with Sendeet Terms and Conditions.
             </span>
-          </label>
+          </label> */}
           <Button
             type="submit"
             className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-            disabled={!isChecked}
+            
             onClick={submit}
             loading={isPending}
           >
