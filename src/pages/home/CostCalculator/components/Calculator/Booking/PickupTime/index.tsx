@@ -12,7 +12,7 @@ import {
   Snowflake,
   Wine,
 } from "lucide-react";
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
 import { formatDate, parseDateInput } from "@/lib/utils";
