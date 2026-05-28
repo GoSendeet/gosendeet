@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { toast } from "sonner";

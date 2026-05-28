@@ -1,4 +1,4 @@
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -60,6 +60,7 @@ const Confirmation = () => {
       setBookingId(verifiedBookingId);
       setVerificationComplete(true);
       sessionStorage.setItem("bookingCompleted", "true");
+      sessionStorage.removeItem("bookingInputData");
     },
     onError: (error: any) => {
       toast.error(error?.message || "We could not verify your payment.");

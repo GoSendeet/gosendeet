@@ -143,7 +143,10 @@ interface FormHorizontalBarProps {
   variant?: "bold" | "minimal" | "floating";
   bookingRequest?: any;
   setData?: any;
-  activeMode?: "gosendeet" | "compare" | "tracking"; // Current active mode
+  activeMode?: "gosendeet" | "compare" | "tracking";
+  onQuoteResult?: (result: any, inputData: any, mode: FormMode) => void;
+  forcedIsDashboard?: boolean;
+  onModeChange?: (mode: FormMode) => void;
 }
 
 const FormHorizontalBar = ({
@@ -151,6 +154,9 @@ const FormHorizontalBar = ({
   bookingRequest,
   setData,
   activeMode = "gosendeet",
+  onQuoteResult,
+  forcedIsDashboard,
+  onModeChange,
 }: FormHorizontalBarProps) => {
   const [inputData, setInputData] = useState<any>({});
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -160,7 +166,10 @@ const FormHorizontalBar = ({
   const location = useLocation();
 
   // Detect dashboard route early so we can adjust styles/layout
-  const isDashboard = location.pathname.includes("dashboard");
+  const isDashboard =
+    forcedIsDashboard !== undefined
+      ? forcedIsDashboard
+      : location.pathname.includes("dashboard");
   const [currentMode, setCurrentMode] = useState<FormMode>(activeMode);
   const mode = isDashboard ? currentMode : activeMode;
 
@@ -211,33 +220,22 @@ const FormHorizontalBar = ({
 
       if (quotes.length === 0) {
         toast.success("No quotes available for the provided details.");
+      } else {
+        toast.success("Successful");
+      }
+
+      if (typeof onQuoteResult === "function") {
+        onQuoteResult(response, inputData, mode);
+      } else {
         navigate("/cost-calculator", {
           state: {
             inputData,
             results: response,
-            mode: mode, // Use the actual current mode
+            mode,
             autoScrollToResults: isDashboard,
           },
         });
-
-        if (typeof setData === "function") {
-          setData(response);
-        }
-
-        resetQuoteMutation();
-        return;
       }
-
-      toast.success("Successful");
-
-      navigate("/cost-calculator", {
-        state: {
-          inputData,
-          results: response,
-          mode: mode, // Use the actual current mode
-          autoScrollToResults: isDashboard,
-        },
-      });
 
       if (typeof setData === "function") {
         setData(response);
@@ -378,6 +376,8 @@ const FormHorizontalBar = ({
       return;
     }
 
+    const storedMode = sessionStorage.getItem("bookingMode") || "gosendeet";
+
     getQuotesDirectly({
       data: [
         {
@@ -392,10 +392,11 @@ const FormHorizontalBar = ({
           },
         },
       ],
-      direct: false,
+      direct: storedMode === "gosendeet",
     });
 
     sessionStorage.removeItem("unauthenticated");
+    sessionStorage.removeItem("bookingMode");
   }, []);
 
   const onSubmit = (data: z.infer<typeof schema>) => {
@@ -517,7 +518,10 @@ const FormHorizontalBar = ({
           <div className="absolute left-1/2 transform -translate-x-1/2 top-[-39px]">
             <ModeSwitcher
               mode={mode}
-              onModeChange={setCurrentMode}
+              onModeChange={(newMode) => {
+                setCurrentMode(newMode);
+                onModeChange?.(newMode);
+              }}
               variant="pill"
               animate={false}
             />

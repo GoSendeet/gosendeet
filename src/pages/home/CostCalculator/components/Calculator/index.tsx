@@ -3,6 +3,8 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
+import CompareCardSkeleton from "./CompareCardSkeleton";
+import DirectQuoteCardSkeleton from "./DirectQuoteCardSkeleton";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
 import empty from "@/assets/images/green-empty-bg.png";
 import Rating from "@/components/Rating";
@@ -82,7 +84,22 @@ const extractStateFromAddress = (address?: string): string => {
   return parts[parts.length - 1] || "";
 };
 
-const Calculator = () => {
+interface CalculatorProps {
+  externalResults?: any;
+  externalInputData?: any;
+  externalMode?: FormMode;
+  onBack?: () => void;
+  hideForm?: boolean;
+}
+
+const Calculator = ({
+  externalResults,
+  externalInputData,
+  externalMode,
+  onBack,
+  hideForm,
+}: CalculatorProps = {}) => {
+  const isEmbedded = hideForm === true || onBack !== undefined;
   const navigate = useNavigate();
   const userId = sessionStorage.getItem("userId") || "";
   const location = useLocation();
@@ -90,12 +107,16 @@ const Calculator = () => {
   const shareId = searchParams.get("shareId") || "";
   const { data: sharedQuote } = useGetSharedQuotes(shareId);
   const {
-    results,
+    results: stateResults,
     inputData: stateInputData,
     autoScrollToResults = false,
   } = location.state || {};
+  const results = externalResults ?? stateResults;
   const [mode, setMode] = useState<FormMode>(
-    location?.state?.mode ?? "gosendeet",
+    externalMode ?? location?.state?.mode ?? "gosendeet",
+  );
+  const [embeddedInputData, setEmbeddedInputData] = useState<any>(
+    externalInputData || null,
   );
 
   const storedInputData = useMemo(() => {
@@ -111,7 +132,7 @@ const Calculator = () => {
   const sharedQuoteRequest = sharedQuote?.quoteRequests[0];
 
   const inputData =
-    sharedQuoteRequest || stateInputData || storedInputData || {};
+    sharedQuoteRequest || embeddedInputData || stateInputData || storedInputData || {};
   const hasRouteQuery = Boolean(
     inputData?.pickupLocation && inputData?.dropOffLocation,
   );
@@ -121,6 +142,29 @@ const Calculator = () => {
   const PAGE_SIZE = 8;
   const bookingRequest = inputData;
   const [data, setData] = useState(results || {});
+
+  useEffect(() => {
+    if (externalResults !== undefined) {
+      setData(externalResults);
+    } else if (isEmbedded) {
+      // Clear stale data when no external results so the wrong mode's cards don't flash
+      setData({});
+      // Reset price state so stale gosendeet PRICE_MAX doesn't filter out compare quotes
+      stablePriceMaxRef.current = 0;
+      maxPriceInitializedRef.current = false;
+      userHasSetPriceFilter.current = false;
+      setMinPrice(PRICE_MIN);
+      setMaxPrice(0);
+    }
+  }, [externalResults, isEmbedded]);
+
+  useEffect(() => {
+    if (externalMode !== undefined) setMode(externalMode);
+  }, [externalMode]);
+
+  useEffect(() => {
+    if (externalInputData !== undefined) setEmbeddedInputData(externalInputData);
+  }, [externalInputData]);
   const quoteContent = useMemo(() => {
     return normalizeQuotesResponse(data);
   }, [data]);
@@ -164,10 +208,16 @@ const Calculator = () => {
   const resultsSectionRef = useRef<HTMLDivElement | null>(null);
   const quoteDetailsRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledToResultsRef = useRef(false);
+  // Only apply price filter (client + server) after the user explicitly adjusts the slider
+  const userHasSetPriceFilter = useRef(false);
+  // Becomes true once any quotes have loaded — gates the gosendeet auto-fetch on public page
+  const hasEverFetchedRef = useRef(false);
   const hasTrackedResultViewRef = useRef(false);
 
   useEffect(() => {
-    if (!hasQuotes || hasTrackedResultViewRef.current) return;
+    if (!hasQuotes) return;
+    if (!hasEverFetchedRef.current) hasEverFetchedRef.current = true;
+    if (hasTrackedResultViewRef.current) return;
     hasTrackedResultViewRef.current = true;
     track(EVENT.QUOTE_RESULT_VIEWED, {
       mode,
@@ -195,6 +245,7 @@ const Calculator = () => {
   }, [showFilters]);
 
   const handleMinInput = (value: string) => {
+    userHasSetPriceFilter.current = true;
     if (value === "") {
       setMinPrice("");
       return;
@@ -204,6 +255,7 @@ const Calculator = () => {
   };
 
   const handleMaxInput = (value: string) => {
+    userHasSetPriceFilter.current = true;
     if (value === "") {
       setMaxPrice("");
       return;
@@ -339,9 +391,13 @@ const Calculator = () => {
     const companyName =
       selectedProviders.length > 0 ? selectedProviders.join(",") : undefined;
     const minPriceParam =
-      typeof debouncedMinPrice === "number" ? debouncedMinPrice : undefined;
+      userHasSetPriceFilter.current && typeof debouncedMinPrice === "number"
+        ? debouncedMinPrice
+        : undefined;
     const maxPriceParam =
-      typeof debouncedMaxPrice === "number" ? debouncedMaxPrice : undefined;
+      userHasSetPriceFilter.current && typeof debouncedMaxPrice === "number"
+        ? debouncedMaxPrice
+        : undefined;
 
     return {
       search: undefined,
@@ -395,6 +451,8 @@ const Calculator = () => {
   useEffect(() => {
     if (mode !== "compare" || isSharedView) return;
     if (quotePayload.length === 0) return;
+    // Skip auto-fetch when compare results are explicitly provided externally
+    if (externalResults !== undefined) return;
     pageRef.current = 1;
     setHasNextPage(true);
     listRef.current?.scrollTo({ top: 0 });
@@ -403,12 +461,24 @@ const Calculator = () => {
     mode,
     isSharedView,
     quotePayload,
+    externalResults,
     debouncedMinPrice,
     debouncedMaxPrice,
     selectedProviders,
     selectedDeliverySpeed,
     fetchQuotesPage,
   ]);
+
+  // Auto-fetch gosendeet quotes when no external results (e.g. switching back from compare)
+  // On embedded (dashboard): always allowed when externalResults is cleared by mode switch
+  // On public page: only after the user has gotten quotes before (hasEverFetchedRef guard)
+  useEffect(() => {
+    if (mode !== "gosendeet" || isSharedView) return;
+    if (!isEmbedded && !hasEverFetchedRef.current) return;
+    if (quotePayload.length === 0) return;
+    if (externalResults !== undefined) return;
+    fetchQuotesPage(1, true);
+  }, [mode, isEmbedded, isSharedView, quotePayload, externalResults, fetchQuotesPage]);
 
   // Determine delivery speed based on nextDayDelivery boolean
   const getDeliverySpeedFromBoolean = (nextDayDelivery: boolean): string => {
@@ -488,16 +558,20 @@ const Calculator = () => {
       );
     }
 
-    // Filter by price range
-    const min =
-      typeof debouncedMinPrice === "number" ? debouncedMinPrice : PRICE_MIN;
-    const max =
-      typeof debouncedMaxPrice === "number" ? debouncedMaxPrice : PRICE_MAX;
+    // Filter by price range — only once the user has explicitly adjusted the slider
+    if (userHasSetPriceFilter.current) {
+      const min =
+        typeof debouncedMinPrice === "number" ? debouncedMinPrice : PRICE_MIN;
+      const max =
+        typeof debouncedMaxPrice === "number" && debouncedMaxPrice > 0
+          ? debouncedMaxPrice
+          : PRICE_MAX;
 
-    filtered = filtered.filter((item: any) => {
-      const price = parsePrice(item?.price);
-      return price >= min && price <= max;
-    });
+      filtered = filtered.filter((item: any) => {
+        const price = parsePrice(item?.price);
+        return price >= min && price <= max;
+      });
+    }
 
     // Filter by providers
     if (selectedProviders.length > 0) {
@@ -613,6 +687,7 @@ const Calculator = () => {
     setSelectedProviders([]);
     setSelectedDeliverySpeed([]);
     setSortBy("price-asc");
+    userHasSetPriceFilter.current = false;
   };
 
   const handleLoadMore = () => {
@@ -647,6 +722,7 @@ const Calculator = () => {
     if (!userId) {
       toast.error("Please sign in to continue");
       sessionStorage.setItem("unauthenticated", "true");
+      sessionStorage.setItem("bookingMode", mode);
       setTimeout(() => {
         navigate("/signin");
       }, 1000);
@@ -712,25 +788,49 @@ const Calculator = () => {
   };
 
   return (
-    <div className="px-4 md:px-6 py-12 bg-[#F8FAFC]">
-      {/* Mode Switcher Tabs - Top of Calculator */}
-      <div className="w-full mb-6 flex justify-center">
-        <ModeSwitcher
-          mode={mode}
-          onModeChange={setMode}
-          variant="pill"
-          animate
-        />
-      </div>
+    <div className={cn("px-4 md:px-6 bg-[#F8FAFC]", hideForm ? "pt-0 pb-8" : "py-12")}>
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 mb-6 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
+        >
+          ← Back to Overview
+        </button>
+      )}
 
-      <div className="w-full mb-20">
-        <FormHorizontalBar
-          variant="minimal"
-          activeMode={mode}
-          bookingRequest={bookingRequest}
-          setData={setData}
-        />
-      </div>
+      {!hideForm && (
+        <>
+          {/* Mode Switcher Tabs - Top of Calculator */}
+          <div className="w-full mb-6 flex justify-center">
+            <ModeSwitcher
+              mode={mode}
+              onModeChange={(newMode) => {
+                if (newMode !== mode) setData({});
+                setMode(newMode);
+              }}
+              variant="pill"
+              animate
+            />
+          </div>
+
+          <div className="w-full mb-20">
+            <FormHorizontalBar
+              variant="minimal"
+              activeMode={mode}
+              bookingRequest={bookingRequest}
+              setData={setData}
+              {...(isEmbedded && {
+                forcedIsDashboard: false,
+                onQuoteResult: (result: any, newInputData: any, newMode: FormMode) => {
+                  setData(result);
+                  setEmbeddedInputData(newInputData);
+                  setMode(newMode);
+                },
+              })}
+            />
+          </div>
+        </>
+      )}
 
       {/* Results Section Header */}
       <div ref={resultsSectionRef}>
@@ -739,11 +839,11 @@ const Calculator = () => {
           {/* Filter & Sort button — only show when quotes were ever loaded */}
           {stablePriceMaxRef.current > 0 && (
             <div
-              className="md:hidden bg-white flex items-center justify-center gap-2 p-2.5 rounded-2xl mb-6 cursor-pointer shadow-md"
+              className="md:hidden bg-white flex items-center justify-center gap-2 p-2 rounded-2xl mb-6 cursor-pointer shadow-md"
               onClick={() => toggleMobileFilterBtn(true)}
             >
-              <TrendingUp />
-              <h3 className="font-semibold text-base text-gray-900">
+              <TrendingUp color="#064E3B" />
+              <h3 className="font-font text-sm text-brand">
                 Filter & Sort
               </h3>
             </div>
@@ -813,14 +913,15 @@ const Calculator = () => {
                         <div className="flex item-center gap-2">
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() =>
+                              onClick={() => {
+                                userHasSetPriceFilter.current = true;
                                 setMinPrice(
                                   Math.max(
                                     PRICE_MIN,
                                     (minPrice || PRICE_MIN) - PRICE_STEP,
                                   ),
-                                )
-                              }
+                                );
+                              }}
                               className="font-semibold pr-1"
                             >
                               −
@@ -837,14 +938,15 @@ const Calculator = () => {
                             />
 
                             <button
-                              onClick={() =>
+                              onClick={() => {
+                                userHasSetPriceFilter.current = true;
                                 setMinPrice(
                                   Math.min(
                                     maxPrice || PRICE_MAX,
                                     (minPrice || PRICE_MIN) + PRICE_STEP,
                                   ),
-                                )
-                              }
+                                );
+                              }}
                               className="font-semibold "
                             >
                               +
@@ -868,14 +970,15 @@ const Calculator = () => {
                             step={PRICE_STEP}
                           />
                           <button
-                            onClick={() =>
+                            onClick={() => {
+                              userHasSetPriceFilter.current = true;
                               setMaxPrice(
                                 Math.max(
                                   (minPrice || PRICE_MIN) + PRICE_STEP,
                                   (maxPrice || PRICE_MAX) - PRICE_STEP,
                                 ),
-                              )
-                            }
+                              );
+                            }}
                             className="font-semibold pr-1"
                           >
                             −
@@ -1011,6 +1114,7 @@ const Calculator = () => {
                             : Math.min(minPrice, PRICE_MAX)
                         }
                         onChange={(e) => {
+                          userHasSetPriceFilter.current = true;
                           const value = Math.min(
                             Number(e.target.value),
                             (maxPrice === "" ? PRICE_MAX : maxPrice) -
@@ -1043,6 +1147,7 @@ const Calculator = () => {
                               )
                         }
                         onChange={(e) => {
+                          userHasSetPriceFilter.current = true;
                           const value = Math.max(
                             Number(e.target.value),
                             (minPrice === "" ? PRICE_MIN : minPrice) +
@@ -1174,13 +1279,13 @@ const Calculator = () => {
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <span className="font-semibold text-gray-900 text-lg">
+                          <span className="font-semibold text-gray-900 text-sm md:text-lg">
                             {extractStateFromAddress(
                               bookingRequest?.pickupLocation,
                             )}
                           </span>
                           <span className="mx-3 text-gray150">→</span>
-                          <span className="font-semibold text-gray-900 text-lg">
+                          <span className="font-semibold text-gray-900 text-sm md:text-lg">
                             {extractStateFromAddress(
                               bookingRequest?.dropOffLocation,
                             )}
@@ -1246,6 +1351,14 @@ const Calculator = () => {
 
               {/* Results Cards */}
               <div className="flex flex-col gap-4">
+                {isFetchingQuotes && !isLoadingMore && (
+                  <div className="flex flex-col gap-4 pt-8">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <CompareCardSkeleton key={i} />
+                    ))}
+                  </div>
+                )}
+
                 {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
                   <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
                     <img src={empty} alt="empty quotes" className="h-50" />
@@ -1424,7 +1537,9 @@ const Calculator = () => {
         </>
       )}
 
-      {mode === "gosendeet" && hasQuotes && (
+      {mode === "gosendeet" && isFetchingQuotes && <DirectQuoteCardSkeleton />}
+
+      {mode === "gosendeet" && hasQuotes && !isFetchingQuotes && (
         <div ref={quoteDetailsRef} className="max-w-3xl mx-auto my-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between">
             <div className="flex items-center gap-6 mb-4">

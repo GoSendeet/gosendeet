@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import OrderHistory from "./components/OrderHistory";

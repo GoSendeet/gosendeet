@@ -22,19 +22,12 @@ const ValidateGoogleLogin = () => {
           throw new Error("Google login callback did not create a valid session");
         }
 
-        const isUnauthenticated =
-          sessionStorage.getItem("unauthenticated") === "true";
-
         storeAuthSession(user);
         identifyUser(String(user.id), { role: user.role, $email: user.email, $name: user.username ?? user.name });
         track(EVENT.LOGIN_COMPLETED, { method: "google", role: user.role });
         toast.success("Login Successful");
 
-        if (isUnauthenticated) {
-          navigate("/cost-calculator", { replace: true });
-        } else {
-          navigate(getDefaultRouteForRole(String(user.role ?? "")), { replace: true });
-        }
+        navigate(getDefaultRouteForRole(String(user.role ?? "")), { replace: true });
       } catch (error) {
         console.error("Google login validation failed:", error);
         setIsError(true);
