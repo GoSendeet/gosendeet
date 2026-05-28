@@ -28,6 +28,7 @@ import logo from "@/assets/images/gosendeet-black-logo.png";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { track, EVENT } from "@/lib/analytics";
+import { savePreSigninQuote } from "@/lib/preSigninQuote";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 
@@ -718,24 +719,23 @@ const Calculator = ({
   //   return FiPackage;
   // };
 
-  const handleClick = (data: any) => {
+  const handleClick = (selectedQuote: any) => {
     if (!userId) {
       toast.error("Please sign in to continue");
-      sessionStorage.setItem("unauthenticated", "true");
-      sessionStorage.setItem("bookingMode", mode);
+      savePreSigninQuote({ mode, results: data, inputData });
       setTimeout(() => {
         navigate("/signin");
       }, 1000);
     } else {
       track(EVENT.COURIER_SELECTED, {
-        courier_name: data?.courier?.name,
-        courier_id: data?.courier?.id,
-        price: parsePrice(data?.price),
-        pudo_mode: data?.pudoMode,
-        estimated_delivery_date: data?.estimatedDeliveryDate,
+        courier_name: selectedQuote?.courier?.name,
+        courier_id: selectedQuote?.courier?.id,
+        price: parsePrice(selectedQuote?.price),
+        pudo_mode: selectedQuote?.pudoMode,
+        estimated_delivery_date: selectedQuote?.estimatedDeliveryDate,
       });
       navigate("/delivery", {
-        state: { bookingDetails: data, bookingRequest: bookingRequest },
+        state: { bookingDetails: selectedQuote, bookingRequest: bookingRequest },
       });
     }
   };

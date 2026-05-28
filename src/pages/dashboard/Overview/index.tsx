@@ -1,27 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Bookings from "../Bookings";
 import { cn } from "@/lib/utils";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import SupportPanel from "@/components/SupportPanel";
 import Calculator from "@/pages/home/CostCalculator/components/Calculator";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
+import {
+  consumePreSigninQuote,
+  peekPreSigninQuote,
+} from "@/lib/preSigninQuote";
 
 const Overview = ({ data }: { data: any }) => {
   const username = data?.data?.username;
   const userStatus = data?.data?.status;
+  const [pendingPreSigninQuote] = useState(() => peekPreSigninQuote());
 
   const [formMode, setFormMode] = useState<FormMode>("gosendeet");
   const [showQuotePanel, setShowQuotePanel] = useState(false);
   const [quotesInputData, setQuotesInputData] = useState<any>(null);
-  // Only cache gosendeet results — compare auto-fetches via Calculator's effect
-  const [gosendeetResults, setGosendeetResults] = useState<any>(undefined);
+  const [quoteResults, setQuoteResults] = useState<any>(undefined);
+
+  // Starts true when pre-signin quote data exists — prevents form flash before restoration
+  const [isRestoringSession, setIsRestoringSession] = useState(
+    () => Boolean(pendingPreSigninQuote),
+  );
+
+  useEffect(() => {
+    if (!pendingPreSigninQuote) {
+      setIsRestoringSession(false);
+      return;
+    }
+
+    setFormMode(pendingPreSigninQuote.mode);
+    setQuotesInputData(pendingPreSigninQuote.inputData);
+    setQuoteResults(pendingPreSigninQuote.results);
+    setShowQuotePanel(true);
+    setIsRestoringSession(false);
+    consumePreSigninQuote();
+  }, [pendingPreSigninQuote]);
 
   const handleQuoteResult = (result: any, inputData: any, mode: FormMode) => {
     setFormMode(mode);
     setQuotesInputData(inputData);
-    if (mode === "gosendeet") {
-      setGosendeetResults(result);
-    }
+    setQuoteResults(result);
     setShowQuotePanel(true);
   };
 
@@ -39,7 +60,7 @@ const Overview = ({ data }: { data: any }) => {
     // Switching modes while the panel is open — clear cached gosendeet results so
     // Calculator always re-fetches fresh data for the target mode
     if (showQuotePanel) {
-      setGosendeetResults(undefined);
+      setQuoteResults(undefined);
     }
     setFormMode(newMode);
   };
@@ -52,7 +73,7 @@ const Overview = ({ data }: { data: any }) => {
         <div className="hidden lg:block items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className="font-clash text-brand uppercase tracking-widest font-semibold">
-              {showQuotePanel ? "Available Quotes" : "Dashboard Overview"}
+              {showQuotePanel || isRestoringSession ? "Available Quotes" : "Dashboard Overview"}
             </p>
           </div>
         </div>
@@ -84,7 +105,12 @@ const Overview = ({ data }: { data: any }) => {
         </div>
       </div>
 
-      {showQuotePanel ? (
+      {isRestoringSession ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+          <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
+          <p className="text-sm font-medium text-grey200">Restoring your quotes...</p>
+        </div>
+      ) : showQuotePanel ? (
         <div className="mb-10">
           {/* Back button + ModeSwitcher on the same row */}
           <div className="flex flex-col items-start md:flex-row md:items-center gap-4 mb-6 px-1">
@@ -108,7 +134,7 @@ const Overview = ({ data }: { data: any }) => {
 
           {/* Embedded Calculator — results only, form + internal mode switcher hidden */}
           <Calculator
-            externalResults={formMode === "gosendeet" ? gosendeetResults : undefined}
+            externalResults={quoteResults}
             externalInputData={quotesInputData}
             externalMode={formMode}
             hideForm={true}
@@ -127,7 +153,7 @@ const Overview = ({ data }: { data: any }) => {
         </div>
       )}
 
-      {!showQuotePanel && <Bookings />}
+      {!showQuotePanel && !isRestoringSession && <Bookings />}
     </div>
   );
 };

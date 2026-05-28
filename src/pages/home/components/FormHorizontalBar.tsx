@@ -19,6 +19,8 @@ import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
 import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { GoArrowRight } from "react-icons/go";
 import { track, EVENT } from "@/lib/analytics";
+import { hasAuthSession } from "@/lib/authSession";
+import { savePreSigninQuote } from "@/lib/preSigninQuote";
 
 const MAX_SUPPORTED_ITEM_VALUE = 100000;
 
@@ -222,6 +224,10 @@ const FormHorizontalBar = ({
         toast.success("No quotes available for the provided details.");
       } else {
         toast.success("Successful");
+      }
+
+      if (!hasAuthSession() && (mode === "gosendeet" || mode === "compare")) {
+        savePreSigninQuote({ mode, results: response, inputData });
       }
 
       if (typeof onQuoteResult === "function") {

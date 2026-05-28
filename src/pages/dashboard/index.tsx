@@ -22,6 +22,16 @@ const Dashboard = () => {
     if (userId) refetchUserData();
   }, [userId, refetchUserData]);
 
+  useEffect(() => {
+    const hasPendingQuote =
+      sessionStorage.getItem("preSigninMode") &&
+      sessionStorage.getItem("preSigninResults");
+
+    if (hasPendingQuote && activeTab !== "overview") {
+      onTabChange("overview");
+    }
+  }, [activeTab, onTabChange]);
+
   return (
     <div className="md:px-20 px-6 py-10 bg-neutral100 min-h-screen">
       {activeTab === "overview" && <Overview data={userData} />}

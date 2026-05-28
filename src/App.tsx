@@ -36,14 +36,11 @@ import Franchise from "./pages/franchise";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 import PageTracker from "./components/PageTracker";
+import { useSessionSync } from "./hooks/useSessionSync";
 
-function App() {
-  return (
-    <>
-    <ChatwootWidget />
-    <Router>
-      <PageTracker />
-      <Routes>
+const AppRoutes = () => {
+  useSessionSync();
+  return <Routes>
             <Route path="/about" element={<About />} />
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
@@ -94,8 +91,17 @@ function App() {
           </Route>
         </Route>
 
-      </Routes>
-    </Router>
+      </Routes>;
+};
+
+function App() {
+  return (
+    <>
+      <ChatwootWidget />
+      <Router>
+        <PageTracker />
+        <AppRoutes />
+      </Router>
     </>
   );
 }

@@ -14,6 +14,7 @@ import { storeAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 import { login } from "@/services/auth";
 import { identifyUser, track, EVENT } from "@/lib/analytics";
+import { getPreSigninQuoteDashboardRoute } from "@/lib/preSigninQuote";
 
 const schema = z.object({
   password: z
@@ -66,6 +67,16 @@ const Login = () => {
       track(EVENT.LOGIN_COMPLETED, { method: "email", role: user.role });
 
       toast.success("Login Successful");
+      const quoteRoute =
+        String(user.role ?? "").toLowerCase() === "user"
+          ? getPreSigninQuoteDashboardRoute()
+          : null;
+
+      if (quoteRoute) {
+        navigate(quoteRoute.pathname, { state: quoteRoute.state, replace: true });
+        return;
+      }
+
       navigate(getDefaultRouteForRole(user.role));
     },
     onError: (error: { message?: string }) => {
