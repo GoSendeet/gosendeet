@@ -277,7 +277,6 @@ const OrderDetails = () => {
             setOpen={setOpen}
             bookingId={bookingData.id}
             progress={bookingData?.currentProgress}
-            status={data?.data?.status}
           />
         </>
       )}

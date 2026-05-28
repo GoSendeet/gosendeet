@@ -68,7 +68,6 @@ const Orders = ({ companyId }: { companyId: string }) => {
   const [bookingData, setBookingData] = useState({});
   const [bookingId, setBookingId] = useState("");
   const [orderProgress, setOrderProgress] = useState("");
-  const [orderStatus, setOrderStatus] = useState("");
 
   const [activeStatusTab, setActiveStatusTab] = useState("All");
   const [open, setOpen] = useState(false);
@@ -204,12 +203,11 @@ const Orders = ({ companyId }: { companyId: string }) => {
                       </Link>
                       <p
                         className="flex items-center gap-2 py-2 px-4 hover:bg-brand-light rounded-md cursor-pointer"
-                        onClick={() => {
-                          setOpen(true);
-                          setBookingId(item?.id);
-                          setOrderProgress(item?.currentProgress);
-                          setOrderStatus(item.status);
-                        }}
+                          onClick={() => {
+                            setOpen(true);
+                            setBookingId(item?.id);
+                            setOrderProgress(item?.currentProgress);
+                          }}
                       >
                         Update progress
                       </p>
@@ -352,7 +350,6 @@ const Orders = ({ companyId }: { companyId: string }) => {
                               setOpen(true);
                               setBookingId(item?.id);
                               setOrderProgress(item?.currentProgress);
-                              setOrderStatus(item.status);
                             }}
                           >
                             Update progress
@@ -387,7 +384,6 @@ const Orders = ({ companyId }: { companyId: string }) => {
         setOpen={setOpen}
         bookingId={bookingId}
         progress={orderProgress}
-        status={orderStatus}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   User,
   Phone,
   FileText,
+  LockKeyhole,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatDateTime } from "@/utils/date";
@@ -15,18 +16,16 @@ import {
   DeliveryTask,
   TaskType,
   TaskStatus,
-  CompletionRequirement,
 } from "@/schema/franchise/delivery/type";
 
 type DeliveryDrawerProps = {
   delivery: DeliveryType | null;
   open: boolean;
   onClose: () => void;
-  onAccept?: (delivery: DeliveryType) => void;
-  onDecline?: (delivery: DeliveryType) => void;
+  onAcceptTask?: (task: DeliveryTask) => void;
+  onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
   onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
-  actionPending?: boolean;
   taskActionPendingId?: string | null;
 };
 
@@ -55,18 +54,6 @@ const abbreviateName = (name: string) => {
   return `${parts[0]} ${parts[parts.length - 1][0]}.`;
 };
 
-const getTaskRequirementLabel = (
-  req: CompletionRequirement,
-  type: TaskType,
-): string => {
-  if (req === "PHOTO")
-    return type === "PICKUP"
-      ? "Photo required at pickup"
-      : "Proof photo/signature required";
-  if (req === "SIGNATURE") return "Signature required";
-  return type === "PICKUP" ? "Standard pickup" : "Standard delivery";
-};
-
 const taskTypeStyles: Record<
   TaskType,
   { label: string; color: string; bg: string; numberBg: string }
@@ -77,6 +64,12 @@ const taskTypeStyles: Record<
     bg: "bg-blue-50",
     numberBg: "bg-blue-100 text-blue-600",
   },
+  IN_HUB: {
+    label: "IN HUB",
+    color: "text-gray-500",
+    bg: "bg-amber-50",
+    numberBg: "bg-amber-100 text-amber-600",
+  },
   DROPOFF: {
     label: "DROPOFF",
     color: "text-gray-500",
@@ -85,13 +78,60 @@ const taskTypeStyles: Record<
   },
 };
 
+const getDropoffLockReason = (
+  task: DeliveryTask,
+  tasks: DeliveryTask[],
+): string | null => {
+  if (task.taskType !== "DROPOFF" || ["COMPLETED", "CANCELLED"].includes(task.status)) {
+    return null;
+  }
+
+  const declaredPrerequisites = task.dependsOn.length
+    ? tasks.filter(
+        (candidate) =>
+          task.dependsOn.includes(candidate.id) && candidate.taskType !== "DROPOFF",
+      )
+    : [];
+  const fallbackPrerequisites = tasks.filter(
+    (candidate) => candidate.id !== task.id && candidate.taskType !== "DROPOFF",
+  );
+  const prerequisites = declaredPrerequisites.length
+    ? declaredPrerequisites
+    : fallbackPrerequisites;
+
+  if (
+    prerequisites.length === 0 ||
+    prerequisites.every((candidate) => candidate.status === "COMPLETED")
+  ) {
+    return null;
+  }
+
+  const pendingTypes = new Set(
+    prerequisites
+      .filter((candidate) => candidate.status !== "COMPLETED")
+      .map((candidate) => candidate.taskType),
+  );
+
+  if (pendingTypes.has("PICKUP") && pendingTypes.has("IN_HUB")) {
+    return "Complete pickup and hub tasks first to unlock dropoff.";
+  }
+  if (pendingTypes.has("IN_HUB")) {
+    return "Complete the hub task first to unlock dropoff.";
+  }
+  return "Complete the pickup task first to unlock dropoff.";
+};
+
 const taskStatusConfig: Record<
   TaskStatus,
   { label: string; icon: React.ReactNode }
 > = {
-  DRAFT: {
-    label: "Not Started",
+  PENDING_DISPATCH: {
+    label: "Waiting",
     icon: <Circle size={14} className="text-gray-300" />,
+  },
+  DRAFT: {
+    label: "To Review",
+    icon: <Circle size={14} className="text-amber-400" />,
   },
   DISPATCHED: {
     label: "Accepted",
@@ -203,67 +243,24 @@ const CustomerSection = ({ delivery }: { delivery: DeliveryType }) => (
   </div>
 );
 
-const TasksSummary = ({ tasks }: { tasks: DeliveryTask[] }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-3">
-    <h3 className="text-sm font-bold text-gray-800">Tasks</h3>
-
-    <div className="flex flex-col gap-2">
-      {tasks.map((task, i) => {
-        const cfg = taskTypeStyles[task.taskType];
-        const status = taskStatusConfig[task.status];
-        const reqLabel = getTaskRequirementLabel(
-          task.completionRequirement,
-          task.taskType,
-        );
-
-        return (
-          <div
-            key={task.id}
-            className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3 border border-gray-100"
-          >
-            {/* Number badge */}
-            <span
-              className={`w-6 h-6 text-white rounded-full text-xs font-bold flex items-center justify-center shrink-0 bg-gray-300`}
-            >
-              {i + 1}
-            </span>
-
-            {/* Label + description */}
-            <div className="flex-1 min-w-0">
-              <p className={`text-xs font-bold tracking-widest ${cfg.color}`}>
-                {cfg.label}
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5 truncate">
-                {reqLabel}
-              </p>
-            </div>
-
-            {/* Status */}
-            <div className="flex items-center gap-1 shrink-0">
-              {status.icon}
-              <span className="text-xs text-gray-400 hidden sm:inline">
-                {status.label}
-              </span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  </div>
-);
-
 const TaskCard = ({
   task,
   actionsEnabled,
+  onAcceptTask,
+  onDeclineTask,
   onStartTask,
   onCompleteTask,
   pending,
+  lockedReason,
 }: {
   task: DeliveryTask;
   actionsEnabled: boolean;
+  onAcceptTask?: (task: DeliveryTask) => void;
+  onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
   onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
   pending?: boolean;
+  lockedReason?: string | null;
 }) => {
   const [proofPhotos, setProofPhotos] = useState<File[]>([]);
   const typeStyle = taskTypeStyles[task.taskType];
@@ -273,9 +270,16 @@ const TaskCard = ({
   const summary = buildWindowSummary(task.completeAfter, task.completeBefore);
   const needsPhoto = task.completionRequirement === "PHOTO";
   const needsSig = task.completionRequirement === "SIGNATURE";
+  const isLocked = Boolean(lockedReason);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-4">
+    <div
+      className={`rounded-2xl border p-5 flex flex-col gap-4 transition-colors ${
+        isLocked
+          ? "bg-gray-50 border-amber-200 shadow-inner"
+          : "bg-white border-gray-200"
+      }`}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-wrap">
@@ -292,13 +296,23 @@ const TaskCard = ({
           )}
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-400 shrink-0">
-          {status.icon}
+          {isLocked ? <LockKeyhole size={14} className="text-amber-500" /> : status.icon}
           <span>{status.label}</span>
         </div>
       </div>
 
+      {lockedReason && (
+        <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <LockKeyhole size={15} className="text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-amber-800">Dropoff locked</p>
+            <p className="text-xs text-amber-700 mt-0.5">{lockedReason}</p>
+          </div>
+        </div>
+      )}
+
       {/* Address */}
-      <p className="text-base font-bold text-gray-900 leading-snug">
+      <p className={`text-base font-bold leading-snug ${isLocked ? "text-gray-500" : "text-gray-900"}`}>
         {task.destinationAddress}
       </p>
 
@@ -336,18 +350,48 @@ const TaskCard = ({
         </div>
       </div>
 
+      {task.status === "PENDING_DISPATCH" && (
+        <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <Circle size={14} className="text-gray-400 shrink-0" />
+          <p className="text-sm font-semibold text-gray-500">
+            Waiting to be dispatched
+          </p>
+        </div>
+      )}
+
+      {task.status === "DRAFT" && (
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            disabled={pending || isLocked}
+            onClick={() => onAcceptTask?.(task)}
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60"
+          >
+            {isLocked ? "Locked" : pending ? "Working..." : `Accept ${typeStyle.label.toLowerCase()}`}
+          </button>
+          <button
+            type="button"
+            disabled={pending || isLocked}
+            onClick={() => onDeclineTask?.(task)}
+            className="w-full py-2.5 rounded-xl text-sm font-bold text-red-600 border border-red-500 bg-white hover:bg-red-50 transition-colors disabled:opacity-60"
+          >
+            Decline
+          </button>
+        </div>
+      )}
+
       {actionsEnabled && task.status === "DISPATCHED" && (
         <button
           type="button"
-          disabled={pending}
+          disabled={pending || isLocked}
           onClick={() => onStartTask?.(task)}
           className="w-full py-2.5 rounded-xl text-sm font-bold text-emerald-700 border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-60"
         >
-          {pending ? "Starting..." : `Start ${typeStyle.label.toLowerCase()}`}
+          {isLocked ? "Locked" : pending ? "Starting..." : `Start ${typeStyle.label.toLowerCase()}`}
         </button>
       )}
 
-      {actionsEnabled && task.status === "STARTED" && (
+      {actionsEnabled && task.status === "STARTED" && !isLocked && (
         <div className="flex flex-col gap-3">
           {needsPhoto && (
             <label className="flex flex-col gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3">
@@ -383,11 +427,10 @@ const DeliveryDrawer = ({
   delivery,
   open,
   onClose,
-  onAccept,
-  onDecline,
+  onAcceptTask,
+  onDeclineTask,
   onStartTask,
   onCompleteTask,
-  actionPending = false,
   taskActionPendingId,
 }: DeliveryDrawerProps) => {
   const tasks = delivery?.tasks ?? [];
@@ -396,9 +439,7 @@ const DeliveryDrawer = ({
   const ongoing = tasks.filter(
     (t) => t.status === "STARTED" || t.status === "DISPATCHED",
   ).length;
-  const toReview = tasks.filter(
-    (t) => t.status === "DRAFT" || t.status === "DISPATCHED",
-  ).length;
+  const toReview = tasks.filter((t) => t.status === "DRAFT").length;
 
   const isPending = delivery?.status === "Pending";
   const taskActionsEnabled =
@@ -518,63 +559,44 @@ const DeliveryDrawer = ({
           {/* Earnings */}
           {delivery && <EarningsCard delivery={delivery} />}
 
-          {tasks.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-gray-300 text-sm">
-              No tasks found
-            </div>
-          ) : (
-            tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                actionsEnabled={taskActionsEnabled}
-                onStartTask={onStartTask}
-                onCompleteTask={onCompleteTask}
-                pending={taskActionPendingId === task.id}
-              />
-            ))
-          )}
           {/* Package Details */}
           {delivery && <PackageDetails delivery={delivery} />}
           {/* Customer */}
           {delivery && <CustomerSection delivery={delivery} />}
-          {/* Tasks summary strip */}
-          {tasks.length > 0 && <TasksSummary tasks={tasks} />}
-        </div>
 
-        {/* ── Footer CTA for Pending only ── */}
-        {isPending && (
-          <div className="bg-white border-t border-gray-100 px-5 py-5 shrink-0 mb-14 md:mb-0">
-            <div className="mb-3">
-              <p className="text-sm font-bold text-gray-800">
-                Ready to Accept?
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Reviewed all tasks above? Accept to start working or decline
-                with a reason
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => delivery && onAccept?.(delivery)}
-                disabled={actionPending}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors"
-              >
-                {actionPending ? "Working..." : "Accept Tasks"}
-              </button>
-              <button
-                onClick={() => delivery && onDecline?.(delivery)}
-                disabled={actionPending}
-                className="flex-1 py-3 rounded-xl bg-white hover:bg-red-600 text-red-600 border border-red-600 text-sm font-bold transition-colors"
-              >
-                Decline Dispatch
-              </button>
-            </div>
-            <p className="text-[11px] text-gray-400 text-center mt-3">
-              Full task controls unlock after acceptance.
-            </p>
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-3">
+            <h3 className="text-sm font-bold text-gray-800">Tasks</h3>
+            {tasks.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-gray-300 text-sm">
+                No tasks found
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <p className="text-[11px] text-gray-400 text-center">
+                  Review each assigned task, then accept or decline it individually.
+                </p>
+                {tasks.map((task) => {
+                  const lockedReason = getDropoffLockReason(task, tasks);
+
+                  return (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      actionsEnabled={taskActionsEnabled}
+                      onAcceptTask={onAcceptTask}
+                      onDeclineTask={onDeclineTask}
+                      onStartTask={onStartTask}
+                      onCompleteTask={onCompleteTask}
+                      pending={taskActionPendingId === task.id}
+                      lockedReason={lockedReason}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
           </div>
-        )}
+        </div>
       </div>
     </>
   );

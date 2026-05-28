@@ -26,6 +26,12 @@ const baseTask: TaskDto = {
 
 describe("franchise delivery contract mapping", () => {
   it("maps backend lifecycle enums into the frontend task enums", () => {
+    expect(mapTaskDtoToDeliveryTask({ ...baseTask, status: "DRAFT" }).status).toBe(
+      "PENDING_DISPATCH",
+    );
+    expect(
+      mapTaskDtoToDeliveryTask({ ...baseTask, status: "DISPATCHED" }).status,
+    ).toBe("DRAFT");
     expect(mapTaskDtoToDeliveryTask({ ...baseTask, status: "ACTIVE" }).status).toBe(
       "STARTED",
     );
@@ -47,6 +53,12 @@ describe("franchise delivery contract mapping", () => {
         completionRequirement: "SIGNATURE",
       }).completionRequirement,
     ).toBe("SIGNATURE");
+  });
+
+  it("preserves in-hub task types from backend responses", () => {
+    expect(mapTaskDtoToDeliveryTask({ ...baseTask, taskType: "IN_HUB" }).taskType).toBe(
+      "IN_HUB",
+    );
   });
 
   it("normalizes proof filenames into url metadata objects", () => {

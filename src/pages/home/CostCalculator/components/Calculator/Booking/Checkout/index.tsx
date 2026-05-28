@@ -21,6 +21,7 @@ import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
+const CHECKOUT_BOOKING_STORAGE_KEY = "checkoutBookingData";
 const bookingSteps = [
   { label: "Route & Package" },
   { label: "Sender & Receiver" },
@@ -78,6 +79,8 @@ const Checkout = () => {
       navigate("/", { replace: true });
       return;
     }
+
+    sessionStorage.setItem(CHECKOUT_BOOKING_STORAGE_KEY, JSON.stringify(bookingData));
     track(EVENT.CHECKOUT_INITIATED, {
       courier_name: bookingData?.courierName,
       total_amount: Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0),

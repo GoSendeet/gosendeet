@@ -1,5 +1,6 @@
-export type TaskType = "PICKUP" | "DROPOFF";
+export type TaskType = "PICKUP" | "IN_HUB" | "DROPOFF";
 export type TaskStatus =
+  | "PENDING_DISPATCH"
   | "DRAFT"
   | "DISPATCHED"
   | "STARTED"

@@ -206,7 +206,7 @@ const PickupTime = () => {
     ];
 
     const response = await getQuotes(quotePayload, false, {
-      page: 0,
+      page: 1,
       size: 50,
       companyName: nextBookingData.courierName,
     });

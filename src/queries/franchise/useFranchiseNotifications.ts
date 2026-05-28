@@ -6,19 +6,19 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export const franchiseNotificationsKey = (page = 0, size = 20) => [
+export const franchiseNotificationsKey = (page = 1, size = 20) => [
   "franchise_notifications",
   page,
   size,
 ];
 
-export const useGetFranchiseNotifications = (page = 0, size = 20) =>
+export const useGetFranchiseNotifications = (page = 1, size = 20) =>
   useQuery({
     queryKey: franchiseNotificationsKey(page, size),
     queryFn: () => getFranchiseNotifications({ page, size }),
   });
 
-export const useMarkAllFranchiseNotificationsRead = (page = 0, size = 20) => {
+export const useMarkAllFranchiseNotificationsRead = (page = 1, size = 20) => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -38,7 +38,7 @@ export const useMarkAllFranchiseNotificationsRead = (page = 0, size = 20) => {
   });
 };
 
-export const useMarkFranchiseNotificationRead = (page = 0, size = 20) => {
+export const useMarkFranchiseNotificationRead = (page = 1, size = 20) => {
   const queryClient = useQueryClient();
 
   return useMutation({
