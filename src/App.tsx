@@ -22,6 +22,7 @@ import Dashboard from "./pages/dashboard";
 import AdminDashboard from "./pages/admin";
 import UserProfiles from "./pages/admin/Profiles/UserProfiles";
 import DashboardLayout from "./layouts/DashboardLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import OrderDetails from "./pages/admin/Orders/OrderDetails";
 import AddCompany from "./pages/admin/Companies/AddCompany";
 import CompanyDetails from "./pages/admin/Companies/CompanyDetails";
@@ -81,7 +82,7 @@ const AppRoutes = () => {
         </Route>
 
         <Route element={<AdminRoutes />}>
-          <Route path="admin-dashboard" element={<DashboardLayout />}>
+          <Route path="admin-dashboard" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="user/:id" element={<UserProfiles />} />
             <Route path="order/:id" element={<OrderDetails />} />
