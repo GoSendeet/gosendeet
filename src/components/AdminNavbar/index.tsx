@@ -40,7 +40,7 @@ const AdminNavbar = ({ activeTab, onTabChange }: AdminNavbarProps) => {
   const [navOpen, setNavOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
+  const moreRef = useRef<HTMLLIElement>(null);
 
   const userId = sessionStorage.getItem("userId") || "";
   const storedProfileImage = sessionStorage.getItem("profileImage") || "";
