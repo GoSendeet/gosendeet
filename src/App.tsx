@@ -22,6 +22,7 @@ import Dashboard from "./pages/dashboard";
 import AdminDashboard from "./pages/admin";
 import UserProfiles from "./pages/admin/Profiles/UserProfiles";
 import DashboardLayout from "./layouts/DashboardLayout";
+import AdminLayout from "./layouts/AdminLayout";
 import OrderDetails from "./pages/admin/Orders/OrderDetails";
 import AddCompany from "./pages/admin/Companies/AddCompany";
 import CompanyDetails from "./pages/admin/Companies/CompanyDetails";
@@ -36,14 +37,11 @@ import Franchise from "./pages/franchise";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 import PageTracker from "./components/PageTracker";
+import { useSessionSync } from "./hooks/useSessionSync";
 
-function App() {
-  return (
-    <>
-    <ChatwootWidget />
-    <Router>
-      <PageTracker />
-      <Routes>
+const AppRoutes = () => {
+  useSessionSync();
+  return <Routes>
             <Route path="/about" element={<About />} />
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
@@ -84,7 +82,7 @@ function App() {
         </Route>
 
         <Route element={<AdminRoutes />}>
-          <Route path="admin-dashboard" element={<DashboardLayout />}>
+          <Route path="admin-dashboard" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="user/:id" element={<UserProfiles />} />
             <Route path="order/:id" element={<OrderDetails />} />
@@ -94,8 +92,17 @@ function App() {
           </Route>
         </Route>
 
-      </Routes>
-    </Router>
+      </Routes>;
+};
+
+function App() {
+  return (
+    <>
+      <ChatwootWidget />
+      <Router>
+        <PageTracker />
+        <AppRoutes />
+      </Router>
     </>
   );
 }

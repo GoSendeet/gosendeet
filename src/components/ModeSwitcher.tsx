@@ -23,7 +23,7 @@ interface ModeSwitcherProps {
 }
 
 const DEFAULT_TABS: ModeTab[] = [
-  { key: "gosendeet", label: "Send Direct", icon: Rocket },
+  { key: "gosendeet", label: "Direct", icon: Rocket },
   { key: "compare", label: "Compare", icon: GoArrowSwitch },
   { key: "tracking", label: "Tracking", icon: SlLocationPin },
 ];
