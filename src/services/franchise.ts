@@ -66,6 +66,9 @@ export type FranchiseEarningsTransaction = {
   feePaid: number;
   commission: number;
   dateCreated: string;
+  status: "PENDING_SETTLEMENT" | "PAID";
+  paymentReference?: string | null;
+  paidAt?: string | null;
 };
 
 export type FranchiseSettlementStatus =
@@ -386,6 +389,20 @@ export const getFranchiseEarningsTransactions = async (
   try {
     const res = await api.get<PageResponse<FranchiseEarningsTransaction>>(
       "/franchise/earnings/transactions",
+      { params: cleanParams(params) },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchisePendingSettlementTransactions = async (
+  params: FranchiseDeliveriesParams,
+): Promise<PageResponse<FranchiseEarningsTransaction>> => {
+  try {
+    const res = await api.get<PageResponse<FranchiseEarningsTransaction>>(
+      "/franchise/settlements/transactions",
       { params: cleanParams(params) },
     );
     return res.data;

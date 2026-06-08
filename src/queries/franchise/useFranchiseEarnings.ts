@@ -3,6 +3,7 @@ import {
   downloadFranchiseSettlementPdf,
   getFranchiseEarningsSummary,
   getFranchiseEarningsTransactions,
+  getFranchisePendingSettlementTransactions,
   getFranchiseSettlements,
   type FranchiseDeliveriesParams,
 } from "@/services/franchise";
@@ -17,6 +18,9 @@ export const franchiseSettlementsKey = (params?: FranchiseDeliveriesParams) => [
   "franchise_settlements",
   params,
 ];
+export const franchisePendingSettlementTransactionsKey = (
+  params?: FranchiseDeliveriesParams,
+) => ["franchise_pending_settlement_transactions", params];
 
 export const useGetFranchiseEarningsSummary = () =>
   useQuery({
@@ -30,6 +34,14 @@ export const useGetFranchiseEarningsTransactions = (
   useQuery({
     queryKey: franchiseEarningsTransactionsKey(params),
     queryFn: () => getFranchiseEarningsTransactions(params),
+  });
+
+export const useGetFranchisePendingSettlementTransactions = (
+  params: FranchiseDeliveriesParams,
+) =>
+  useQuery({
+    queryKey: franchisePendingSettlementTransactionsKey(params),
+    queryFn: () => getFranchisePendingSettlementTransactions(params),
   });
 
 export const useGetFranchiseSettlements = (params: FranchiseDeliveriesParams) =>

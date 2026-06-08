@@ -36,6 +36,7 @@ const invalidateFranchiseWork = (queryClient: ReturnType<typeof useQueryClient>)
   queryClient.invalidateQueries({ queryKey: franchiseEarningsSummaryKey });
   queryClient.invalidateQueries({ queryKey: ["franchise_earnings_transactions"] });
   queryClient.invalidateQueries({ queryKey: ["franchise_settlements"] });
+  queryClient.invalidateQueries({ queryKey: ["franchise_pending_settlement_transactions"] });
 };
 
 export const useGetFranchiseDeliveries = (params: FranchiseDeliveriesParams) =>
