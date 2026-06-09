@@ -30,6 +30,7 @@ import PrivateRoutes from "./lib/PrivateRoutes";
 import PublicRoutes from "./lib/PublicRoutes";
 import AdminRoutes from "./lib/AdminRoutes";
 import FranchiseRoutes from "./lib/FranchiseRoutes";
+import BookingRoutes from "./lib/BookingRoutes";
 import ErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking/ErrorPage";
 import PublicDispatchPage from "./pages/dispatch/PublicDispatchPage";
 import FranchiseLayout from "./layouts/FranchiseLayout";
@@ -46,11 +47,6 @@ const AppRoutes = () => {
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
-          <Route path="/delivery" element={<Delivery />} />
-          <Route path="/pickup-time" element={<PickupTime />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/success-page" element={<Confirmation />} />
-          <Route path="/error-page" element={<ErrorPage />} />
           <Route path="/track-booking" element={<Tracking />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
@@ -67,6 +63,14 @@ const AppRoutes = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/:id/reset-password" element={<ResetPassword />} />
           <Route path="/oauth2/callback" element={<ValidateGoogleLogin />} />
+        </Route>
+
+        <Route element={<BookingRoutes />}>
+          <Route path="/delivery" element={<Delivery />} />
+          <Route path="/pickup-time" element={<PickupTime />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/success-page" element={<Confirmation />} />
+          <Route path="/error-page" element={<ErrorPage />} />
         </Route>
 
         <Route element={<PrivateRoutes />}>
