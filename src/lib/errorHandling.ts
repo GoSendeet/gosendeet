@@ -1,5 +1,6 @@
 interface AxiosErrorShape {
   response?: {
+    status?: number;
     data?: unknown;
   };
 }
@@ -35,9 +36,19 @@ export const throwApiError = (
   fallbackMessage = "Something went wrong"
 ): never => {
   const axiosError = error as AxiosErrorShape;
+  const status = axiosError?.response?.status;
   const responseData = axiosError?.response?.data;
-  const fallback = extractMessage(error) || fallbackMessage;
-  const message = extractMessage(responseData) || fallback;
+
+  // 5xx and network errors (no status) may contain internal server details —
+  // never forward those to the UI; use the fallback instead.
+  const isServerError = !status || status >= 500;
+
+  if (isServerError) {
+    throw { message: fallbackMessage };
+  }
+
+  const message =
+    extractMessage(responseData) || extractMessage(error) || fallbackMessage;
 
   if (isRecord(responseData)) {
     throw { ...responseData, message };
