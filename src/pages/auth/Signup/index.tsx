@@ -32,10 +32,8 @@ const getInitialUserType = (
   typeParam === "franchise" ? "franchise" : "customer";
 
 const Signup = () => {
-  // remove showFranchiseForm or comment this out to revert to old logic
-  const showFranchiseForm =
-    import.meta.env.DEV ||
-    import.meta.env.VITE_SHOW_FRANCHISE_FORM === "true";
+  // Hide franchise signup on production only; show on local and beta, change to true 
+  const showFranchiseForm = window.location.hostname !== "gosendeet.com";
   const skipEmailValidation = isNonProductionEmailValidationEnv();
   const [searchParams] = useSearchParams();
   const requestedUserType = getInitialUserType(searchParams.get("type"));

@@ -5,7 +5,14 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -14,6 +21,7 @@ import {
   createDeliveryProgress,
   updateDeliveryProgress,
 } from "@/services/adminSettings";
+import { statusOptions } from "@/constants";
 import { useEffect } from "react";
 
 export function DeliveryProgressModal({
@@ -31,10 +39,12 @@ export function DeliveryProgressModal({
     deliveryProgress: z
       .string({ required_error: "Delivery progress is required" })
       .min(1, { message: "Please enter a delivery progress" }),
+    bookingStatus: z.string().optional(),
   });
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -47,10 +57,12 @@ export function DeliveryProgressModal({
     if (open && type === "edit" && info) {
       reset({
         deliveryProgress: info.name,
+        bookingStatus: info.bookingStatus ?? "",
       });
     } else if (open && type === "create") {
       reset({
         deliveryProgress: "",
+        bookingStatus: "",
       });
     }
   }, [open, info, type, reset]);
@@ -91,16 +103,14 @@ export function DeliveryProgressModal({
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
-    type === "create" &&
-      createProgress({
-        name: data.deliveryProgress,
-      });
+    const payload = {
+      name: data.deliveryProgress,
+      ...(data.bookingStatus ? { bookingStatus: data.bookingStatus } : {}),
+    };
 
-    type === "edit" &&
-      updateProgress({
-        id: info?.id,
-        data: { name: data.deliveryProgress },
-      });
+    type === "create" && createProgress(payload);
+
+    type === "edit" && updateProgress({ id: info?.id, data: payload });
   };
 
   return (
@@ -119,12 +129,6 @@ export function DeliveryProgressModal({
               className="flex flex-col gap-8"
             >
               <div className="flex flex-col gap-2 w-full">
-                {/* <label
-                  htmlFor="deliveryProgress"
-                  className="font-inter font-semibold px-4"
-                >
-                  delivery progress
-                </label> */}
                 <div className="flex justify-between items-center gap-2 border-b">
                   <input
                     type="text"
@@ -139,6 +143,39 @@ export function DeliveryProgressModal({
                     {errors.deliveryProgress.message}
                   </p>
                 )}
+              </div>
+
+              <div className="flex flex-col gap-2 w-full">
+                <label className="font-inter font-semibold px-4 text-brand">
+                  Maps to Booking Status <span className="text-neutral500 font-normal">(optional)</span>
+                </label>
+                <Controller
+                  name="bookingStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="border-b">
+                      <Select
+                        onValueChange={(val) => field.onChange(val === "none" ? "" : val)}
+                        value={field.value || "none"}
+                      >
+                        <SelectTrigger className="outline-0 focus-visible:border-transparent focus-visible:ring-transparent border-0 w-full py-2 px-4 mt-0">
+                          <SelectValue placeholder="No status mapping" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No status mapping</SelectItem>
+                          {statusOptions.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                />
+                <p className="text-xs text-neutral500 px-4">
+                  When this progress is selected, the booking status will also update automatically.
+                </p>
               </div>
 
               <Button
