@@ -20,12 +20,24 @@ const DASHBOARD_TABS = [
   { key: "security", label: "Security" },
 ];
 
+type DashboardNavTab = {
+  key: string;
+  label: string;
+};
+
 interface DashboardNavbarProps {
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  tabs?: DashboardNavTab[];
+  showDesktopTabs?: boolean;
 }
 
-const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
+const DashboardNavbar = ({
+  activeTab,
+  onTabChange,
+  tabs = DASHBOARD_TABS,
+  showDesktopTabs = true,
+}: DashboardNavbarProps) => {
   const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
@@ -108,9 +120,9 @@ const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
         </div>
 
         {/* Desktop: tab links */}
-        {onTabChange && (
+        {onTabChange && showDesktopTabs && (
           <ul className="hidden lg:flex xl:space-x-10 lg:space-x-5">
-            {DASHBOARD_TABS.map((tab) => {
+            {tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               return (
                 <li key={tab.key} className="text-center cursor-pointer">
@@ -162,7 +174,7 @@ const DashboardNavbar = ({ activeTab, onTabChange }: DashboardNavbarProps) => {
 
           {onTabChange && (
             <ul className="flex flex-col my-10">
-              {DASHBOARD_TABS.map((tab) => {
+              {tabs.map((tab) => {
                 const isActive = activeTab === tab.key;
                 return (
                   <li

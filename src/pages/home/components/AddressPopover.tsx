@@ -8,18 +8,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
+import { DELIVERY_RESTRICTION_MESSAGE } from "@/constants/booking";
 import { cn } from "@/lib/utils";
 import {
   ADDRESS_LIMITS,
   STREET_ALLOWED_REGEX,
-  STREET_SANITIZE_REGEX,
+  sanitizeStreetInput,
   validateManualAddress,
 } from "@/utils/form-validators";
 import { ManualAddressData } from "@/types/forms";
 import { toast } from "sonner";
-import { FiEdit3, FiMapPin, FiNavigation, FiSearch } from "react-icons/fi";
+import { FiEdit3, FiMapPin, FiNavigation } from "react-icons/fi";
 import usePlacesAutocomplete, { getDetails } from "use-places-autocomplete";
+import {
+  CITY_STATE_MAP,
+  getCityOptions,
+  inferAllowedLocationFromText,
+  isDeliveryLocationAllowed,
+  isIbadanCity,
+  isLagosState,
+  isOyoState,
+  parseAddressComponents,
+  STATE_CITY_MAP,
+  STATE_OPTIONS,
+} from "@/utils/address";
 
 interface AddressPopoverProps {
   type?: "pickup" | "destination";
@@ -31,194 +43,6 @@ interface AddressPopoverProps {
   onSelect: (location: string, breakdown?: { city: string; state: string }) => void;
 }
 
-const normalizeStateKey = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/\s*state$/, "")
-    .trim();
-
-const normalizeCityKey = (value: string) =>
-  value.toLowerCase().replace(/\s+/g, " ").trim();
-
-const STATE_CITY_MAP = NIGERIAN_STATES_AND_CITIES.reduce<
-  Record<string, string[]>
->((acc, { state, cities }) => {
-  acc[state] = [...cities].sort((a, b) => a.localeCompare(b));
-  return acc;
-}, {});
-
-const STATE_LOOKUP = Object.keys(STATE_CITY_MAP).reduce<Record<string, string>>(
-  (acc, state) => {
-    acc[normalizeStateKey(state)] = state;
-    return acc;
-  },
-  {},
-);
-
-const CITY_STATE_MAP = NIGERIAN_STATES_AND_CITIES.reduce<Record<string, string>>(
-  (acc, { state, cities }) => {
-    cities.forEach((city) => {
-      acc[city] = state;
-    });
-    return acc;
-  },
-  {},
-);
-
-const NORMALIZED_CITY_LOOKUP = Object.keys(CITY_STATE_MAP).reduce<
-  Record<string, string>
->((acc, city) => {
-  acc[normalizeCityKey(city)] = city;
-  return acc;
-}, {});
-
-const STATE_OPTIONS = Object.keys(STATE_CITY_MAP).sort((a, b) =>
-  a.localeCompare(b),
-);
-
-const DELIVERY_RESTRICTION_MESSAGE =
-  "We currently only operate in Lagos State and Ibadan, Oyo.";
-
-const sanitizeStreetInput = (value: string) =>
-  value.replace(STREET_SANITIZE_REGEX, "");
-
-const isLagosState = (state?: string) =>
-  normalizeStateKey(state || "") === "lagos";
-
-const isOyoState = (state?: string) => normalizeStateKey(state || "") === "oyo";
-
-const isIbadanCity = (city?: string) =>
-  normalizeCityKey(city || "").startsWith("ibadan");
-
-const getCanonicalCityMatch = (city?: string) => {
-  if (!city) return "";
-
-  const normalizedCity = normalizeCityKey(city);
-  return (
-    NORMALIZED_CITY_LOOKUP[normalizedCity] ||
-    Object.keys(NORMALIZED_CITY_LOOKUP).find(
-      (canonicalCity) =>
-        normalizedCity.startsWith(`${canonicalCity} -`) ||
-        normalizedCity.startsWith(`${canonicalCity},`) ||
-        normalizedCity.startsWith(`${canonicalCity} `),
-    ) ||
-    ""
-  );
-};
-
-const resolveStateForValidation = (state?: string, city?: string) => {
-  if (state) return state;
-  const canonicalCity = getCanonicalCityMatch(city);
-  return canonicalCity ? CITY_STATE_MAP[canonicalCity] : "";
-};
-
-const isDeliveryLocationAllowed = (state?: string, city?: string) => {
-  const resolvedState = resolveStateForValidation(state, city);
-
-  if (isLagosState(resolvedState)) return true;
-  if (isOyoState(resolvedState)) return isIbadanCity(city);
-  return false;
-};
-
-const inferAllowedLocationFromText = (value?: string) => {
-  const normalizedValue = normalizeCityKey(value || "");
-  if (!normalizedValue) return null;
-
-  if (normalizedValue.includes("lagos")) {
-    return { city: "Lagos", state: "Lagos State" };
-  }
-
-  if (normalizedValue.includes("ibadan")) {
-    return { city: "Ibadan", state: "Oyo State" };
-  }
-
-  if (
-    normalizedValue.includes("ikeja") ||
-    normalizedValue.includes("lekki") ||
-    normalizedValue.includes("ikorodu") ||
-    normalizedValue.includes("mushin") ||
-    normalizedValue.includes("badagry")
-  ) {
-    return { city: "", state: "Lagos State" };
-  }
-
-  return null;
-};
-
-const resolveStateValue = (value?: string) => {
-  if (!value) return "";
-  return STATE_LOOKUP[normalizeStateKey(value)] || "";
-};
-
-const resolveCityValue = (city?: string, state?: string) => {
-  if (!city) return "";
-
-  const canonical = getCanonicalCityMatch(city);
-  if (canonical) return canonical;
-
-  const canonicalState = state
-    ? STATE_LOOKUP[normalizeStateKey(state)]
-    : undefined;
-  const fromState = canonicalState
-    ? STATE_CITY_MAP[canonicalState]?.find(
-        (stateCity) => normalizeCityKey(stateCity) === normalizeCityKey(city),
-      )
-    : "";
-
-  return fromState || city;
-};
-
-const parseAddressComponents = (
-  components: google.maps.GeocoderAddressComponent[],
-  placeName?: string,
-): Partial<ManualAddressData> => {
-  let streetNumber = "";
-  let route = "";
-  let premise = "";
-  let city = "";
-  let state = "";
-  const localParts: string[] = [];
-
-  for (const component of components) {
-    const type = component.types[0];
-
-    if (type === "premise") premise = component.long_name;
-    if (type === "street_number") streetNumber = component.long_name;
-    if (type === "route") route = component.long_name;
-    if (type === "sublocality" || type === "sublocality_level_1") {
-      localParts.push(component.long_name);
-    }
-    if (type === "locality") city = component.long_name;
-    if (type === "administrative_area_level_2" && !city) {
-      city = component.long_name;
-    }
-    if (type === "administrative_area_level_1") state = component.long_name;
-  }
-
-  const streetParts = [
-    premise || placeName || "",
-    streetNumber && route ? `${streetNumber} ${route}` : route || streetNumber,
-    ...localParts,
-  ].filter(Boolean);
-
-  const canonicalState = resolveStateValue(state);
-  const normalizedCity = resolveCityValue(city, canonicalState || state);
-  const resolvedState =
-    canonicalState || (normalizedCity ? CITY_STATE_MAP[normalizedCity] : "") || state;
-
-  return {
-    street: sanitizeStreetInput(streetParts.join(", ")),
-    apartment: "",
-    city: normalizedCity,
-    state: resolvedState,
-  };
-};
-
-const getCityOptions = (state?: string) => {
-  if (state && STATE_CITY_MAP[state]) return [...STATE_CITY_MAP[state]];
-  return Object.keys(CITY_STATE_MAP).sort((a, b) => a.localeCompare(b));
-};
 
 export function AddressPopover({
   open,
@@ -236,9 +60,10 @@ export function AddressPopover({
     state: "",
   });
   const [isLocating, setIsLocating] = useState(false);
+  const [completedSearchQuery, setCompletedSearchQuery] = useState("");
 
   const {
-    suggestions: { status, data: suggestions },
+    suggestions: { loading: suggestionsLoading, status, data: suggestions },
     setValue: setPlacesValue,
     clearSuggestions,
   } = usePlacesAutocomplete({
@@ -257,6 +82,27 @@ export function AddressPopover({
       setShowManual(false);
     }
   }, [open, query]);
+
+  useEffect(() => {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length < 2) {
+      setCompletedSearchQuery("");
+      return;
+    }
+
+    if (!suggestionsLoading && status) {
+      setCompletedSearchQuery(trimmedQuery);
+      return;
+    }
+
+    const fallbackTimer = window.setTimeout(() => {
+      if (!suggestionsLoading && suggestions.length === 0) {
+        setCompletedSearchQuery(trimmedQuery);
+      }
+    }, 550);
+
+    return () => window.clearTimeout(fallbackTimer);
+  }, [query, status, suggestions.length, suggestionsLoading]);
 
   const cityOptions = useMemo(
     () => getCityOptions(manualAddress.state),
@@ -463,6 +309,14 @@ export function AddressPopover({
     !isStreetInvalid &&
     !isApartmentTooLong;
 
+  const trimmedQuery = query.trim();
+  const isSearchComplete = completedSearchQuery === trimmedQuery;
+  const hasNoSuggestions =
+    // hasSearchQuery &&
+    isSearchComplete 
+    // !suggestionsLoading &&
+    // !hasSuggestions;
+
   return (
     <PopoverContent
       side="bottom"
@@ -473,26 +327,8 @@ export function AddressPopover({
       className="w-[min(420px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
     >
       <div className="p-4">
-        {/* <div className="mb-3 flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-bold text-[#0F172A]">{title}</h3>
-            <p className="mt-0.5 text-xs text-[#64748B]">
-              Keep typing in the field. Suggestions update here.
-            </p>
-          </div>
-          <FiSearch className="h-4 w-4 text-brand" />
-        </div> */}
-
         {!showManual && (
           <div className="space-y-2">
-            {query.trim().length < 2 && (
-              <div className="flex items-start gap-2 px-1 py-1 text-xs text-[#64748B]">
-                <FiSearch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-                <p>
-                  Start typing in the address field to see matching suggestions.
-                </p>
-              </div>
-            )}
 
             {status === "OK" && suggestions.length > 0 && (
               <div className="max-h-[240px] overflow-y-auto rounded-xl border border-gray-100">
@@ -512,26 +348,42 @@ export function AddressPopover({
               </div>
             )}
 
-            {query.trim().length >= 2 && status !== "OK" && (
+            {/* {isSearching && (
               <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
                 Searching for matching addresses...
               </p>
-            )}
+            )} */}
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowManual(true);
-                setManualAddress((current) => ({
-                  ...current,
-                  street: current.street || sanitizeStreetInput(query),
-                }));
-              }}
-              className="flex w-full items-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-left text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
+            <div
+              className={cn(
+                "grid transition-[grid-template-rows,opacity,transform] duration-300 ease-out",
+                !hasNoSuggestions
+                  ? "grid-rows-[1fr] opacity-100 translate-y-0"
+                  : "grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none",
+              )}
             >
-              <FiEdit3 className="h-4 w-4" />
-              Enter address manually
-            </button>
+              <div className="overflow-hidden">
+                <div className="space-y-2">
+                  <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
+                    No matching addresses found.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowManual(true);
+                      setManualAddress((current) => ({
+                        ...current,
+                        street: current.street || sanitizeStreetInput(query),
+                      }));
+                    }}
+                    className="flex w-full items-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-left text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
+                  >
+                    <FiEdit3 className="h-4 w-4" />
+                    Enter address manually
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <button
               type="button"

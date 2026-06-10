@@ -12,6 +12,9 @@ export const ADDRESS_LIMITS = {
 export const STREET_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9,. \\-'/&]+$");
 export const STREET_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9,. \\-'/&]", "g");
 
+export const sanitizeStreetInput = (value: string) =>
+  value.replace(STREET_SANITIZE_REGEX, "");
+
 /**
  * Validates that a string contains only numbers and optional decimal point
  */
