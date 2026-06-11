@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
-import { MdOutlineMailOutline } from "react-icons/md";
+import { MdOutlineMailOutline, MdLockOutline } from "react-icons/md";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useMutation } from "@tanstack/react-query";
 import { googleLogin, login } from "@/services/auth";
@@ -141,6 +141,7 @@ const Signin = () => {
               </div>
 
               <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
+                <MdLockOutline className="text-green500 text-xl" />
                 <div className="flex flex-col gap-2 w-full">
                   <label htmlFor="password" className="font-inter font-semibold">
                     Password
