@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PopoverContent } from "@/components/ui/popover";
 import {
@@ -25,12 +25,10 @@ import {
   getCityOptions,
   inferAllowedLocationFromText,
   isDeliveryLocationAllowed,
-  isIbadanCity,
   isLagosState,
   isOyoState,
   parseAddressComponents,
-  STATE_CITY_MAP,
-  STATE_OPTIONS,
+  parseAddressFields,
 } from "@/utils/address";
 
 interface AddressPopoverProps {
@@ -43,6 +41,7 @@ interface AddressPopoverProps {
   onSelect: (location: string, breakdown?: { city: string; state: string }) => void;
 }
 
+const MANUAL_STATE_OPTIONS = ["Lagos State", "Oyo State"];
 
 export function AddressPopover({
   open,
@@ -104,10 +103,59 @@ export function AddressPopover({
     return () => window.clearTimeout(fallbackTimer);
   }, [query, status, suggestions.length, suggestionsLoading]);
 
-  const cityOptions = useMemo(
-    () => getCityOptions(manualAddress.state),
-    [manualAddress.state],
-  );
+  const cityOptions = useMemo(() => {
+    const options = isOyoState(manualAddress.state)
+      ? ["Ibadan"]
+      : getCityOptions(manualAddress.state);
+    if (
+      manualAddress.city &&
+      !options.some(
+        (city) =>
+          city.toLowerCase().trim() === manualAddress.city.toLowerCase().trim(),
+      )
+    ) {
+      return [manualAddress.city, ...options];
+    }
+
+    return options;
+  }, [manualAddress.city, manualAddress.state]);
+
+  const getManualAddressFromQuery = useCallback(() => {
+    const parsed = parseAddressFields(query);
+    const inferred = inferAllowedLocationFromText(query);
+
+    return {
+      street: parsed.street,
+      apartment: parsed.apartment,
+      city: parsed.city || inferred?.city || "",
+      state: parsed.state || inferred?.state || "",
+    };
+  }, [query]);
+
+  const fillManualAddressFromQuery = () => {
+    const parsed = getManualAddressFromQuery();
+
+    setManualAddress((current) => ({
+      street: parsed.street || current.street,
+      apartment: parsed.apartment || current.apartment,
+      city: parsed.city || current.city,
+      state: parsed.state || current.state,
+    }));
+  };
+
+  useEffect(() => {
+    const parsed = getManualAddressFromQuery();
+    const hasCompleteManualAddress =
+      query.split(",").length >= 4 &&
+      Boolean(parsed.street.trim()) &&
+      Boolean(parsed.city.trim()) &&
+      Boolean(parsed.state.trim());
+
+    if (!open || showManual || !hasCompleteManualAddress) return;
+
+    setManualAddress(parsed);
+    setShowManual(true);
+  }, [getManualAddressFromQuery, open, query, showManual]);
 
   const handleSelectLocation = async (
     placeId: string,
@@ -170,10 +218,9 @@ export function AddressPopover({
     setManualAddress((current) => ({
       ...current,
       state,
-      city: isOyoState(state)
-        ? (STATE_CITY_MAP[state] || []).find((city) => isIbadanCity(city)) ||
-          "Ibadan"
-        : current.city,
+      city: "",
+      street: "",
+      apartment: "",
     }));
   };
 
@@ -202,8 +249,8 @@ export function AddressPopover({
     }
 
     const formatted = [
-      street,
       apartment.trim() || "",
+      street,
       city,
       state,
       "Nigeria",
@@ -308,6 +355,8 @@ export function AddressPopover({
     !isStreetTooLong &&
     !isStreetInvalid &&
     !isApartmentTooLong;
+  const hasManualLocationSelected =
+    Boolean(manualAddress.state.trim()) && Boolean(manualAddress.city.trim());
 
   const trimmedQuery = query.trim();
   const isSearchComplete = completedSearchQuery === trimmedQuery;
@@ -371,10 +420,7 @@ export function AddressPopover({
                     type="button"
                     onClick={() => {
                       setShowManual(true);
-                      setManualAddress((current) => ({
-                        ...current,
-                        street: current.street || sanitizeStreetInput(query),
-                      }));
+                      fillManualAddressFromQuery();
                     }}
                     className="flex w-full items-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-left text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
                   >
@@ -400,50 +446,6 @@ export function AddressPopover({
 
         {showManual && (
           <div className="space-y-3">
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
-                Street address
-              </label>
-              <input
-                type="text"
-                value={manualAddress.street}
-                onChange={(event) =>
-                  setManualAddress((current) => ({
-                    ...current,
-                    street: sanitizeStreetInput(event.target.value),
-                  }))
-                }
-                placeholder="e.g. 12 Admiralty Way"
-                className={cn(
-                  "w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-brand",
-                  isStreetTooLong || isStreetInvalid
-                    ? "border-red-400"
-                    : "border-gray-200",
-                )}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
-                Apartment or house number
-              </label>
-              <input
-                type="text"
-                value={manualAddress.apartment}
-                onChange={(event) =>
-                  setManualAddress((current) => ({
-                    ...current,
-                    apartment: event.target.value,
-                  }))
-                }
-                placeholder="Optional"
-                className={cn(
-                  "w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-brand",
-                  isApartmentTooLong ? "border-red-400" : "border-gray-200",
-                )}
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
@@ -457,9 +459,9 @@ export function AddressPopover({
                     <SelectValue placeholder="State" />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATE_OPTIONS.map((state) => (
+                    {MANUAL_STATE_OPTIONS.map((state) => (
                       <SelectItem key={state} value={state}>
-                        {state}
+                        {state.replace(" State", "")}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -470,23 +472,82 @@ export function AddressPopover({
                 <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
                   City
                 </label>
-                <Select
-                  value={manualAddress.city || undefined}
-                  onValueChange={handleManualCityChange}
+                <div
+                  className="group relative"
+                  title={!manualAddress.state ? "Select a state" : undefined}
                 >
-                  <SelectTrigger className="w-full rounded-xl border-gray-200 text-sm">
-                    <SelectValue placeholder="City" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cityOptions.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Select
+                    value={manualAddress.city || undefined}
+                    onValueChange={handleManualCityChange}
+                    disabled={!manualAddress.state}
+                  >
+                    <SelectTrigger className="w-full rounded-xl border-gray-200 text-sm">
+                      <SelectValue placeholder="City" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cityOptions.map((city) => (
+                        <SelectItem key={city} value={city}>
+                          {city}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!manualAddress.state && (
+                    <span className="pointer-events-none absolute left-1/2 top-[calc(100%+6px)] z-50 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-[#0F172A] px-2 py-1 text-[11px] font-semibold text-white shadow-lg group-hover:block">
+                      Select a state
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+
+            {hasManualLocationSelected && (
+              <>
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
+                    Street address
+                  </label>
+                  <input
+                    type="text"
+                    value={manualAddress.street}
+                    onChange={(event) =>
+                      setManualAddress((current) => ({
+                        ...current,
+                        street: sanitizeStreetInput(event.target.value),
+                      }))
+                    }
+                    placeholder="e.g. Admiralty Way"
+                    className={cn(
+                      "w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-brand",
+                      isStreetTooLong || isStreetInvalid
+                        ? "border-red-400"
+                        : "border-gray-200",
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold text-[#0F172A]">
+                    Apartment or house number
+                  </label>
+                  <input
+                    type="text"
+                    value={manualAddress.apartment}
+                    onChange={(event) =>
+                      setManualAddress((current) => ({
+                        ...current,
+                        apartment: event.target.value,
+                      }))
+                    }
+                    placeholder="Optional"
+                    className={cn(
+                      "w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-brand",
+                      isApartmentTooLong ? "border-red-400" : "border-gray-200",
+                    )}
+                  />
+                </div>
+              </>
+            )}
 
             <div className="flex gap-2">
               <Button
@@ -498,15 +559,17 @@ export function AddressPopover({
               >
                 Back
               </Button>
-              <Button
-                type="button"
-                size="custom"
-                className="flex-1 bg-[#064E3B] py-2 text-xs font-bold"
-                disabled={!isManualValid}
-                onClick={handleManualSubmit}
-              >
-                Apply
-              </Button>
+              {hasManualLocationSelected && (
+                <Button
+                  type="button"
+                  size="custom"
+                  className="flex-1 bg-[#064E3B] py-2 text-xs font-bold"
+                  disabled={!isManualValid}
+                  onClick={handleManualSubmit}
+                >
+                  Apply
+                </Button>
+              )}
             </div>
           </div>
         )}

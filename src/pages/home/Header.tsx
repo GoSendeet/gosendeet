@@ -66,7 +66,11 @@ const Header = () => {
             animate={false}
           />
           <div className="w-96.75 lg:w-[1120px] px-2 py-3">
-            <FormHorizontalBar variant="minimal" activeMode={formMode} />
+            <FormHorizontalBar
+              variant="minimal"
+              activeMode={formMode}
+              autoFocusPickup
+            />
           </div>
         </div>
 

@@ -281,6 +281,17 @@ const isApartmentLike = (value: string) => {
   return APARTMENT_PREFIXES.some((prefix) => lower.startsWith(prefix));
 };
 
+const isLeadingHouseNumberLike = (value: string) => {
+  const normalized = value.toLowerCase().trim();
+  return (
+    /^\d+[a-z]?([\s/-]*\d+[a-z]?)?$/i.test(normalized) ||
+    /^#\s*\d+/i.test(normalized) ||
+    /^(no\.?|house|flat|apt|apartment|unit|suite|plot)\s*#?\s*[\w/-]+/i.test(
+      normalized,
+    )
+  );
+};
+
 export const parseAddressFields = (address: string): ManualAddressData => {
   const parts = address.split(",").map((part) => part.trim()).filter(Boolean);
 
@@ -306,10 +317,17 @@ export const parseAddressFields = (address: string): ManualAddressData => {
     }
   }
 
+  if (!city && state && parts.length >= 2) {
+    city = parts.pop() || "";
+  }
+
   let street = "";
   let apartment = "";
   if (parts.length <= 1) {
     street = parts[0] || "";
+  } else if (isLeadingHouseNumberLike(parts[0])) {
+    apartment = parts[0];
+    street = parts.slice(1).join(", ");
   } else {
     let aptStartIndex = -1;
     for (let i = 1; i < parts.length; i++) {

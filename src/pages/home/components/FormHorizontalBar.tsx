@@ -26,6 +26,7 @@ interface FormHorizontalBarProps {
   bookingRequest?: any;
   setData?: any;
   activeMode?: "gosendeet" | "compare" | "tracking";
+  autoFocusPickup?: boolean;
   onQuoteResult?: (result: any, inputData: any, mode: FormMode) => void;
   forcedIsDashboard?: boolean;
   onModeChange?: (mode: FormMode) => void;
@@ -36,6 +37,7 @@ const FormHorizontalBar = ({
   bookingRequest,
   setData,
   activeMode = "gosendeet",
+  autoFocusPickup = false,
   onQuoteResult,
   forcedIsDashboard,
   onModeChange,
@@ -53,6 +55,7 @@ const FormHorizontalBar = ({
   const [destinationSearchQuery, setDestinationSearchQuery] = useState("");
 
   const pickupInputRef = useRef<HTMLInputElement | null>(null);
+  const hasAutoFocusedPickupRef = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -99,6 +102,28 @@ const FormHorizontalBar = ({
       setCurrentMode(activeMode);
     }
   }, [activeMode, isDashboard]);
+
+  useEffect(() => {
+    if (
+      !autoFocusPickup ||
+      hasAutoFocusedPickupRef.current ||
+      !isHydrated ||
+      mode === "tracking"
+    ) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!pickupInputRef.current) return;
+
+      pickupInputRef.current.focus();
+      setActiveCard("pickup");
+      setPickupModalOpen(true);
+      hasAutoFocusedPickupRef.current = true;
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [autoFocusPickup, isHydrated, mode]);
 
   useEffect(() => {
     setPickupSearchQuery(pickupLocation || "");
