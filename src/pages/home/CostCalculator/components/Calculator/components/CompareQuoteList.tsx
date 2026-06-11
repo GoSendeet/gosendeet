@@ -3,7 +3,16 @@ import Rating from "@/components/Rating";
 import { cn } from "@/lib/utils";
 import empty from "@/assets/images/green-empty-bg.png";
 import CompareCardSkeleton from "../CompareCardSkeleton";
-import { ArrowRight, Box, ChevronDown, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Box,
+  CalendarRange,
+  CheckCircle2,
+  ChevronDown,
+  Home,
+  ShieldCheck,
+  Store,
+} from "lucide-react";
 import { PAGE_SIZE, parsePrice } from "../quoteUtils";
 
 interface CompareQuoteListProps {
@@ -30,109 +39,104 @@ const DashboardCompareQuoteCard = ({
 }) => (
   <div
     className={cn(
-      "shrink-0 rounded-[28px] border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      "shrink-0 rounded-[20px] gap-4 justify-center border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
       isRecommended ? "border-[#CBD5E1] ring-1 ring-[#E2E8F0]" : "border-[#E2E8F0]",
     )}
   >
-    <div className="mb-5 flex items-start justify-between gap-4">
-      <div className="flex min-w-0 items-start gap-3">
-        <span
-          className={cn(
-            "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
-            isRecommended ? "border-brand" : "border-[#CBD5E1]",
+     <div>
+      <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          
+          {item?.courier?.logo ? (
+            <img
+              src={item?.courier?.logo}
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-xl object-contain"
+            />
+          ) : (
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#334155]">
+              <Box className="h-5 w-5" />
+            </div>
           )}
-        >
-          {isRecommended && <span className="h-2.5 w-2.5 rounded-full bg-brand" />}
-        </span>
-        {item?.courier?.logo ? (
-          <img
-            src={item?.courier?.logo}
-            alt=""
-            className="h-10 w-10 shrink-0 rounded-xl object-contain"
-          />
-        ) : (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F1F5F9] text-[#334155]">
-            <Box className="h-5 w-5" />
-          </div>
-        )}
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-extrabold text-[#0F172A]">
-            {item?.courier?.name || "GoSendeet Direct"}
-          </h3>
-          <div className="mt-1 flex items-center gap-1">
-            <Rating value={item?.courier?.averageRatingScore} readOnly />
-            <span className="text-xs font-semibold text-[#64748B]">
-              ({item?.courier?.totalRatings ?? 0})
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-extrabold text-[#0F172A]">
+              {item?.courier?.name || "GoSendeet Direct"}
+            </h3>
+            <span className="flex w-fit items-center gap-2 rounded-lg bg-[#D1FAE5] px-3 py-2 text-xs font-extrabold text-[#064E3B]">
+              <ShieldCheck size={14} /> Verified
             </span>
+            <div className="mt-1 flex items-center gap-1">
+              <Rating value={item?.courier?.averageRatingScore} readOnly />
+              <span className="text-xs font-semibold text-[#64748B]">
+                ({item?.courier?.totalRatings ?? 0})
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="text-right">
-        {item?.discount > 0 && (
-          <span className="mb-1 inline-block rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[11px] font-bold text-brand">
-            {item.discount}% off
-          </span>
-        )}
-        <p className="text-2xl font-extrabold tracking-tight text-brand">
-          ₦{parsePrice(item.price).toLocaleString()}
-        </p>
-      </div>
-    </div>
-
-    <div className="mb-5 flex flex-wrap items-center gap-2">
-      <span className="flex w-fit items-center gap-2 rounded-lg bg-[#D1FAE5] px-3 py-2 text-xs font-extrabold text-[#064E3B]">
-        <ShieldCheck size={14} /> Verified
-      </span>
-      <span className="rounded-lg bg-[#F8FAFC] px-3 py-2 text-xs font-bold text-[#475569]">
-        {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
-      </span>
-    </div>
-
-    <div className="rounded-2xl bg-[#F8FAFC] p-4">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-        <div>
-          <p className="text-[11px] font-extrabold uppercase tracking-wider text-brand">
-            {item?.pudoMode === "STORE_DROPOFF"
-              ? "Store drop-off"
-              : "Doorstep pickup"}
-          </p>
-          <p className="mt-1 text-sm font-bold text-[#64748B]">
-            {item?.pickUpdateDate || "Not specified"}
-          </p>
-        </div>
-
-        <div className="flex min-w-[80px] flex-col items-center gap-2">
-          <p className="text-xs font-bold text-[#475569]">
-            {item?.nextDayDelivery ? "Fast" : "Standard"}
-          </p>
-          <div className="h-1 w-full rounded-full bg-[#00C853]" />
-        </div>
 
         <div className="text-right">
-          <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#475569]">
-            Delivery
-          </p>
-          <p className="mt-1 text-sm font-bold text-[#64748B]">
-            {item?.estimatedDeliveryDate || "Not specified"}
+          {item?.discount > 0 && (
+            <span className="mb-1 inline-block rounded-full bg-[#ECFDF5] px-2 py-0.5 text-[11px] font-bold text-brand">
+              {item.discount}% off
+            </span>
+          )}
+          <p className="text-2xl font-extrabold tracking-tight text-brand">
+            ₦{parsePrice(item.price).toLocaleString()}
           </p>
         </div>
       </div>
+        <div className="flex items-center gap-2 bg-[#F0FDF4] px-4 py-2 rounded-lg w-fit mb-4 text-[#475569]">
+        <CalendarRange size={14} />
+        <p className="text-sm font-semibold ">
+        Arrives{" "}
+        <span className="">
+          {item?.estimatedDeliveryDate || "Not specified"}
+        </span>
+      </p>
+      </div>
+      <div className="mt-5 rounded-[24px] border border-[#E2E8F0] bg-gradient-to-br from-white via-white to-[#F8FAFC] p-4 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-2 rounded-xl bg-[#ECFDF5] px-4 py-2 text-sm font-bold text-brand">
+            <CheckCircle2 className="h-4 w-4" />
+            {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
+          </span>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-[1fr_232px] md:items-center">
+          <div className="grid grid-cols-[42px_1fr] gap-x-4">
+            <div className="relative row-span-2 flex flex-col items-center">
+              <span className="z-10 flex h-10 w-10 items-center justify-center rounded-full border-4 border-[#DDFBE8] bg-[#12A65A] text-white shadow-sm">
+                {item?.pudoMode === "STORE_DROPOFF" ? (
+                  <Store className="h-4 w-4" />
+                ) : (
+                  <Home className="h-4 w-4" />
+                )}
+              </span>
+            </div>
+
+            <div className="pb-6">
+              <p className="text-lg font-extrabold leading-none text-[#0F172A]">
+                {item?.pudoMode === "STORE_DROPOFF"
+                  ? "Store drop-off"
+                  : "Doorstep pickup"}
+              </p>
+              <p className="mt-2 text-base font-bold text-[#64748B]">
+                {item?.pickUpdateDate || "Not specified"}
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={onSelect}
+            className="group h-16 w-full rounded-xl bg-gradient-to-r from-[#006B4F] to-brand text-lg font-extrabold text-white shadow-[0_12px_28px_rgba(0,107,79,0.22)] transition-all hover:from-[#005C43] hover:to-green-800 hover:shadow-[0_16px_32px_rgba(0,107,79,0.28)]"
+          >
+            Select quote
+            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </div>
+      </div>
     </div>
-
-    <p className="mt-4 text-sm font-semibold text-[#475569]">
-      Arrives{" "}
-      <span className="text-[#0F172A]">
-        {item?.estimatedDeliveryDate || "Not specified"}
-      </span>
-    </p>
-
-    <Button
-      onClick={onSelect}
-      className="mt-5 h-12 w-full rounded-2xl bg-brand text-sm font-extrabold text-white hover:bg-green-800"
-    >
-      Select quote
-    </Button>
   </div>
 );
 
@@ -339,7 +343,7 @@ const CompareQuoteList = ({
           <button
             onClick={handleLoadMore}
             disabled={isLoadingMore || isFetchingQuotes}
-            className="shrink-0 w-full flex items-center justify-center gap-3 rounded-2xl border border-[#D1D5DB] bg-white py-4 text-sm font-semibold text-green100 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            className="sticky bottom-0 z-20 shrink-0 w-full flex items-center justify-center gap-3 rounded-2xl border border-[#D1D5DB] bg-white py-4 text-sm font-semibold text-green100 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoadingMore || isFetchingQuotes
               ? "Loading more options..."

@@ -6,14 +6,32 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
 import { MdOutlineMailOutline } from "react-icons/md";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useMutation } from "@tanstack/react-query";
-import { googleLogin, validateEmail } from "@/services/auth";
+import { googleLogin, login } from "@/services/auth";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
-import { track, EVENT } from "@/lib/analytics";
+import { identifyUser, track, EVENT } from "@/lib/analytics";
+import { storeAuthSession } from "@/lib/authSession";
+import { getDefaultRouteForRole } from "@/lib/roles";
+import { getPreSigninQuoteDashboardRoute } from "@/lib/preSigninQuote";
+
+const schema = z.object({
+  email: z
+    .string({ required_error: "Email Address is required" })
+    .min(1, { message: "Email Address cannot be empty" })
+    .email({ message: "Invalid email address" }),
+  password: z
+    .string({ required_error: "Password is required" })
+    .min(1, { message: "Password cannot be empty" }),
+});
+
+type SigninFormValues = z.infer<typeof schema>;
 
 const Signin = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     track(EVENT.LOGIN_STARTED);
@@ -22,41 +40,55 @@ const Signin = () => {
   //   import.meta.env.DEV ||
   //   window.location.hostname.toLowerCase().includes("gosendeet-beta.vercel.app");
 
-  const schema = z.object({
-    email: z
-      .string({ required_error: "Email Address is required" })
-      .min(1, { message: "Email Address cannot be empty" })
-      .email({ message: "Invalid email address" }),
-  });
-
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof schema>>({
+  } = useForm<SigninFormValues>({
     resolver: zodResolver(schema),
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: validateEmail,
-    onSuccess: (_response, submittedEmail) => {
-      toast.success("Successful");
-      navigate("/login", {
-        state: {
-          email: submittedEmail,
-        },
+    mutationFn: (data: SigninFormValues) => login(data),
+    onSuccess: (response, submittedData) => {
+      const user = response?.data?.user;
+      if (!user) {
+        toast.error("Invalid login response");
+        return;
+      }
+
+      storeAuthSession(user);
+      identifyUser(String(user.id), {
+        role: user.role,
+        $email: submittedData.email,
+        $name: user.username,
       });
+      track(EVENT.LOGIN_COMPLETED, { method: "email", role: user.role });
+
+      toast.success("Login Successful");
+      const quoteRoute =
+        String(user.role ?? "").toLowerCase() === "user"
+          ? getPreSigninQuoteDashboardRoute()
+          : null;
+
+      if (quoteRoute) {
+        navigate(quoteRoute.pathname, {
+          state: quoteRoute.state,
+          replace: true,
+        });
+        return;
+      }
+
+      navigate(getDefaultRouteForRole(user.role));
     },
-    onError: (data) => {
-      toast.error(data?.message || "Unable to continue");
+    onError: (error: { message?: string }) => {
+      toast.error(error?.message || "Login failed");
     },
   });
 
-  const onSubmit = (data: z.infer<typeof schema>) => {
-    mutate(data.email);
+  const onSubmit = (data: SigninFormValues) => {
+    mutate(data);
   };
-
-  const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = () => {
     setLoading(true);
@@ -108,6 +140,36 @@ const Signin = () => {
                 </div>
               </div>
 
+              <div className="flex gap-3 items-center py-3 md:px-4 border-b mb-5">
+                <div className="flex flex-col gap-2 w-full">
+                  <label htmlFor="password" className="font-inter font-semibold">
+                    Password
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      {...register("password")}
+                      placeholder="Enter your password"
+                      className="w-full outline-0 bg-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((value) => !value)}
+                      className="text-green500"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="error text-xs text-[#FF0000]">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <Link
                 to={"/forgot-password"}
                 className="text-green500 border-b border-b-green500 text-base"
@@ -119,7 +181,7 @@ const Signin = () => {
                 loading={isPending}
                 className=" w-full my-5 bg-green100 hover:bg-green800"
               >
-                Continue
+                Login
               </Button>
             </form>
             <div className="text-center mt-6">

@@ -13,7 +13,6 @@ import Checkout from "./pages/home/CostCalculator/components/Calculator/Booking/
 import Confirmation from "./pages/home/CostCalculator/components/Calculator/Booking/Confirmation";
 import Tracking from "./pages/home/Track/Tracking";
 import Signin from "./pages/auth/Signin";
-import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import VerifyEmail from "./pages/auth/VerifyEmail";
@@ -56,7 +55,6 @@ const AppRoutes = () => {
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
-          <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-account" element={<VerifyEmail />} />
           <Route path="/:id/verify-email" element={<VerifyEmail />} />
