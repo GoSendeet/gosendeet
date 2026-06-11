@@ -9,6 +9,7 @@ import {
   consumePreSigninQuote,
   peekPreSigninQuote,
 } from "@/lib/preSigninQuote";
+import { ArrowLeft } from "lucide-react";
 
 const Overview = ({ data }: { data: any }) => {
   const username = data?.data?.username;
@@ -80,7 +81,7 @@ const Overview = ({ data }: { data: any }) => {
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className="text-xs text-grey200 uppercase tracking-widest font-medium">
-              Welcome back
+              {/* Welcome back */}
             </p>
             <h2 className="font-clash font-semibold text-[22px] text-brand truncate">
               {username}
@@ -113,14 +114,15 @@ const Overview = ({ data }: { data: any }) => {
       ) : showQuotePanel ? (
         <div className="mb-10">
           {/* Back button + ModeSwitcher on the same row */}
-          <div className="flex flex-col items-start md:flex-row md:items-center gap-4 mb-6 px-1">
+          <div className="mb-6 flex flex-col gap-4 px-1">
             <button
               onClick={handleBack}
-              className="flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors shrink-0"
+              className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
             >
-              ← Back
+              <ArrowLeft className="w-4 h-4" />
+              Back
             </button>
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex justify-center">
               <ModeSwitcher
                 mode={formMode}
                 onModeChange={handleModeChange}
@@ -128,8 +130,6 @@ const Overview = ({ data }: { data: any }) => {
                 animate={false}
               />
             </div>
-            {/* Spacer to keep ModeSwitcher visually centred */}
-            <div className="w-14 shrink-0" />
           </div>
 
           {/* Embedded Calculator — results only, form + internal mode switcher hidden */}
@@ -138,6 +138,7 @@ const Overview = ({ data }: { data: any }) => {
             externalInputData={quotesInputData}
             externalMode={formMode}
             hideForm={true}
+            onBack={handleBack}
           />
         </div>
       ) : (
