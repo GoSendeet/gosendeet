@@ -32,7 +32,7 @@ export const TrackingNumberForm = ({
         )}
       >
         <div className={isDashboard ? "mt-4 w-full" : "flex-1"}>
-          <div className="tracking-section focus-within:outline focus-within:outline-2 focus-within:outline-[#fbbf24] focus-within:outline-offset-2">
+          <div className="tracking-section focus-within:outline-2 focus-within:outline-[#fbbf24] focus-within:outline-offset-2">
             <label
               htmlFor="trackingNumber"
               className={cn(labelClassName, "flex justify-between items-center")}
@@ -52,7 +52,6 @@ export const TrackingNumberForm = ({
             />
           </div>
         </div>
-
         <Button
           type="submit"
           loading={loading}
