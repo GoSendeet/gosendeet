@@ -37,6 +37,10 @@ export const ModeSwitcher = ({
   animate = true,
 }: ModeSwitcherProps) => {
   const tabs = DEFAULT_TABS;
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.key === mode),
+  );
 
   const containerClasses = cn(
     "flex justify-center items-center gap-0",
@@ -46,7 +50,26 @@ export const ModeSwitcher = ({
   if (variant === "pill") {
     return (
       <div className={containerClasses}>
-        <div className="inline-flex items-center lg:w-[400px] px-1 py-2 lg:py-1 bg-white rounded-full shadow-sm" style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}>
+        <div
+          className="relative grid grid-cols-3 items-center w-full max-w-[400px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
+          style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}
+        >
+          {animate ? (
+            <motion.span
+              className="absolute left-1 top-1 bottom-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]"
+              style={{ width: "calc((100% - 0.5rem) / 3)" }}
+              animate={{ x: `${activeIndex * 100}%` }}
+              transition={{ type: "spring", stiffness: 420, damping: 36 }}
+            />
+          ) : (
+            <span
+              className="absolute top-1 bottom-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]"
+              style={{
+                left: `calc(0.25rem + ${activeIndex} * ((100% - 0.5rem) / 3))`,
+                width: "calc((100% - 0.5rem) / 3)",
+              }}
+            />
+          )}
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = mode === tab.key;
@@ -62,15 +85,13 @@ export const ModeSwitcher = ({
                 type="button"
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
-                  "md:px-6 px-4 py-3.5 lg:py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-all",
-                  isActive
-                    ? "bg-green900 text-white shadow-[0px_10px_15px_-3px_#00996640]"
-                    : "text-[#62748E] hover:text-gray-800"
+                  "relative z-10 justify-center px-3 py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-colors",
+                  isActive ? "text-white" : "text-[#62748E] hover:text-gray-800"
                 )}
                 {...wrapperProps}
               >
-                <Icon className="w-4 h-4" />
-                {showLabels && tab.label}
+                <Icon className="relative z-10 w-4 h-4" />
+                {showLabels && <span className="relative z-10">{tab.label}</span>}
               </Wrapper>
             );
           })}
@@ -123,7 +144,34 @@ export const ModeSwitcher = ({
   // Default: card variant
   return (
     <div className={containerClasses}>
-      <div className="inline-flex bg-white rounded-t-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="relative grid grid-cols-3 bg-white rounded-t-2xl shadow-lg border border-gray-200 overflow-hidden">
+        {animate ? (
+          <>
+            <motion.span
+              className="absolute inset-y-0 left-0 bg-amber-50"
+              style={{ width: "33.333333%" }}
+              animate={{ x: `${activeIndex * 100}%` }}
+              transition={{ type: "spring", stiffness: 420, damping: 36 }}
+            />
+            <motion.span
+              className="absolute bottom-0 left-0 h-1 bg-amber-500"
+              style={{ width: "33.333333%" }}
+              animate={{ x: `${activeIndex * 100}%` }}
+              transition={{ type: "spring", stiffness: 420, damping: 36 }}
+            />
+          </>
+        ) : (
+          <>
+            <span
+              className="absolute inset-y-0 bg-amber-50"
+              style={{ left: `${activeIndex * 33.333333}%`, width: "33.333333%" }}
+            />
+            <span
+              className="absolute bottom-0 h-1 bg-amber-500"
+              style={{ left: `${activeIndex * 33.333333}%`, width: "33.333333%" }}
+            />
+          </>
+        )}
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = mode === tab.key;
@@ -140,24 +188,22 @@ export const ModeSwitcher = ({
               type="button"
               onClick={() => onModeChange(tab.key)}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-4 py-2 md:gap-1 md:px-6 md:py-3 lg:px-8 lg:py-4 transition-all duration-300 group relative",
+                "flex flex-col items-center gap-0.5 px-4 py-2 md:gap-1 md:px-6 md:py-3 lg:px-8 lg:py-4 transition-colors duration-300 group relative z-10",
                 !isLast && "border-r border-gray-200",
-                isActive
-                  ? "border-b-4 border-b-amber-500 bg-amber-50 -mb-[2px]"
-                  : "hover:bg-gray-50"
+                isActive ? "text-amber-600" : "hover:bg-gray-50"
               )}
               {...wrapperProps}
             >
               <Icon
                 className={cn(
-                  "w-5 h-5 md:w-6 md:h-6 transition-colors",
+                  "relative z-10 w-5 h-5 md:w-6 md:h-6 transition-colors",
                   isActive ? "text-amber-500" : "text-gray-500 group-hover:text-gray-700"
                 )}
               />
               {showLabels && (
                 <span
                   className={cn(
-                    "text-[10px] md:text-xs font-bold transition-colors",
+                    "relative z-10 text-[10px] md:text-xs font-bold transition-colors",
                     isActive ? "text-amber-600" : "text-gray-600 group-hover:text-gray-800"
                   )}
                 >

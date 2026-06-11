@@ -464,6 +464,7 @@ const Signup = () => {
                       render={({ field }) => (
                         <PhoneInput
                           country="ng"
+                          onlyCountries={["ng"]}
                           countryCodeEditable={false}
                           value={field.value}
                           onChange={(value) => field.onChange(value)}
