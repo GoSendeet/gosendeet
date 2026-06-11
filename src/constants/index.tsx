@@ -1,20 +1,16 @@
 export const MENU = [
   {
-    title: "About Us",
-    route: "/about",
+    title: "Get a quote",
+    route: "/cost-calculator",
   },
   {
     title: "Track A Delivery",
     route: "/track",
   },
   {
-    title: "Get a quote",
-    route: "/cost-calculator",
-  },
-  // {
-  //   title: "FAQ",
-  //   route: "/faq",
-  // },
+    title: "About Us",
+    route: "/about",
+  }
 ];
 
 export type BankAccountType = {

@@ -4,7 +4,6 @@ import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
-// import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
 import { ArrowUpRight, Home } from "lucide-react";
 import { Button } from "../ui/button";
 import { hasAuthSession } from "@/lib/authSession";
@@ -24,16 +23,7 @@ const Navbar = () => {
   const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role") || "";
 
-  // const userId = sessionStorage.getItem("userId") || "";
-  // const { data: userData, refetchUserData } = useGetUserDetails(userId);
-  // const username = userData?.data?.username;
-  // const letter = username?.charAt(0).toUpperCase();
 
-  // useEffect(() => {
-  //   if (userId) {
-  //     refetchUserData();
-  //   }
-  // }, [userId]);
   return (
     <nav className="bg-white backdrop-blur-md">
       <div className="flex justify-between items-center py-5 lg:py-5 xl:px-30 md:px-20 px-3 border-b border-b-neutral300">
