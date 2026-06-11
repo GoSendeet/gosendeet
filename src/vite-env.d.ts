@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPPORT_WHATSAPP?: string;
   readonly VITE_POSTHOG_KEY?: string;
   readonly VITE_POSTHOG_HOST?: string;
+  readonly VITE_SHOW_FRANCHISE_FORM?: string;
 }
 
 interface ImportMeta {

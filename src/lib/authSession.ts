@@ -11,9 +11,21 @@ type SessionUser = {
 };
 
 const AUTH_SESSION_KEY = "authSession";
+const BROADCAST_CHANNEL_NAME = "auth_session_sync";
 
-// Keys that must be shared across tabs — stored in both localStorage and sessionStorage
-const AUTH_KEYS = [AUTH_SESSION_KEY, "userId", "role", "profileImage", "sessionExpired"] as const;
+// Keys written to sessionStorage (never to localStorage)
+const SESSION_ONLY_KEYS = ["userId", "role", "profileImage"] as const;
+// Keys written to both storages (presence flag + expiry signal)
+const LOCAL_STORAGE_KEYS = [AUTH_SESSION_KEY, "sessionExpired"] as const;
+const ALL_SESSION_KEYS = [...LOCAL_STORAGE_KEYS, ...SESSION_ONLY_KEYS] as const;
+
+const openChannel = (): BroadcastChannel | null => {
+  try {
+    return new BroadcastChannel(BROADCAST_CHANNEL_NAME);
+  } catch {
+    return null;
+  }
+};
 
 const resolveProfileImage = (user: SessionUser) =>
   user.profilePicture ||
@@ -33,7 +45,7 @@ export const hasAuthSession = () =>
 export const storeAuthSession = (user: SessionUser) => {
   const profileImage = resolveProfileImage(user);
 
-  const items: Record<string, string | null> = {
+  const sessionItems: Record<string, string | null> = {
     [AUTH_SESSION_KEY]: "true",
     userId: String(user.id ?? ""),
     role: String(user.role ?? "").toLowerCase(),
@@ -41,38 +53,106 @@ export const storeAuthSession = (user: SessionUser) => {
     profileImage: profileImage || null,
   };
 
-  Object.entries(items).forEach(([key, value]) => {
+  // Write all data to sessionStorage only
+  Object.entries(sessionItems).forEach(([key, value]) => {
     if (value !== null) {
       sessionStorage.setItem(key, value);
-      localStorage.setItem(key, value);
     } else {
       sessionStorage.removeItem(key);
-      localStorage.removeItem(key);
     }
   });
+
+  // Only write presence flags to localStorage — never userId/role/profileImage
+  localStorage.setItem(AUTH_SESSION_KEY, "true");
+  localStorage.setItem("sessionExpired", "false");
 };
 
 export const clearAuthSession = () => {
-  AUTH_KEYS.forEach((key) => {
-    sessionStorage.removeItem(key);
-    localStorage.removeItem(key);
+  ALL_SESSION_KEYS.forEach((key) => sessionStorage.removeItem(key));
+  LOCAL_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+};
+
+/**
+ * Requests session data from an existing tab via BroadcastChannel.
+ * Returns a Promise that resolves once sync completes or the 300ms window
+ * expires (meaning no existing tab is open — stale flag is cleared).
+ * Called once in main.tsx before first render so route guards see a
+ * populated sessionStorage on new-tab open.
+ */
+export const syncSessionFromStorage = (): Promise<void> => {
+  return new Promise((resolve) => {
+    if (sessionStorage.getItem("userId")) {
+      resolve();
+      return;
+    }
+
+    if (localStorage.getItem(AUTH_SESSION_KEY) !== "true") {
+      resolve();
+      return;
+    }
+
+    const channel = openChannel();
+    if (!channel) {
+      // BroadcastChannel unsupported — clear the stale flag and give up
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      resolve();
+      return;
+    }
+
+    const done = () => {
+      try { channel.close(); } catch { /* ignore */ }
+      resolve();
+    };
+
+    // If no existing tab responds within 300ms the flag is stale
+    // (browser was closed without logout) — clear it and start fresh
+    const timeout = setTimeout(() => {
+      localStorage.removeItem(AUTH_SESSION_KEY);
+      done();
+    }, 300);
+
+    channel.onmessage = (event: MessageEvent) => {
+      if (event.data?.type === "SESSION_DATA") {
+        clearTimeout(timeout);
+        const { userId, role, profileImage } = event.data;
+        if (userId) {
+          sessionStorage.setItem(AUTH_SESSION_KEY, "true");
+          sessionStorage.setItem("userId", String(userId));
+          sessionStorage.setItem("role", String(role ?? ""));
+          if (profileImage) sessionStorage.setItem("profileImage", String(profileImage));
+          sessionStorage.setItem("sessionExpired", "false");
+        }
+        done();
+      }
+    };
+
+    channel.postMessage({ type: "REQUEST_SESSION" });
   });
 };
 
 /**
- * Copies auth keys from localStorage → sessionStorage.
- * Called once on app startup so new tabs inherit the active session.
+ * Registers this tab as a session data provider.
+ * When a new tab broadcasts REQUEST_SESSION, this tab replies with its
+ * sessionStorage data. Returns a cleanup function.
  */
-export const syncSessionFromStorage = () => {
-  if (sessionStorage.getItem("userId")) return; // Already populated
+export const setupCrossTabSync = (): (() => void) => {
+  const channel = openChannel();
+  if (!channel) return () => {};
 
-  const userId = localStorage.getItem("userId");
-  if (!userId) return; // No active session to sync
-
-  AUTH_KEYS.forEach((key) => {
-    const value = localStorage.getItem(key);
-    if (value !== null) {
-      sessionStorage.setItem(key, value);
+  const handler = (event: MessageEvent) => {
+    if (event.data?.type === "REQUEST_SESSION") {
+      const userId = sessionStorage.getItem("userId");
+      if (userId) {
+        channel.postMessage({
+          type: "SESSION_DATA",
+          userId,
+          role: sessionStorage.getItem("role") ?? "",
+          profileImage: sessionStorage.getItem("profileImage") ?? "",
+        });
+      }
     }
-  });
+  };
+
+  channel.addEventListener("message", handler);
+  return () => { try { channel.close(); } catch { /* ignore */ } };
 };

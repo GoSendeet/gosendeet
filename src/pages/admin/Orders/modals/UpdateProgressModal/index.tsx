@@ -5,7 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,8 +19,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useGetDeliveryProgress } from "@/queries/admin/useGetAdminSettings";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTrackingHistory } from "@/services/bookings";
-import { useEffect } from "react";
+import { createTrackingHistory, updateBookingStatus } from "@/services/bookings";
+import { formatStatus } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 export function UpdateProgressModal({
   open,
@@ -35,7 +36,7 @@ export function UpdateProgressModal({
 }) {
   const { data: deliveryProgress } = useGetDeliveryProgress({ minimize: true });
 
-  // find the matching progress item by name
+  // find the matching progress item by name to pre-select it
   const matchedProgressId = deliveryProgress?.data?.find(
     (item: any) => item.name === progress
   )?.id;
@@ -76,22 +77,37 @@ export function UpdateProgressModal({
     });
   }, [matchedProgressId, reset]);
 
+  // Derive the linked booking status from whichever progress item is currently selected
+  const selectedProgressId = useWatch({ control, name: "deliveryProgressId" });
+  const selectedProgressItem = deliveryProgress?.data?.find(
+    (item: any) => item.id === selectedProgressId
+  );
+  const linkedBookingStatus = selectedProgressItem?.bookingStatus as string | undefined;
+
+  // Capture linked status in a ref so onSuccess can access it without stale closure
+  const linkedStatusRef = useRef<string | undefined>(undefined);
+
   const queryClient = useQueryClient();
+
+  const { mutate: updateStatus } = useMutation({
+    mutationFn: (status: string) => updateBookingStatus(bookingId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+    },
+  });
 
   const { mutate: create, isPending: pendingCreate } = useMutation({
     mutationFn: createTrackingHistory,
     onSuccess: () => {
+      // If the selected progress maps to a booking status, update it now
+      if (linkedStatusRef.current) {
+        updateStatus(linkedStatusRef.current);
+      }
       toast.success("Successful");
       setOpen(false);
-      queryClient.invalidateQueries({
-        queryKey: ["tracking_history"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["bookings"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["booking_stats"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["tracking_history"] });
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking_stats"] });
       reset();
     },
     onError: (data) => {
@@ -100,9 +116,11 @@ export function UpdateProgressModal({
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    linkedStatusRef.current = linkedBookingStatus;
     create({
-      bookingId: bookingId,
+      bookingId,
       ...data,
+      ...(linkedBookingStatus ? { bookingStatus: linkedBookingStatus } : {}),
     });
   };
 
@@ -149,6 +167,12 @@ export function UpdateProgressModal({
             {errors.deliveryProgressId && (
               <p className="error text-xs text-[#FF0000]">
                 {errors.deliveryProgressId.message}
+              </p>
+            )}
+            {linkedBookingStatus && (
+              <p className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded px-3 py-2 mt-1">
+                Booking status will also update to:{" "}
+                <strong>{formatStatus(linkedBookingStatus)}</strong>
               </p>
             )}
           </div>

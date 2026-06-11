@@ -81,6 +81,15 @@ export const createTrackingHistory = async (data: any) => {
   }
 };
 
+export const updateBookingStatus = async (bookingId: string, status: string) => {
+  try {
+    const res = await api.patch(`/bookings/${bookingId}/status`, { status });
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
 
 export const trackBookings = async (id: string) => {
   try {
