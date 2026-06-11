@@ -9,6 +9,7 @@ import {
   peekPreSigninQuote,
 } from "@/lib/preSigninQuote";
 import { ArrowLeft } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const MODE_HEADER_COPY: Record<FormMode, { title: string; subtitle: string }> = {
   gosendeet: {
@@ -101,56 +102,76 @@ const Overview = ({ data: _data }: { data: any }) => {
         </div>
       </div>
 
-      {isRestoringSession ? (
-        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
-          <p className="text-sm font-medium text-grey200">Restoring your quotes...</p>
-        </div>
-      ) : showQuotePanel ? (
-        <div className="mb-10">
-          {/* Back button + ModeSwitcher on the same row */}
-          <div className="mb-6 flex flex-col gap-4 px-1">
-        
-            <div className="flex justify-center">
-              <ModeSwitcher
-                mode={formMode}
-                onModeChange={handleModeChange}
-                variant="pill"
-                animate={false}
-              />
+      <AnimatePresence mode="wait" initial={false}>
+        {isRestoringSession ? (
+          <motion.div
+            key="restoring"
+            initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -14, filter: "blur(6px)" }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col items-center justify-center min-h-[400px] gap-4"
+          >
+            <div className="w-10 h-10 border-4 border-brand/20 border-t-brand rounded-full animate-spin" />
+            <p className="text-sm font-medium text-grey200">Restoring your quotes...</p>
+          </motion.div>
+        ) : showQuotePanel ? (
+          <motion.div
+            key="quote-panel"
+            initial={{ opacity: 0, y: 24, scale: 0.985, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 18, scale: 0.985, filter: "blur(8px)" }}
+            transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-10"
+          >
+            <div className="mb-6 flex flex-col gap-4 px-1">
+              <div className="flex justify-center">
+                <ModeSwitcher
+                  mode={formMode}
+                  onModeChange={handleModeChange}
+                  variant="pill"
+                  animate={false}
+                />
+              </div>
+              <button
+                onClick={handleBack}
+                className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
             </div>
-            <button
-              onClick={handleBack}
-              className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-          </div>
 
-          {/* Embedded Calculator — results only, form + internal mode switcher hidden */}
-          <Calculator
-            externalResults={quoteResults}
-            externalInputData={quotesInputData}
-            externalMode={formMode}
-            hideForm={true}
-            onBack={handleBack}
-          />
-        </div>
-      ) : (
-        <div className="flex lg:flex-row flex-col gap-8 mb-10">
-          <div className="lg:w-[60%] rounded-3xl text-sm">
-            <FormHorizontalBar
-              activeMode={formMode}
-              onQuoteResult={handleQuoteResult}
-              onModeChange={handleModeChange}
+            <Calculator
+              externalResults={quoteResults}
+              externalInputData={quotesInputData}
+              externalMode={formMode}
+              hideForm={true}
+              onBack={handleBack}
             />
-          </div>
-          <SupportPanel />
-        </div>
-      )}
-
-      {!showQuotePanel && !isRestoringSession && <Bookings />}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="dashboard-form"
+            initial={{ opacity: 0, y: -18, scale: 0.99, filter: "blur(6px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: -18, scale: 0.99, filter: "blur(6px)" }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="flex lg:flex-row flex-col gap-8 mb-10">
+              <div className="lg:w-[60%] rounded-3xl text-sm">
+                <FormHorizontalBar
+                  activeMode={formMode}
+                  onQuoteResult={handleQuoteResult}
+                  onModeChange={handleModeChange}
+                />
+              </div>
+              <SupportPanel />
+            </div>
+            <Bookings />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
