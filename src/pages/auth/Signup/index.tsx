@@ -49,22 +49,26 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [hasPasswordInteraction, setHasPasswordInteraction] = useState(false);
 
+  const requiredTrimmedString = (fieldName: string) =>
+    z
+      .string({ required_error: `${fieldName} is required` })
+      .trim()
+      .min(1, { message: `${fieldName} is required` });
+
   const emailSchema = skipEmailValidation
-    ? z.string({ required_error: "Email address is required" }).trim().min(1, {
-        message: "Email address is required",
-      })
+    ? requiredTrimmedString("Email address")
     : z
         .string({ required_error: "Email address is required" })
         .trim()
+        .min(1, { message: "Email address is required" })
         .email({ message: "Invalid email address" });
 
   const companyEmailSchema = skipEmailValidation
-    ? z.string({ required_error: "Company email is required" }).trim().min(1, {
-        message: "Company email is required",
-      })
+    ? requiredTrimmedString("Company email")
     : z
         .string({ required_error: "Company email is required" })
         .trim()
+        .min(1, { message: "Company email is required" })
         .email({ message: "Invalid company email" });
 
   const PASSWORD_MIN_LENGTH = 8;
@@ -126,22 +130,20 @@ const Signup = () => {
 
   const customerSchema = z
     .object({
-      firstName: z
-        .string({ required_error: "First Name is required" })
-        .trim()
-        .min(1, { message: "First Name name cannot be empty" }),
-      lastName: z
-        .string({ required_error: "Last Name is required" })
-        .trim()
-        .min(1, { message: "Last Name cannot be empty" }),
+      firstName: requiredTrimmedString("First name"),
+      lastName: requiredTrimmedString("Last name"),
       email: emailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
+        .trim()
+        .min(1, { message: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
       password: strongPasswordSchema,
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
-        .min(1, { message: "Please confirm your password" }),
+        .refine((value) => value.trim().length > 0, {
+          message: "Please confirm your password",
+        }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
           message:
@@ -156,27 +158,22 @@ const Signup = () => {
 
   const franchiseSchema = z
     .object({
-      firstName: z
-        .string({ required_error: "First Name is required" })
-        .trim()
-        .min(1, { message: "First Name name cannot be empty" }),
-      lastName: z
-        .string({ required_error: "Last Name is required" })
-        .trim()
-        .min(1, { message: "Last Name cannot be empty" }),
-      companyName: z
-        .string({ required_error: "Company name is required" })
-        .trim()
-        .min(1, { message: "Company name cannot be empty" }),
+      firstName: requiredTrimmedString("First name"),
+      lastName: requiredTrimmedString("Last name"),
+      companyName: requiredTrimmedString("Company name"),
       email: emailSchema,
       companyEmail: companyEmailSchema,
       phone: z
         .string({ required_error: "Phone number is required" })
+        .trim()
+        .min(1, { message: "Phone number is required" })
         .min(10, { message: "Invalid phone number" }),
       password: strongPasswordSchema,
       confirmPassword: z
         .string({ required_error: "Please confirm your password" })
-        .min(1, { message: "Please confirm your password" }),
+        .refine((value) => value.trim().length > 0, {
+          message: "Please confirm your password",
+        }),
       agreedToTerms: z.literal(true, {
         errorMap: () => ({
           message:
