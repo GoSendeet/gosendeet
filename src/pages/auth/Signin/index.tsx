@@ -32,6 +32,8 @@ const Signin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Email from the last failed login attempt — used to offer the verification path
+  const [failedEmail, setFailedEmail] = useState<string | null>(null);
 
   useEffect(() => {
     track(EVENT.LOGIN_STARTED);
@@ -81,7 +83,15 @@ const Signin = () => {
 
       navigate(getDefaultRouteForRole(user.role));
     },
-    onError: (error: { message?: string }) => {
+    onError: (
+      error: { message?: string; data?: string },
+      submittedData,
+    ) => {
+      // Backend returns EMAIL_NOT_VERIFIED only after the password check
+      // passed, so the banner is shown strictly for unverified accounts
+      setFailedEmail(
+        error?.data === "EMAIL_NOT_VERIFIED" ? submittedData.email : null,
+      );
       toast.error(error?.message || "Login failed");
     },
   });
@@ -185,6 +195,23 @@ const Signin = () => {
                 Login
               </Button>
             </form>
+            {failedEmail && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 mb-4">
+                Your email has not been verified yet. Please verify it before
+                logging in.{" "}
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/verify-account?status=pending&email=${encodeURIComponent(failedEmail)}`,
+                    )
+                  }
+                  className="font-semibold underline text-amber-900 cursor-pointer"
+                >
+                  Verify your account
+                </button>
+              </div>
+            )}
             <div className="text-center mt-6">
               <p className="text-grey300 text-sm">
                 Don't have an account?{" "}
