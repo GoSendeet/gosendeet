@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import {
   ADDRESS_LIMITS,
   STREET_ALLOWED_REGEX,
+  sanitizeApartmentInput,
   sanitizeStreetInput,
   validateManualAddress,
 } from "@/utils/form-validators";
@@ -346,6 +347,9 @@ export function AddressPopover({
   const isStreetInvalid =
     Boolean(manualAddress.street.trim()) &&
     !STREET_ALLOWED_REGEX.test(manualAddress.street.trim());
+  const isApartmentInvalid =
+    Boolean(manualAddress.apartment.trim()) &&
+    !/^\d+$/.test(manualAddress.apartment.trim());
   const isApartmentTooLong =
     manualAddress.apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH;
   const isManualValid =
@@ -354,6 +358,7 @@ export function AddressPopover({
     Boolean(manualAddress.state.trim()) &&
     !isStreetTooLong &&
     !isStreetInvalid &&
+    !isApartmentInvalid &&
     !isApartmentTooLong;
   const hasManualLocationSelected =
     Boolean(manualAddress.state.trim()) && Boolean(manualAddress.city.trim());
@@ -510,6 +515,7 @@ export function AddressPopover({
                   <input
                     type="text"
                     value={manualAddress.street}
+                    maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH}
                     onChange={(event) =>
                       setManualAddress((current) => ({
                         ...current,
@@ -524,6 +530,17 @@ export function AddressPopover({
                         : "border-gray-200",
                     )}
                   />
+                  {isStreetInvalid && (
+                    <p className="mt-1 text-[11px] text-red-500">
+                      Street address should contain alphabets only.
+                    </p>
+                  )}
+                  {isStreetTooLong && (
+                    <p className="mt-1 text-[11px] text-red-500">
+                      Street address cannot exceed{" "}
+                      {ADDRESS_LIMITS.STREET_MAX_LENGTH} characters.
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -531,20 +548,29 @@ export function AddressPopover({
                     Apartment or house number
                   </label>
                   <input
-                    type="text"
+                    type="number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={manualAddress.apartment}
                     onChange={(event) =>
                       setManualAddress((current) => ({
                         ...current,
-                        apartment: event.target.value,
+                        apartment: sanitizeApartmentInput(event.target.value),
                       }))
                     }
-                    placeholder="Optional"
+                    placeholder="e.g. 34"
                     className={cn(
                       "w-full rounded-xl border px-3 py-2 text-sm outline-none focus:border-brand",
-                      isApartmentTooLong ? "border-red-400" : "border-gray-200",
+                      isApartmentTooLong || isApartmentInvalid
+                        ? "border-red-400"
+                        : "border-gray-200",
                     )}
                   />
+                  {isApartmentInvalid && (
+                    <p className="mt-1 text-[11px] text-red-500">
+                      Apartment or house number must be numeric.
+                    </p>
+                  )}
                 </div>
               </>
             )}

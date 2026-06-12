@@ -15,7 +15,9 @@ import { AddressModalProps, ManualAddressData } from "@/types/forms";
 import {
   validateManualAddress,
   ADDRESS_LIMITS,
+  APARTMENT_ALLOWED_REGEX,
   STREET_ALLOWED_REGEX,
+  sanitizeApartmentInput,
   sanitizeStreetInput,
 } from "@/utils/form-validators";
 import { DELIVERY_RESTRICTION_MESSAGE } from "@/constants/booking";
@@ -263,12 +265,16 @@ export function AddressModal({
   const isStreetInvalid =
     Boolean(manualAddress.street.trim()) &&
     !STREET_ALLOWED_REGEX.test(manualAddress.street.trim());
+  const isApartmentInvalid =
+    Boolean(manualAddress.apartment.trim()) &&
+    !APARTMENT_ALLOWED_REGEX.test(manualAddress.apartment.trim());
 
   const isFormValid =
     Boolean(hasRequiredFields) &&
     isLocationServiceable &&
     hasValidLengths &&
-    !isStreetInvalid;
+    !isStreetInvalid &&
+    !isApartmentInvalid;
 
   // Type-specific content
   const title = type === "pickup" ? "Pickup Location" : "Destination";
@@ -380,8 +386,8 @@ export function AddressModal({
                 const sanitized = sanitizeStreetInput(e.target.value);
                 setManualAddress({ ...manualAddress, street: sanitized });
               }}
-              placeholder="e.g., 123 Main Street"
-              maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH + 50}
+              placeholder="e.g., Admiralty Way"
+              maxLength={ADDRESS_LIMITS.STREET_MAX_LENGTH}
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
                 isStreetTooLong || isStreetInvalid
                   ? "border-red-400 focus:border-red-500"
@@ -390,7 +396,7 @@ export function AddressModal({
             />
             {isStreetInvalid && (
               <p className="text-xs text-red-500 mt-1">
-                Only letters, numbers, commas, hyphens, periods, and slashes are allowed.
+                Street address should contain alphabets only.
               </p>
             )}
             {isStreetTooLong && (
@@ -417,22 +423,28 @@ export function AddressModal({
               )}
             </div>
             <input
-              type="text"
+              type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={manualAddress.apartment}
               onChange={(e) =>
                 setManualAddress({
                   ...manualAddress,
-                  apartment: e.target.value,
+                  apartment: sanitizeApartmentInput(e.target.value),
                 })
               }
-              placeholder="e.g., Apt 5, Unit 3B, Floor 2"
-              maxLength={ADDRESS_LIMITS.APARTMENT_MAX_LENGTH + 50}
+              placeholder="e.g., 34"
               className={`w-full px-3 py-2 border-2 rounded-xl text-sm focus:outline-none transition-colors ${
-                isApartmentTooLong
+                isApartmentTooLong || isApartmentInvalid
                   ? "border-red-400 focus:border-red-500"
                   : `border-gray-200 ${INPUT_FOCUS_BORDER}`
               }`}
             />
+            {isApartmentInvalid && (
+              <p className="text-xs text-red-500 mt-1">
+                Apartment/House number must be numeric.
+              </p>
+            )}
             {isApartmentTooLong && (
               <p className="text-xs text-red-500 mt-1">
                 Apartment/House number cannot exceed{" "}

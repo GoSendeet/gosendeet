@@ -5,15 +5,22 @@
 
 // Character limits for address fields
 export const ADDRESS_LIMITS = {
-  STREET_MAX_LENGTH: 200,
+  STREET_MAX_LENGTH: 150,
   APARTMENT_MAX_LENGTH: 100,
 } as const;
 
-export const STREET_ALLOWED_REGEX = new RegExp("^[a-zA-Z0-9,. \\-'/&]+$");
-export const STREET_SANITIZE_REGEX = new RegExp("[^a-zA-Z0-9,. \\-'/&]", "g");
+export const STREET_ALLOWED_REGEX = new RegExp("^[a-zA-Z ]+$");
+export const STREET_SANITIZE_REGEX = new RegExp("[^a-zA-Z ]", "g");
+export const APARTMENT_ALLOWED_REGEX = new RegExp("^\\d+$");
+export const APARTMENT_SANITIZE_REGEX = new RegExp("\\D", "g");
 
 export const sanitizeStreetInput = (value: string) =>
-  value.replace(STREET_SANITIZE_REGEX, "");
+  value.replace(STREET_SANITIZE_REGEX, "").slice(0, ADDRESS_LIMITS.STREET_MAX_LENGTH);
+
+export const sanitizeApartmentInput = (value: string) =>
+  value
+    .replace(APARTMENT_SANITIZE_REGEX, "")
+    .slice(0, ADDRESS_LIMITS.APARTMENT_MAX_LENGTH);
 
 /**
  * Validates that a string contains only numbers and optional decimal point
@@ -144,7 +151,15 @@ export const validateManualAddress = (
     };
   }
 
-  if (apartment && apartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH) {
+  const trimmedApartment = apartment?.trim() ?? "";
+  if (trimmedApartment && !APARTMENT_ALLOWED_REGEX.test(trimmedApartment)) {
+    return {
+      valid: false,
+      message: "Apartment/House number must be numeric",
+    };
+  }
+
+  if (trimmedApartment.length > ADDRESS_LIMITS.APARTMENT_MAX_LENGTH) {
     return {
       valid: false,
       message: `Apartment/House number cannot exceed ${ADDRESS_LIMITS.APARTMENT_MAX_LENGTH} characters`,
