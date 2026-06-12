@@ -1,13 +1,13 @@
 import { CheckCheck } from "lucide-react";
 import NotificationFeed from "./NotificationFeed";
 import { type Notification } from "./NotificationRow";
-import CusstomerSupportCard from "@/components/ui/CusstomerSupportCard";
 import {
   useGetFranchiseNotifications,
   useMarkAllFranchiseNotificationsRead,
   useMarkFranchiseNotificationRead,
 } from "@/queries/franchise/useFranchiseNotifications";
 import type { FranchiseNotification } from "@/services/franchise";
+import SupportPanel from "@/components/SupportPanel";
 
 const formatNotificationTime = (value: string) => {
   const date = new Date(value);
@@ -92,7 +92,7 @@ const FranchiseNotifications = () => {
           onMarkRead={(id) => markRead(id)}
         />
 
-        <CusstomerSupportCard />
+       <SupportPanel />
       </div>
     </>
   );

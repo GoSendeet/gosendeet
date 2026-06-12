@@ -356,7 +356,12 @@ const Calculator = ({
       <div ref={resultsSectionRef}>
       {mode === "compare" && (
         <>
-          <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] md:flex-col gap-6 mb-6 font-arial">
+          <div
+            className={cn(
+              "flex flex-col gap-6 mb-6 font-arial",
+              !isEmbedded && "xl:grid xl:grid-cols-[1fr_3fr]",
+            )}
+          >
             <QuoteFilters
               activeFiltersCount={activeFiltersCount}
               clearFilters={clearFilters}

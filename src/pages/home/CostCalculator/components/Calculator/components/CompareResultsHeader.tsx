@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Copy, Locate, MapPin, MoveRight, Share2, SlidersHorizontal } from "lucide-react";
 import { FiPackage } from "react-icons/fi";
@@ -190,14 +189,14 @@ const CompareResultsHeader = ({
   return (
     <div className="mb-1 lg:mb-6">
       <div className="flex items-center justify-end gap-2 mb-2">
-        <Button
+        {/* <Button
           className="w-fit bg-brand hover:bg-green-800"
           loading={shareLoading}
           onClick={shareUrl ? copyUrl : handleShare}
-        >
-          {shareUrl ? <Copy size={16} /> : <Share2 size={16} />}
-          <span className="ml-2">{shareUrl ? "Copy Link" : "Share Quote"}</span>
-        </Button>
+        > */}
+          {/* {shareUrl ? <Copy size={16} /> : <Share2 size={16} />} */}
+          {/* <span className="ml-2">{shareUrl ? "Copy Link" : "Share Quote"}</span>
+        </Button> */}
       </div>
       <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
         <div>
