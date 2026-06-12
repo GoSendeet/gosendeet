@@ -1,5 +1,7 @@
 import type { FranchiseDashboardActivity } from "@/services/franchise";
 import { Package, CheckCircle, ArrowRight, Clock, XCircle, Wallet, AlertTriangle } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useState } from "react";
 
 const iconConfig = {
   assignment: { icon: Package, bg: "bg-orange-100", color: "text-orange-500" },
@@ -35,6 +37,10 @@ export default function RecentActivity({
   activities?: FranchiseDashboardActivity[];
   isLoading?: boolean;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  const visibleActivities = showAll ? activities : activities.slice(0, 4);
+  const canToggleActivities = activities.length > 4;
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-6 w-full">
       {/* Header */}
@@ -42,9 +48,18 @@ export default function RecentActivity({
         <h2 className="text-base font-semibold text-gray-800">
           Recent Activity
         </h2>
-        <button className="flex items-center gap-1 text-sm text-emerald-500 hover:text-emerald-600 font-medium transition-colors">
-          View All <ArrowRight size={14} />
-        </button>
+        {canToggleActivities && (
+          <button
+            onClick={() => setShowAll((value) => !value)}
+            className="flex items-center gap-1 text-sm text-emerald-500 hover:text-emerald-600 font-medium transition-colors"
+          >
+            {showAll ? "Show Less" : "View All"}
+            <ArrowRight
+              size={14}
+              className={showAll ? "-rotate-90 transition-transform" : "transition-transform"}
+            />
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -61,44 +76,55 @@ export default function RecentActivity({
           </div>
         )}
 
-        {!isLoading && activities.map((item) => {
-          const { icon: Icon, bg, color } =
-            iconConfig[(item.type as ActivityType) ?? "alert"] ?? iconConfig.alert;
-          return (
-            <div
-              key={item.id}
-              className="flex items-center py-3 gap-1 justify-between"
-            >
-              {/* Icon + Label */}
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-full ${bg}`}>
-                  <Icon size={15} className={color} />
-                </div>
-              
+        {!isLoading && (
+          <AnimatePresence initial={false}>
+            {visibleActivities.map((item, index) => {
+              const { icon: Icon, bg, color } =
+                iconConfig[(item.type as ActivityType) ?? "alert"] ?? iconConfig.alert;
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: -14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{
+                    duration: 0.24,
+                    ease: [0.22, 1, 0.36, 1],
+                    delay: showAll && index >= 4 ? (index - 4) * 0.04 : 0,
+                  }}
+                  className="flex items-center py-3 gap-1 justify-between"
+                >
+                  {/* Icon + Label */}
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${bg}`}>
+                      <Icon size={15} className={color} />
+                    </div>
 
-                <div className="flex flex-col gap-1">
-                    <span className="flex flex-col md:flex-row gap-2 text-xs font-semibold  md:text-sm text-gray-600">
+                    <div className="flex flex-col gap-1">
+                      <span className="flex flex-col md:flex-row gap-2 text-xs font-semibold md:text-sm text-gray-600">
                         {item.label}{" "}
                         <span className="text-emerald-500 font-medium">
-                            {item.trackingId ?? ""}
+                          {item.trackingId ?? ""}
                         </span>
-                    </span>
+                      </span>
 
-                    {/* Route or Detail */}
-                    <div className="flex item-center text-xs md:text-sm text-gray-500 text-center">
-                    {item.route || item.detail || "—"}
+                      {/* Route or Detail */}
+                      <div className="flex item-center text-xs md:text-sm text-gray-500 text-center">
+                        {item.route || item.detail || "—"}
+                      </div>
                     </div>
-                </div>
-              </div>
+                  </div>
 
-              {/* Time */}
-              <div className="flex items-center gap-1 text-xs text-gray-400 min-w-17.5">
-                <Clock size={11} />
-                {formatRelativeTime(item.timestamp)}
-              </div>
-            </div>
-          );
-        })}
+                  {/* Time */}
+                  <div className="flex items-center gap-1 text-xs text-gray-400 min-w-17.5">
+                    <Clock size={11} />
+                    {formatRelativeTime(item.timestamp)}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        )}
       </div>
     </div>
   );
