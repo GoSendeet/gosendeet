@@ -312,6 +312,9 @@ const Calculator = ({
   const routePickupState = extractStateFromAddress(bookingRequest?.pickupLocation);
   const routeDropOffState = extractStateFromAddress(bookingRequest?.dropOffLocation);
   const packageSummary = buildPackageSummary(bookingRequest);
+  const showCompareContext =
+    stablePriceMaxRef.current > 0 || isFetchingQuotes || hasRouteQuery;
+  const filterPriceMax = PRICE_MAX > 0 ? PRICE_MAX : 1;
 
   return (
     <div className={cn("md:px-6 bg-[#F8FAFC]", hideForm ? "pt-0 pb-8" : "py-12")}>
@@ -353,7 +356,7 @@ const Calculator = ({
       <div ref={resultsSectionRef}>
       {mode === "compare" && (
         <>
-          <div className="flex flex-col xl:flex-row md:flex-col gap-6 mb-6 font-arial">
+          <div className="flex flex-col xl:grid xl:grid-cols-[1fr_3fr] md:flex-col gap-6 mb-6 font-arial">
             <QuoteFilters
               activeFiltersCount={activeFiltersCount}
               clearFilters={clearFilters}
@@ -365,7 +368,7 @@ const Calculator = ({
               maxPrice={maxPrice}
               minPrice={minPrice}
               minPriceRef={minPriceRef}
-              priceMax={PRICE_MAX}
+              priceMax={filterPriceMax}
               providerOptions={providerOptions}
               selectedDeliverySpeed={selectedDeliverySpeed}
               selectedProviders={selectedProviders}
@@ -373,7 +376,7 @@ const Calculator = ({
               setMinPrice={setMinPrice}
               setSelectedDeliverySpeed={setSelectedDeliverySpeed}
               setSelectedProviders={setSelectedProviders}
-              showFilterControls={stablePriceMaxRef.current > 0}
+              showFilterControls={showCompareContext}
               showFilters={showFilters}
               toggleMobileFilterBtn={toggleMobileFilterBtn}
               userHasSetPriceFilter={userHasSetPriceFilter}
@@ -396,7 +399,7 @@ const Calculator = ({
                 setSortBy={setSortBy}
                 shareLoading={shareLoading}
                 shareUrl={shareUrl}
-                showActions={stablePriceMaxRef.current > 0}
+                showActions={showCompareContext}
                 toggleMobileFilterBtn={toggleMobileFilterBtn}
               />
 

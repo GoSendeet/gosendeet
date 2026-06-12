@@ -1,5 +1,16 @@
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from "react";
-import { TrendingUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Circle,
+  TrendingUp,
+  RotateCcw,
+  Wallet,
+  Users,
+  Timer,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PRICE_MIN, PRICE_STEP } from "../quoteUtils";
 
@@ -28,6 +39,28 @@ interface QuoteFiltersProps {
   userHasSetPriceFilter: MutableRefObject<boolean>;
 }
 
+const FilterSectionHeader = ({
+  description,
+  icon: Icon,
+  title,
+}: {
+  description: string;
+  icon: LucideIcon;
+  title: string;
+}) => (
+  <div className="flex items-center gap-4">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
+      <Icon size={18} />
+    </span>
+    <div>
+      <h4 className="font-semibold text-sm text-dark tracking-wider">
+        {title}
+      </h4>
+      <h3 className="text-xs text-gray-500">{description}</h3>
+    </div>
+  </div>
+);
+
 const ProviderFilter = ({
   providerOptions,
   selectedProviders,
@@ -39,12 +72,14 @@ const ProviderFilter = ({
   setSelectedProviders: Dispatch<SetStateAction<string[]>>;
   scrollable?: boolean;
 }) => (
-  <div className="mb-6">
-    <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-      Providers
-    </h4>
+  <div className="mb-6 space-y-2">
+    <FilterSectionHeader
+      description="Select one or more providers to filter quotes"
+      icon={Users}
+      title="Providers"
+    />
     <div className={cn("w-full overflow-y-auto", scrollable && "h-[160px]")}>
-      <div className="flex flex-col items-start gap-3">
+      <div className="flex flex-wrap items-start gap-3">
         {providerOptions.map((provider) => (
           <button
             key={provider}
@@ -56,12 +91,17 @@ const ProviderFilter = ({
               );
             }}
             className={cn(
-              "px-3 py-2 rounded-lg text-xs font-semibold transition-all",
+              "inline-flex min-h-10 items-center gap-3 rounded-xl border px-2 py-2 text-sm font-normal transition-all",
               selectedProviders.includes(provider)
-                ? "bg-brand text-white"
-                : "bg-brand-light text-brand hover:bg-opacity-80",
+                ? "border-[#86EFAC] bg-[#ECFDF5] text-brand shadow-sm"
+                : "border-[#D1D5DB] bg-white text-[#0F172A] hover:border-brand hover:bg-[#F8FAFC]",
             )}
           >
+            {selectedProviders.includes(provider) ? (
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
+            ) : (
+              <Circle className="h-5 w-5 shrink-0 text-[#64748B]" />
+            )}
             {provider}
           </button>
         ))}
@@ -81,10 +121,12 @@ const DeliverySpeedFilter = ({
   setSelectedDeliverySpeed: Dispatch<SetStateAction<string[]>>;
   cursorPointer?: boolean;
 }) => (
-  <div className="mb-6">
-    <h4 className="font-semibold text-sm text-gray150 mb-3 uppercase tracking-wider">
-      Delivery Speed
-    </h4>
+  <div className="mb-6 space-y-2">
+    <FilterSectionHeader
+      description="Choose how quickly you want the delivery completed"
+      icon={Timer}
+      title="Delivery Speed"
+    />
     <div className="flex flex-wrap gap-4">
       {deliverySpeedOptions.map((speed) => (
         <button
@@ -95,13 +137,18 @@ const DeliverySpeedFilter = ({
             )
           }
           className={cn(
-            "px-3 py-2 shadow-sm rounded-lg text-xs font-semibold transition-all",
+            "inline-flex min-h-10 items-center gap-3 rounded-xl border px-2 py-2 text-sm font-extrabold transition-all",
             cursorPointer && "cursor-pointer",
             selectedDeliverySpeed.includes(speed)
-              ? "bg-brand text-white"
-              : "bg-brand-light text-brand hover:bg-opacity-80",
+              ? "border-[#86EFAC] bg-[#ECFDF5] text-brand shadow-sm"
+              : "border-[#D1D5DB] bg-white text-[#475569] hover:border-brand hover:bg-[#F8FAFC]",
           )}
         >
+          {selectedDeliverySpeed.includes(speed) ? (
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
+          ) : (
+            <Clock3 className="h-5 w-5 shrink-0 text-[#64748B]" />
+          )}
           {speed}
         </button>
       ))}
@@ -134,7 +181,7 @@ const MobilePriceFilter = ({
   <div className="space-y-4">
     <div className="flex items-center justify-between ">
       <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+        <p className="text-xs text-[#99A1AF] text-capitalize text-center font-semibold mb-1">
           MIN
         </p>
         <div className="flex item-center gap-2">
@@ -173,7 +220,7 @@ const MobilePriceFilter = ({
       </div>
       <div className="text-gray-400">→</div>
       <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-        <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
+        <p className="text-xs text-[#99A1AF] text-capitalize text-center font-semibold mb-1">
           MAX
         </p>
         <div className="flex items-center gap-1">
@@ -229,10 +276,40 @@ const DesktopPriceFilter = ({
   | "userHasSetPriceFilter"
 >) => (
   <div className="mb-6">
-    <h4 className="font-semibold text-sm text-gray150 mb-6 uppercase tracking-wider">
-      Price Range
-    </h4>
     <div className="space-y-4">
+      <FilterSectionHeader
+        description="Select the minimum and maximum price for quotes"
+        icon={Wallet}
+        title="Price Range"
+      />
+      <div className="flex items-center justify-between ">
+        <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1 text-center">
+            MIN
+          </p>
+          <input
+            type="number"
+            value={minPrice}
+            onChange={(e) => handleMinInput(e.target.value)}
+            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none cursor-text"
+            step={PRICE_STEP}
+          />
+        </div>
+        <div className="text-gray-400">→</div>
+        <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1 text-center">
+            MAX
+          </p>
+          <input
+            type="number"
+            value={maxPrice}
+            onChange={(e) => handleMaxInput(e.target.value)}
+            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-right cursor-text"
+            step={PRICE_STEP}
+          />
+        </div>
+      </div>
+
       <div className="relative w-full h-6">
         <div className="absolute -top-0.1 w-full h-2.5 bg-gray-200 rounded-lg" />
 
@@ -290,33 +367,7 @@ const DesktopPriceFilter = ({
         />
       </div>
 
-      <div className="flex items-center justify-between ">
-        <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-            MIN
-          </p>
-          <input
-            type="number"
-            value={minPrice}
-            onChange={(e) => handleMinInput(e.target.value)}
-            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none cursor-text"
-            step={PRICE_STEP}
-          />
-        </div>
-        <div className="text-gray-400">→</div>
-        <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1">
-            MAX
-          </p>
-          <input
-            type="number"
-            value={maxPrice}
-            onChange={(e) => handleMaxInput(e.target.value)}
-            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-right cursor-text"
-            step={PRICE_STEP}
-          />
-        </div>
-      </div>
+
     </div>
   </div>
 );
@@ -443,19 +494,25 @@ const QuoteFilters = ({
 
     <div
       className={cn(
-        "hidden xl:w-64 w-full shrink-0",
+        "hidden w-full shrink-0",
         showFilterControls && !isEmbedded ? "md:block" : "",
       )}
     >
       <div className="bg-white rounded-xl shadow-md p-6 border border-[#E2E8F0] sticky top-4">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-semibold text-lg text-gray-900">Filters</h3>
-          <button
+          <h3 className="font-semibold text-lg text-brand">Filter quotes</h3>
+
+          <Button
             onClick={clearFilters}
-            className="text-xs font-semibold text-brand cursor-pointer hover:text-green-800 bg-brand-light py-1 px-2 rounded transition-colors"
+            className="text-xs font-semibold text-brand cursor-pointer hover:text-green-800  border border-brand-light py-1 px-2 rounded transition-colors flex items-center gap-1"
+            variant="outline"
+            size="sm"
           >
-            Reset
-          </button>
+            <RotateCcw size={14} />
+            <span>
+              Reset
+            </span>
+          </Button>
         </div>
 
         <DesktopPriceFilter
@@ -469,11 +526,13 @@ const QuoteFilters = ({
           setMinPrice={setMinPrice}
           userHasSetPriceFilter={userHasSetPriceFilter}
         />
-        <ProviderFilter
+  <hr className="my-6 border-gray-200" />
+          <ProviderFilter
           providerOptions={providerOptions}
           selectedProviders={selectedProviders}
           setSelectedProviders={setSelectedProviders}
         />
+        <hr className="my-6 border-gray-200" />
         <DeliverySpeedFilter
           cursorPointer
           deliverySpeedOptions={deliverySpeedOptions}
