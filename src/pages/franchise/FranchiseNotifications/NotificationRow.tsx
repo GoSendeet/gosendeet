@@ -1,5 +1,6 @@
 import { Truck, DollarSign, XCircle, TriangleAlert, Settings, CheckCircle2 } from "lucide-react";
 import type { FranchiseNotificationType } from "@/services/franchise";
+import { cn } from "@/lib/utils";
 
 
 export type NotificationType = FranchiseNotificationType;
@@ -97,12 +98,17 @@ type Props = {
 
 
 const NotificationRow = ({ item = MOCK_NOTIFICATIONS[0], onMarkRead }: Props) => {
-     const { icon: Icon, iconColor, iconBg } = typeConfig[item.type] ?? defaultTypeConfig;
+  const { icon: Icon, iconColor, iconBg } = typeConfig[item.type] ?? defaultTypeConfig;
+  const statusLabel = item.isUnread ? "Unread" : "Read";
+
   return (
     <button
       type="button"
       onClick={() => item.isUnread && onMarkRead?.(item.id)}
-      className={`flex items-start gap-3.5 px-4 py-4 text-left w-full transition-colors hover:bg-gray-50/70 ${item.isUnread ? "bg-brand-light" : "bg-white"}`}
+      className={cn(
+        "flex items-start gap-3.5 px-4 py-4 text-left w-full transition-colors hover:bg-gray-50/70",
+        item.isUnread ? "bg-brand-light" : "bg-white",
+      )}
     >
       {/* Icon */}
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
@@ -111,11 +117,18 @@ const NotificationRow = ({ item = MOCK_NOTIFICATIONS[0], onMarkRead }: Props) =>
 
       {/* Body */}
       <div className="flex flex-col gap-0.5 flex-1 min-w-0 ">
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <p className="text-sm font-semibold text-gray-800 truncate">{item.title}</p>
-          {item.isUnread && (
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
-          )}
+          <span
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-semibold",
+              item.isUnread
+                ? "bg-brand-light text-brand"
+                : "bg-neutral100 text-neutral500",
+            )}
+          >
+            {statusLabel}
+          </span>
         </div>
         <p className="text-xs text-gray-500 leading-relaxed">{item.message}</p>
         {item.actionLabel && (

@@ -15,6 +15,17 @@ import {
 import { toast } from "sonner";
 import SupportPanel from "@/components/SupportPanel";
 
+type DashboardNotification = {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+  status?: string;
+};
+
+const isUnreadNotification = (status?: string) =>
+  status?.toLowerCase() === "unread";
+
 const Notifications = ({ setActiveTab }: any) => {
   const [lastPage, setLastPage] = useState(1);
   const { currentPage, updatePage } = usePaginationSync(lastPage);
@@ -41,13 +52,19 @@ const Notifications = ({ setActiveTab }: any) => {
     },
   });
 
-  const update = (ids: string[]) => {
-    mutate({ ids: [ids] });
+  const update = (id: string) => {
+    mutate({ ids: [id] });
   };
 
-  const allIds = data?.data?.content?.map((item: any) => item.id) || [];
+  const notifications: DashboardNotification[] = data?.data?.content ?? [];
+  const allIds = notifications.map((item) => item.id);
+  const unreadIds = notifications
+    .filter((item) => isUnreadNotification(item.status))
+    .map((item) => item.id);
+
   const markAllAsRead = () => {
-    mutate({ ids: allIds });
+    if (!unreadIds.length) return;
+    mutate({ ids: unreadIds });
   };
 
   const { mutate: deleteFn } = useMutation({
@@ -62,8 +79,8 @@ const Notifications = ({ setActiveTab }: any) => {
     },
   });
 
-  const deleteAction = (ids: string[]) => {
-    deleteFn({ ids: [ids] });
+  const deleteAction = (id: string) => {
+    deleteFn({ ids: [id] });
   };
 
   const deleteAll = () => {
@@ -93,41 +110,57 @@ const Notifications = ({ setActiveTab }: any) => {
 
         {!isLoading && isSuccess && data && (
           <div className="lg:w-[60%] min-h-[370px] bg-white xl:p-10 py-6 px-2 rounded-3xl">
-            {data?.data?.content?.length > 0 ? (
+            {notifications.length > 0 ? (
               <div className="flex flex-col gap-6 text-sm ">
                 <div className="flex justify-end gap-4 mb-4">
-                  <p
-                    className="text-sm font-medium text-brand hover:font-semibold text-right cursor-pointer"
+                  <button
+                    type="button"
+                    disabled={!unreadIds.length}
+                    className="text-sm font-medium text-brand hover:font-semibold text-right cursor-pointer disabled:cursor-not-allowed disabled:text-neutral400"
                     onClick={markAllAsRead}
                   >
                     Mark all as read
-                  </p>
-                  <p
+                  </button>
+                  <button
+                    type="button"
                     className="text-sm font-medium text-red-500 hover:font-semibold text-right cursor-pointer"
                     onClick={deleteAll}
                   >
                     Delete all
-                  </p>
+                  </button>
                 </div>
-                {data?.data?.content?.map((item: any) => (
+                {notifications.map((item) => {
+                  const isUnread = isUnreadNotification(item.status);
+
+                  return (
                   <div className="flex flex-col gap-1" key={item.id}>
-                    <h3 className="font-clash font-semibold">{item.title}</h3>
-                    <p>
-                      <span className="text-neutral500 mr-2">
-                        {timeAgo(item.createdAt)}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-clash font-semibold">{item.title}</h3>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                          isUnread
+                            ? "bg-brand-light text-brand"
+                            : "bg-neutral100 text-neutral500",
+                        )}
+                      >
+                        {isUnread ? "Unread" : "Read"}
                       </span>
+                    </div>
+                    <p className="text-neutral500 mr-2">
+                      {timeAgo(item.createdAt)}
                     </p>
                     <div
                       className={cn(
-                        item.status === "unread"
-                          ? "border-l-brand"
-                          : "border-l-brand",
-                        "px-4 py-1 flex items-center gap-4 justify-between bg-brand-light border-l-3 rounded"
+                        isUnread
+                          ? "border-l-brand bg-brand-light"
+                          : "border-l-neutral300 bg-white",
+                        "px-4 py-3 flex items-center gap-4 justify-between border-l-3 rounded"
                       )}
                     >
                       <p className="text-neutral600">{item.message}</p>
                       <p className="flex items-center gap-2 cursor-pointer">
-                        {item.status === "unread" && (
+                        {isUnread && (
                           <LuMailCheck
                             size={18}
                             className="text-purple500"
@@ -142,7 +175,8 @@ const Notifications = ({ setActiveTab }: any) => {
                       </p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
 
                 <PaginationComponent
                   lastPage={data?.data?.page?.totalPages}

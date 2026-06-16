@@ -24,7 +24,7 @@ export const useMarkAllFranchiseNotificationsRead = (page = 1, size = 20) => {
   return useMutation({
     mutationFn: markAllFranchiseNotificationsRead,
     onSuccess: () => {
-      toast.success("Notifications marked as read");
+      toast.success("All notifications marked as read");
       queryClient.invalidateQueries({
         queryKey: franchiseNotificationsKey(page, size),
       });

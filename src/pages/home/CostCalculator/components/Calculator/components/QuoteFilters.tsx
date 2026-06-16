@@ -156,103 +156,6 @@ const DeliverySpeedFilter = ({
   </div>
 );
 
-const MobilePriceFilter = ({
-  handleMaxInput,
-  handleMinInput,
-  maxPrice,
-  minPrice,
-  minPriceRef,
-  priceMax,
-  setMaxPrice,
-  setMinPrice,
-  userHasSetPriceFilter,
-}: Pick<
-  QuoteFiltersProps,
-  | "handleMaxInput"
-  | "handleMinInput"
-  | "maxPrice"
-  | "minPrice"
-  | "minPriceRef"
-  | "priceMax"
-  | "setMaxPrice"
-  | "setMinPrice"
-  | "userHasSetPriceFilter"
->) => (
-  <div className="space-y-4">
-    <div className="flex items-center justify-between ">
-      <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-        <p className="text-xs text-[#99A1AF] text-capitalize text-center font-semibold mb-1">
-          MIN
-        </p>
-        <div className="flex item-center gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                userHasSetPriceFilter.current = true;
-                setMinPrice(Math.max(PRICE_MIN, (minPrice || PRICE_MIN) - PRICE_STEP));
-              }}
-              className="font-semibold pr-1"
-            >
-              −
-            </button>
-            <input
-              ref={minPriceRef}
-              type="number"
-              value={minPrice ?? ""}
-              onChange={(e) => handleMinInput(e.target.value)}
-              className="price-input w-full text-sm font-bold text-brand text-center bg-transparent outline-none cursor-text"
-              min={PRICE_MIN}
-              max={maxPrice}
-              step={PRICE_STEP}
-            />
-
-            <button
-              onClick={() => {
-                userHasSetPriceFilter.current = true;
-                setMinPrice(Math.min(priceMax, (minPrice || PRICE_MIN) + PRICE_STEP));
-              }}
-              className="font-semibold "
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="text-gray-400">→</div>
-      <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-        <p className="text-xs text-[#99A1AF] text-capitalize text-center font-semibold mb-1">
-          MAX
-        </p>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            value={maxPrice ?? ""}
-            onChange={(e) => handleMaxInput(e.target.value)}
-            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-center cursor-text"
-            min={minPrice}
-            max={priceMax}
-            step={PRICE_STEP}
-          />
-          <button
-            onClick={() => {
-              userHasSetPriceFilter.current = true;
-              setMaxPrice(
-                Math.max(
-                  (minPrice || PRICE_MIN) + PRICE_STEP,
-                  (maxPrice || priceMax) - PRICE_STEP,
-                ),
-              );
-            }}
-            className="font-semibold pr-1"
-          >
-            −
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 const DesktopPriceFilter = ({
   getPercent,
   handleMaxInput,
@@ -373,7 +276,6 @@ const DesktopPriceFilter = ({
 );
 
 const QuoteFilters = ({
-  activeFiltersCount,
   clearFilters,
   deliverySpeedOptions,
   getPercent,
@@ -382,7 +284,6 @@ const QuoteFilters = ({
   isEmbedded,
   maxPrice,
   minPrice,
-  minPriceRef,
   priceMax,
   providerOptions,
   selectedDeliverySpeed,
@@ -424,70 +325,67 @@ const QuoteFilters = ({
       />
       <div
         className={cn(
-          "fixed right-0 top-0 h-full w-full max-w-xs bg-white shadow-xl z-50 overflow-y-auto transform transition-transform duration-500 ease-in-out",
+          "fixed right-0 top-0 z-50 h-full w-full max-w-sm transform overflow-y-auto bg-[#F8FAFC] p-4 shadow-xl transition-transform duration-500 ease-in-out",
           showFilters ? "translate-x-0" : "translate-x-full",
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-[#E2E8F0]">
-          <h3 className="font-semibold text-lg text-gray-900">Filters</h3>
-          <button
-            onClick={() => toggleMobileFilterBtn(false)}
-            className="text-2xl text-gray-500 hover:text-gray-900"
-          >
-            ✕
-          </button>
-        </div>
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-md">
+          <div className="mb-6 flex items-center justify-between gap-3">
+            <h3 className="font-semibold text-lg text-brand">Filter quotes</h3>
 
-        <div className="p-6">
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-6">
-              <h4 className="font-semibold text-sm text-gray150 uppercase tracking-wider">
-                Price Range
-              </h4>
-              {activeFiltersCount > 0 && (
-                <button
-                  onClick={clearFilters}
-                  className="w-fit text-sm font-semibold text-brand cursor-pointer  bg-brand-light py-2 px-3 rounded"
-                >
-                  Reset Filters
-                </button>
-              )}
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={clearFilters}
+                className="flex items-center gap-1 rounded border border-brand-light px-2 py-1 text-xs font-semibold text-brand transition-colors hover:text-green-800"
+                variant="outline"
+                size="sm"
+              >
+                <RotateCcw size={14} />
+                <span>Reset</span>
+              </Button>
+              <button
+                onClick={() => toggleMobileFilterBtn(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E2E8F0] text-lg font-semibold text-gray-500 transition hover:border-brand hover:text-brand"
+                aria-label="Close filters"
+              >
+                ✕
+              </button>
             </div>
-
-            <MobilePriceFilter
-              handleMaxInput={handleMaxInput}
-              handleMinInput={handleMinInput}
-              maxPrice={maxPrice}
-              minPrice={minPrice}
-              minPriceRef={minPriceRef}
-              priceMax={priceMax}
-              setMaxPrice={setMaxPrice}
-              setMinPrice={setMinPrice}
-              userHasSetPriceFilter={userHasSetPriceFilter}
-            />
           </div>
 
+          <DesktopPriceFilter
+            getPercent={getPercent}
+            handleMaxInput={handleMaxInput}
+            handleMinInput={handleMinInput}
+            maxPrice={maxPrice}
+            minPrice={minPrice}
+            priceMax={priceMax}
+            setMaxPrice={setMaxPrice}
+            setMinPrice={setMinPrice}
+            userHasSetPriceFilter={userHasSetPriceFilter}
+          />
+          <hr className="my-6 border-gray-200" />
           <ProviderFilter
             providerOptions={providerOptions}
             scrollable
             selectedProviders={selectedProviders}
             setSelectedProviders={setSelectedProviders}
           />
+          <hr className="my-6 border-gray-200" />
           <DeliverySpeedFilter
+            cursorPointer
             deliverySpeedOptions={deliverySpeedOptions}
             selectedDeliverySpeed={selectedDeliverySpeed}
             setSelectedDeliverySpeed={setSelectedDeliverySpeed}
           />
 
-          {activeFiltersCount > 0 && (
-            <button
-              onClick={() => toggleMobileFilterBtn(false)}
-              className="w-full text-sm font-semibold text-white cursor-pointer bg-brand py-2 px-3 rounded transition-colors"
-            >
-              Apply Filters
-            </button>
-          )}
+          <button
+            onClick={() => toggleMobileFilterBtn(false)}
+            className="mt-2 w-full cursor-pointer rounded-xl bg-brand px-3 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-800"
+          >
+            Apply Filters
+          </button>
         </div>
       </div>
     </div>
@@ -495,7 +393,7 @@ const QuoteFilters = ({
     <div
       className={cn(
         "hidden w-full shrink-0",
-        showFilterControls && !isEmbedded ? "md:block" : "",
+        showFilterControls && (isEmbedded ? "xl:block" : "md:block"),
       )}
     >
       <div className="bg-white rounded-xl shadow-md p-6 border border-[#E2E8F0] sticky top-4">

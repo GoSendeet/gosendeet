@@ -359,7 +359,8 @@ const Calculator = ({
           <div
             className={cn(
               "flex flex-col gap-6 mb-6 font-arial",
-              !isEmbedded && "xl:grid xl:grid-cols-[1fr_3fr]",
+              showCompareContext &&
+                "xl:grid xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]",
             )}
           >
             <QuoteFilters

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Copy, Locate, MapPin, MoveRight, Share2, SlidersHorizontal } from "lucide-react";
+import { Locate, MapPin, MoveRight, SlidersHorizontal } from "lucide-react";
 import { FiPackage } from "react-icons/fi";
 
 const tabs = [
@@ -75,7 +75,6 @@ const CompareTabs = ({
 const CompareResultsHeader = ({
   activeTab,
   bookingRequest,
-  copyUrl,
   filteredCount,
   isEmbedded,
   onBack,
@@ -84,9 +83,6 @@ const CompareResultsHeader = ({
   routePickupState,
   setActiveTab,
   setSortBy,
-  shareLoading,
-  shareUrl,
-  handleShare,
   showActions,
   toggleMobileFilterBtn,
 }: CompareResultsHeaderProps) => {
@@ -149,23 +145,14 @@ const CompareResultsHeader = ({
         </div>
 
         {showActions && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="xl:hidden">
             <button
               type="button"
               onClick={() => toggleMobileFilterBtn(true)}
-              className="flex h-12 items-center justify-center gap-2 rounded-2xl border border-[#E2E8F0] bg-white text-sm font-bold text-brand shadow-sm transition hover:border-brand"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-[#E2E8F0] bg-white text-sm font-bold text-brand shadow-sm transition hover:border-brand"
             >
               <SlidersHorizontal size={18} />
               Filter & Sort
-            </button>
-            <button
-              type="button"
-              disabled={shareLoading}
-              onClick={shareUrl ? copyUrl : handleShare}
-              className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#064E3B] text-sm font-bold text-white shadow-sm transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {shareUrl ? <Copy size={18} /> : <Share2 size={18} />}
-              {shareUrl ? "Copy Link" : "Share Quote"}
             </button>
           </div>
         )}
