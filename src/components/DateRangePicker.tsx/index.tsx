@@ -20,6 +20,10 @@ export function DateRangePicker({
 }) {
   const [range, setRange] = React.useState<DateRange | undefined>(value);
 
+  React.useEffect(() => {
+    setRange(value);
+  }, [value]);
+
   const handleSelect = (selected: DateRange | undefined) => {
     setRange(selected);
     onChange?.(selected);

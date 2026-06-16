@@ -1,13 +1,20 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { KeyRound, Plus, RefreshCw, ShieldCheck } from "lucide-react";
+import { KeyRound, Plus, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { IoSearchOutline } from "react-icons/io5";
 import { toast } from "sonner";
 
-import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { BaseModal } from "@/components/ui/base-modal";
 import { MultiSelect } from "@/components/ui/multi";
+import {
+  AdminDataTable,
+  type AdminDataTableColumn,
+} from "@/pages/admin/components/AdminDataTable";
+import {
+  StatusSummaryCards,
+  type StatusSummaryCardItem,
+} from "@/pages/admin/components/StatusSummaryCards";
 import {
   Select,
   SelectContent,
@@ -61,6 +68,7 @@ const normalizeSelectedScopes = (scopes: string[]) =>
   AVAILABLE_SCOPES.filter((scope) => scopes.includes(scope));
 
 const isApprovedClient = (client: ApprovedClient) => client.status === "APPROVED";
+type CredentialStatusFilter = "all" | "active" | "revoked";
 
 const Credentials = () => {
   const queryClient = useQueryClient();
@@ -91,6 +99,27 @@ const Credentials = () => {
   );
 
   const stats = getClientCredentialStats(credentials);
+  const statusCards: StatusSummaryCardItem<CredentialStatusFilter>[] = [
+    {
+      key: "all",
+      title: "Total keys",
+      count: stats.total,
+      icon: <KeyRound className="text-brand" size={18} />,
+    },
+    {
+      key: "active",
+      title: "Active keys",
+      count: stats.active,
+      icon: <ShieldCheck className="text-green-700" size={18} />,
+    },
+    {
+      key: "revoked",
+      title: "Revoked keys",
+      count: stats.revoked,
+      icon: <RefreshCw className="text-amber-700" size={18} />,
+    },
+  ];
+  const hasActiveFilters = statusFilter !== "all" || Boolean(searchTerm.trim());
 
   const filteredCredentials = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -230,6 +259,104 @@ const Credentials = () => {
     }
   };
 
+  const columns: AdminDataTableColumn<ClientCredential>[] = [
+    {
+      key: "client",
+      header: "Client",
+      className: "1.4fr",
+      render: (credential) => (
+        <div>
+          <p className="font-medium text-brand">
+            {credential.clientName || "Approved client"}
+          </p>
+          <p className="mt-1 break-all text-sm text-neutral500">
+            {credential.clientId}
+          </p>
+          <span
+            className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+              credential.isRevoked
+                ? "bg-red-50 text-red-700"
+                : "bg-green-50 text-green-700"
+            }`}
+          >
+            {credential.isRevoked ? "Revoked" : "Active"}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "key",
+      header: "Key",
+      render: (credential) => (
+        <div className="text-sm text-neutral600">
+          <p className="font-medium text-brand">
+            {credential.keyPrefix || "Hidden"}
+          </p>
+          <p className="mt-1 break-all text-xs text-neutral500">
+            ID: {credential.id}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "scopes",
+      header: "Scopes",
+      className: "1.4fr",
+      render: (credential) => (
+        <div className="flex flex-wrap gap-2">
+          {credential.scopes.length > 0 ? (
+            credential.scopes.map((scope) => (
+              <span
+                key={`${credential.id}-${scope}`}
+                className="rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand"
+              >
+                {scope}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm text-neutral500">No scopes assigned</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      render: (credential) => (
+        <div className="text-sm text-neutral600">
+          <p>{formatDateTime(credential.createdAt)}</p>
+          <p className="mt-1 text-xs text-neutral500">
+            Last used: {formatDateTime(credential.lastUsedAt)}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (credential) => (
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleOpenScopesModal(credential)}
+            disabled={credential.isRevoked}
+          >
+            Update scopes
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleRevoke(credential)}
+            disabled={credential.isRevoked || revokeMutation.isPending}
+          >
+            Revoke
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -249,59 +376,19 @@ const Credentials = () => {
         </Button>
       </div>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Total keys</p>
-            <KeyRound className="text-brand" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.total}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Active keys</p>
-            <ShieldCheck className="text-green-700" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.active}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Revoked keys</p>
-            <RefreshCw className="text-amber-700" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.revoked}
-          </p>
-        </div>
-      </div>
+      <StatusSummaryCards
+        items={statusCards}
+        activeKey={statusFilter}
+        onChange={setStatusFilter}
+        className="mb-8 md:grid-cols-3"
+      />
 
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-wrap gap-3">
-          {[
-            { key: "all", label: "All" },
-            { key: "active", label: "Active" },
-            { key: "revoked", label: "Revoked" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() =>
-                setStatusFilter(tab.key as "all" | "active" | "revoked")
-              }
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === tab.key
-                  ? "bg-neutral300 text-neutral800"
-                  : "bg-neutral200 text-neutral500"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div>
+          <p className="text-sm font-semibold text-brand">Credential list</p>
+          <p className="text-xs text-neutral500">
+            Showing {statusFilter === "all" ? "all" : statusFilter} credentials
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -324,113 +411,31 @@ const Credentials = () => {
           >
             Refresh
           </Button>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("all");
+                setSearchTerm("");
+              }}
+              className="flex h-9 items-center gap-2 rounded-lg border border-brand/20 bg-brand-light px-3 text-sm font-semibold text-brand transition-colors hover:bg-[#DCFCE7]"
+            >
+              <X size={16} />
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-        {isLoading ? (
-          <div className="p-10">
-            <Spinner />
-          </div>
-        ) : isError ? (
-          <div className="p-10 text-center text-sm text-red-600">
-            We couldn&apos;t load client credentials right now.
-          </div>
-        ) : filteredCredentials.length === 0 ? (
-          <div className="p-10 text-center text-sm text-neutral500">
-            No credentials match the current filters.
-          </div>
-        ) : (
-          <>
-            <div className="hidden grid-cols-[1.4fr_1fr_1.4fr_1fr_1fr] gap-4 border-b border-neutral200 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-neutral500 lg:grid">
-              <p>Client</p>
-              <p>Key</p>
-              <p>Scopes</p>
-              <p>Created</p>
-              <p>Actions</p>
-            </div>
-
-            <div className="divide-y divide-neutral200">
-              {filteredCredentials.map((credential) => (
-                <div
-                  key={credential.id}
-                  className="grid gap-4 px-6 py-5 lg:grid-cols-[1.4fr_1fr_1.4fr_1fr_1fr] lg:items-center"
-                >
-                  <div>
-                    <p className="font-medium text-brand">
-                      {credential.clientName || "Approved client"}
-                    </p>
-                    <p className="mt-1 break-all text-sm text-neutral500">
-                      {credential.clientId}
-                    </p>
-                    <span
-                      className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                        credential.isRevoked
-                          ? "bg-red-50 text-red-700"
-                          : "bg-green-50 text-green-700"
-                      }`}
-                    >
-                      {credential.isRevoked ? "Revoked" : "Active"}
-                    </span>
-                  </div>
-
-                  <div className="text-sm text-neutral600">
-                    <p className="font-medium text-brand">
-                      {credential.keyPrefix || "Hidden"}
-                    </p>
-                    <p className="mt-1 break-all text-xs text-neutral500">
-                      ID: {credential.id}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {credential.scopes.length > 0 ? (
-                      credential.scopes.map((scope) => (
-                        <span
-                          key={`${credential.id}-${scope}`}
-                          className="rounded-full bg-brand-light px-3 py-1 text-xs font-medium text-brand"
-                        >
-                          {scope}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-sm text-neutral500">
-                        No scopes assigned
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="text-sm text-neutral600">
-                    <p>{formatDateTime(credential.createdAt)}</p>
-                    <p className="mt-1 text-xs text-neutral500">
-                      Last used: {formatDateTime(credential.lastUsedAt)}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenScopesModal(credential)}
-                      disabled={credential.isRevoked}
-                    >
-                      Update scopes
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleRevoke(credential)}
-                      disabled={credential.isRevoked || revokeMutation.isPending}
-                    >
-                      Revoke
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      <AdminDataTable
+        rows={filteredCredentials}
+        columns={columns}
+        getRowKey={(credential) => credential.id}
+        isLoading={isLoading}
+        isError={isError}
+        emptyMessage="No credentials match the current filters."
+        errorMessage="We couldn't load client credentials right now."
+      />
 
       <BaseModal
         open={createOpen}

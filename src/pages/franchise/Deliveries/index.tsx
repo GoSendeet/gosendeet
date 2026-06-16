@@ -3,7 +3,6 @@ import {
   MoreHorizontal,
   ArrowRight,
   Eye,
-  RefreshCw,
   Search,
   ChevronDown,
   Package,
@@ -1279,10 +1278,6 @@ const Deliveries = ({
                           >
                             <Eye size={14} />
                             View full details
-                          </button>
-                          <button className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
-                            <RefreshCw size={14} />
-                            Update progress
                           </button>
                         </PopoverContent>
                       </Popover>

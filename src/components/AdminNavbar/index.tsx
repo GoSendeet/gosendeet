@@ -30,6 +30,11 @@ const MORE_TABS = [
 
 const ALL_TABS = [...MAIN_TABS, ...MORE_TABS];
 
+const clearAdminListFilters = () => {
+  sessionStorage.removeItem("savedStatus");
+  sessionStorage.removeItem("savedLabel");
+};
+
 interface AdminNavbarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
@@ -108,7 +113,9 @@ const AdminNavbar = ({ activeTab, onTabChange }: AdminNavbarProps) => {
   });
 
   const handleTabClick = (key: string) => {
+    clearAdminListFilters();
     onTabChange(key);
+    navigate("/admin-dashboard");
     setNavOpen(false);
     setMoreOpen(false);
   };

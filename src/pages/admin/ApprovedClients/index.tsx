@@ -1,12 +1,16 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Building2, CheckCircle2, Clock3, Plus, XCircle } from "lucide-react";
+import { Building2, CheckCircle2, Clock3, Plus, X, XCircle } from "lucide-react";
 import { IoSearchOutline } from "react-icons/io5";
 import { toast } from "sonner";
 
-import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/button";
 import { BaseModal } from "@/components/ui/base-modal";
+import { AdminDataTable, type AdminDataTableColumn } from "@/pages/admin/components/AdminDataTable";
+import {
+  StatusSummaryCards,
+  type StatusSummaryCardItem,
+} from "@/pages/admin/components/StatusSummaryCards";
 import { useGetApprovedClients } from "@/queries/admin/useApprovedClients";
 import {
   approveClient,
@@ -36,6 +40,7 @@ const isApprovedStatus = (status: string) => status === "APPROVED";
 const isRejectedStatus = (status: string) => status === "REJECTED";
 const isPendingStatus = (status: string) =>
   !isApprovedStatus(status) && !isRejectedStatus(status);
+type ClientStatusFilter = "all" | "pending" | "approved" | "rejected";
 
 const ApprovedClients = () => {
   const queryClient = useQueryClient();
@@ -43,9 +48,7 @@ const ApprovedClients = () => {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "pending" | "approved" | "rejected"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<ClientStatusFilter>("all");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -59,6 +62,33 @@ const ApprovedClients = () => {
     approved: clients.filter((client) => isApprovedStatus(client.status)).length,
     rejected: clients.filter((client) => isRejectedStatus(client.status)).length,
   };
+  const statusCards: StatusSummaryCardItem<ClientStatusFilter>[] = [
+    {
+      key: "all",
+      title: "Total clients",
+      count: stats.total,
+      icon: <Building2 className="text-brand" size={18} />,
+    },
+    {
+      key: "pending",
+      title: "Pending review",
+      count: stats.pending,
+      icon: <Clock3 className="text-amber-700" size={18} />,
+    },
+    {
+      key: "approved",
+      title: "Approved",
+      count: stats.approved,
+      icon: <CheckCircle2 className="text-green-700" size={18} />,
+    },
+    {
+      key: "rejected",
+      title: "Rejected",
+      count: stats.rejected,
+      icon: <XCircle className="text-red-700" size={18} />,
+    },
+  ];
+  const hasActiveFilters = statusFilter !== "all" || Boolean(searchTerm.trim());
 
   const filteredClients = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -163,6 +193,94 @@ const ApprovedClients = () => {
     rejectMutation.mutate(client.id);
   };
 
+  const columns: AdminDataTableColumn<ApprovedClient>[] = [
+    {
+      key: "client",
+      header: "Client",
+      className: "1.4fr",
+      render: (client) => (
+        <div>
+          <p className="font-medium text-brand">{client.name || "Client"}</p>
+          <p className="mt-1 text-sm text-neutral500">
+            {client.email || "No email"}
+          </p>
+          <p className="mt-2 break-all text-xs text-neutral500">
+            ID: {client.id}
+          </p>
+          {client.description && (
+            <p className="mt-2 text-sm text-neutral600">
+              {client.description}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (client) => (
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+            isApprovedStatus(client.status)
+              ? "bg-green-50 text-green-700"
+              : isRejectedStatus(client.status)
+                ? "bg-red-50 text-red-700"
+                : "bg-amber-50 text-amber-700"
+          }`}
+        >
+          {isApprovedStatus(client.status)
+            ? "Approved"
+            : isRejectedStatus(client.status)
+              ? "Rejected"
+              : "Pending"}
+        </span>
+      ),
+    },
+    {
+      key: "created",
+      header: "Created",
+      className: "1.2fr",
+      render: (client) => (
+        <div className="text-sm text-neutral600">
+          {formatDateTime(client.createdAt)}
+        </div>
+      ),
+    },
+    {
+      key: "approved",
+      header: "Approved",
+      render: (client) => (
+        <div className="text-sm text-neutral600">
+          {formatDateTime(client.approvedAt)}
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (client) => (
+        <div className="flex flex-wrap gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleApprove(client)}
+            disabled={isApprovedStatus(client.status) || approveMutation.isPending}
+          >
+            Approve
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleReject(client)}
+            disabled={isRejectedStatus(client.status) || rejectMutation.isPending}
+          >
+            Reject
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -182,72 +300,19 @@ const ApprovedClients = () => {
         </Button>
       </div>
 
-      <div className="mb-8 grid gap-4 md:grid-cols-4">
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Total clients</p>
-            <Building2 className="text-brand" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.total}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Pending review</p>
-            <Clock3 className="text-amber-700" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.pending}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Approved</p>
-            <CheckCircle2 className="text-green-700" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.approved}
-          </p>
-        </div>
-
-        <div className="rounded-2xl bg-neutral200 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-neutral500">Rejected</p>
-            <XCircle className="text-red-700" size={18} />
-          </div>
-          <p className="font-inter text-2xl font-semibold text-brand">
-            {stats.rejected}
-          </p>
-        </div>
-      </div>
+      <StatusSummaryCards
+        items={statusCards}
+        activeKey={statusFilter}
+        onChange={setStatusFilter}
+        className="mb-8"
+      />
 
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-wrap gap-3">
-          {[
-            { key: "all", label: "All" },
-            { key: "pending", label: "Pending" },
-            { key: "approved", label: "Approved" },
-            { key: "rejected", label: "Rejected" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() =>
-                setStatusFilter(
-                  tab.key as "all" | "pending" | "approved" | "rejected",
-                )
-              }
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                statusFilter === tab.key
-                  ? "bg-neutral300 text-neutral800"
-                  : "bg-neutral200 text-neutral500"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div>
+          <p className="text-sm font-semibold text-brand">Client list</p>
+          <p className="text-xs text-neutral500">
+            Showing {statusFilter === "all" ? "all" : statusFilter} clients
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -266,107 +331,31 @@ const ApprovedClients = () => {
           <Button variant="outline" size="sm" onClick={() => refreshClients()}>
             Refresh
           </Button>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter("all");
+                setSearchTerm("");
+              }}
+              className="flex h-9 items-center gap-2 rounded-lg border border-brand/20 bg-brand-light px-3 text-sm font-semibold text-brand transition-colors hover:bg-[#DCFCE7]"
+            >
+              <X size={16} />
+              Clear filters
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-        {isLoading ? (
-          <div className="p-10">
-            <Spinner />
-          </div>
-        ) : isError ? (
-          <div className="p-10 text-center text-sm text-red-600">
-            We couldn&apos;t load clients right now.
-          </div>
-        ) : filteredClients.length === 0 ? (
-          <div className="p-10 text-center text-sm text-neutral500">
-            No clients match the current filters.
-          </div>
-        ) : (
-          <>
-            <div className="hidden grid-cols-[1.4fr_1fr_1.2fr_1fr_1fr] gap-4 border-b border-neutral200 px-6 py-4 text-xs font-semibold uppercase tracking-wide text-neutral500 lg:grid">
-              <p>Client</p>
-              <p>Status</p>
-              <p>Created</p>
-              <p>Approved</p>
-              <p>Actions</p>
-            </div>
-
-            <div className="divide-y divide-neutral200">
-              {filteredClients.map((client) => (
-                <div
-                  key={client.id}
-                  className="grid gap-4 px-6 py-5 lg:grid-cols-[1.4fr_1fr_1.2fr_1fr_1fr] lg:items-center"
-                >
-                  <div>
-                    <p className="font-medium text-brand">{client.name || "Client"}</p>
-                    <p className="mt-1 text-sm text-neutral500">
-                      {client.email || "No email"}
-                    </p>
-                    <p className="mt-2 break-all text-xs text-neutral500">
-                      ID: {client.id}
-                    </p>
-                    {client.description && (
-                      <p className="mt-2 text-sm text-neutral600">
-                        {client.description}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
-                        isApprovedStatus(client.status)
-                          ? "bg-green-50 text-green-700"
-                          : isRejectedStatus(client.status)
-                            ? "bg-red-50 text-red-700"
-                            : "bg-amber-50 text-amber-700"
-                      }`}
-                    >
-                      {isApprovedStatus(client.status)
-                        ? "Approved"
-                        : isRejectedStatus(client.status)
-                          ? "Rejected"
-                          : "Pending"}
-                    </span>
-                  </div>
-
-                  <div className="text-sm text-neutral600">
-                    {formatDateTime(client.createdAt)}
-                  </div>
-
-                  <div className="text-sm text-neutral600">
-                    {formatDateTime(client.approvedAt)}
-                  </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleApprove(client)}
-                      disabled={
-                        isApprovedStatus(client.status) || approveMutation.isPending
-                      }
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleReject(client)}
-                      disabled={
-                        isRejectedStatus(client.status) || rejectMutation.isPending
-                      }
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+      <AdminDataTable
+        rows={filteredClients}
+        columns={columns}
+        getRowKey={(client) => client.id}
+        isLoading={isLoading}
+        isError={isError}
+        emptyMessage="No clients match the current filters."
+        errorMessage="We couldn't load clients right now."
+      />
 
       <BaseModal
         open={createOpen}
