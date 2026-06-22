@@ -62,58 +62,47 @@ const clearStoredAuthData = () => {
   clearAccessibleCookies();
 };
 
-const stringifyResponseData = (data: unknown): string => {
-  if (!data) return "";
-  if (typeof data === "string") return data;
 
-  if (typeof data === "object") {
-    const responseData = data as Record<string, unknown>;
-    return [
-      responseData.message,
-      responseData.error,
-      responseData.detail,
-      responseData.title,
-    ]
-      .filter(Boolean)
-      .join(" ");
-  }
+// Only treat a genuine HTTP 401 as an auth failure.
+// String-matching on response body text caused false-positive logouts on 403s
+// (e.g. "You are not authorized to perform this action") and other errors whose
+// body happened to contain the word "unauthorized".
+const isUnauthorized = (error: any) => error?.response?.status === 401;
 
-  return String(data);
-};
+// Key stored in sessionStorage so the guard survives same-tab page reloads on
+// mobile (iOS Safari can restore a page from bfcache, resetting module-level
+// variables, but sessionStorage persists within the same tab).
+const REDIRECT_IN_PROGRESS_KEY = "auth_redirect_in_progress";
 
-const isUnauthorizedOrInvalidToken = (error: any) => {
-  const status = error?.response?.status;
-  const responseText = stringifyResponseData(error?.response?.data).toLowerCase();
-
-  return (
-    status === 401 ||
-    responseText.includes("unauthorized") ||
-    responseText.includes("invalid token") ||
-    responseText.includes("invalid_token")
-  );
-};
-
-let redirected = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (isUnauthorizedOrInvalidToken(error)) {
-      clearStoredAuthData();
+    if (!isUnauthorized(error)) {
+      return Promise.reject(error);
     }
 
-    if (isUnauthorizedOrInvalidToken(error) && !redirected) {
-      redirected = true; // Prevent repeat redirects
-      sessionStorage.setItem("sessionExpired", "true");
-      // Check if user is on the  dashboard
-      const isDashboard = window.location.pathname.includes("dashboard");
-      if (isDashboard) {
-        toast.error("User session expired");
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          window.location.href = "/signin";
-        }, 1000);
-      }
+    // Prevent multiple simultaneous logout flows (parallel API calls all 401-ing)
+    if (sessionStorage.getItem(REDIRECT_IN_PROGRESS_KEY) === "true") {
+      return Promise.reject(error);
     }
+
+    sessionStorage.setItem(REDIRECT_IN_PROGRESS_KEY, "true");
+    clearStoredAuthData();
+
+    // Show the expiry toast on any protected route the user was actively using.
+    // The previous check only covered paths with "dashboard" in them, so
+    // franchise users (/franchise) were silently logged out with no feedback.
+    const path = window.location.pathname;
+    const isProtectedPage =
+      path.includes("dashboard") || path.startsWith("/franchise");
+
+    if (isProtectedPage) {
+      toast.error("Your session has expired. Please log in again.");
+    }
+
+    setTimeout(() => {
+      window.location.href = "/signin";
+    }, isProtectedPage ? 1500 : 0);
 
     return Promise.reject(error);
   }
