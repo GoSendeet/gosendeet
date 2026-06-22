@@ -45,6 +45,10 @@ export const hasAuthSession = () =>
 export const storeAuthSession = (user: SessionUser) => {
   const profileImage = resolveProfileImage(user);
 
+  // Clear the redirect guard (set by the axios 401 interceptor) so a future
+  // genuine 401 can trigger the toast again after re-login.
+  sessionStorage.removeItem("auth_redirect_in_progress"); // must match REDIRECT_IN_PROGRESS_KEY in axios.ts
+
   const sessionItems: Record<string, string | null> = {
     [AUTH_SESSION_KEY]: "true",
     userId: String(user.id ?? ""),
