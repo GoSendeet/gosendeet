@@ -16,11 +16,7 @@ const Dashboard = () => {
   const { activeTab, onTabChange } = useOutletContext<DashboardContext>();
 
   const userId = sessionStorage.getItem("userId") || "";
-  const { data: userData, refetchUserData } = useGetUserDetails(userId);
-
-  useEffect(() => {
-    if (userId) refetchUserData();
-  }, [userId, refetchUserData]);
+  const { data: userData } = useGetUserDetails(userId);
 
   useEffect(() => {
     const hasPendingQuote =

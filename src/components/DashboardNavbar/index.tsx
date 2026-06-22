@@ -44,7 +44,7 @@ const DashboardNavbar = ({
 
   const userId = sessionStorage.getItem("userId") || "";
   const storedProfileImage = sessionStorage.getItem("profileImage") || "";
-  const { data: userData, refetchUserData } = useGetUserDetails(userId);
+  const { data: userData } = useGetUserDetails(userId);
 
   const profile = userData?.data;
   const username = profile?.username;
@@ -73,10 +73,6 @@ const DashboardNavbar = ({
     }
     return <span>{letter || "U"}</span>;
   };
-
-  useEffect(() => {
-    if (userId) refetchUserData();
-  }, [userId]);
 
   useEffect(() => {
     setHasAvatarError(false);

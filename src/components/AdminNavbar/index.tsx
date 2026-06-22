@@ -49,7 +49,7 @@ const AdminNavbar = ({ activeTab, onTabChange }: AdminNavbarProps) => {
 
   const userId = sessionStorage.getItem("userId") || "";
   const storedProfileImage = sessionStorage.getItem("profileImage") || "";
-  const { data: userData, refetchUserData } = useGetUserDetails(userId);
+  const { data: userData } = useGetUserDetails(userId);
 
   const profile = userData?.data;
   const username = profile?.username;
@@ -63,10 +63,6 @@ const AdminNavbar = ({ activeTab, onTabChange }: AdminNavbarProps) => {
     profile?.photoUrl ||
     profile?.photo ||
     storedProfileImage;
-
-  useEffect(() => {
-    if (userId) refetchUserData();
-  }, [userId]);
 
   useEffect(() => {
     setHasAvatarError(false);
