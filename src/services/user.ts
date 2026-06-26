@@ -112,3 +112,12 @@ export const verifyBookingPayment = async (reference: string) => {
     throwApiError(error);
   }
 };
+
+export const validatePromoCode = async (code: string) => {
+  try {
+    const res = await authApi.post(`/promo-codes/validate`, { code });
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};

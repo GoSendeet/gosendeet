@@ -21,6 +21,7 @@ const Confirmation = () => {
     searchParams.get("reference") || searchParams.get("trxref") || "";
   const [bookingId, setBookingId] = useState("");
   const [verificationComplete, setVerificationComplete] = useState(false);
+  const [verifiedAmount, setVerifiedAmount] = useState<number | null>(null);
   const verifiedReferenceRef = useRef<string | null>(null);
 
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(bookingId);
@@ -59,6 +60,7 @@ const Confirmation = () => {
 
       track(EVENT.BOOKING_CONFIRMED, { booking_id: verifiedBookingId });
       setBookingId(verifiedBookingId);
+      setVerifiedAmount(response?.data?.amount ?? null);
       setVerificationComplete(true);
       sessionStorage.setItem("bookingCompleted", "true");
       sessionStorage.removeItem("bookingInputData");
@@ -258,6 +260,26 @@ const Confirmation = () => {
                       </span>
                     </p>
 
+                    {(() => {
+                      const subTotal = Number(data?.data?.cost?.subTotal ?? 0);
+                      const paid = verifiedAmount ?? Number(data?.data?.cost?.total ?? 0);
+                      const promoDiscount = data?.data?.cost?.discountAmount
+                        ? Number(data.data.cost.discountAmount)
+                        : subTotal - paid > 0
+                        ? subTotal - paid
+                        : 0;
+
+                      return promoDiscount > 0 ? (
+                        <p className="flex justify-between items-center font-medium text-sm">
+                          <span className="text-neutral600">
+                            Promo{data?.data?.promoCode ? ` (${data.data.promoCode})` : ""}
+                          </span>
+                          <span className="text-right text-green-600">
+                            - ₦ {CurrencyFormatter(promoDiscount)}
+                          </span>
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
 
                   <hr className="border-b border-b-neutral200 my-4" />
@@ -265,7 +287,7 @@ const Confirmation = () => {
                   <p className="flex justify-between items-center font-semibold">
                     <span className="text-neutral600">Total</span>
                     <span className="text-right">
-                      ₦ {CurrencyFormatter(data?.data?.cost?.total)}
+                      ₦ {CurrencyFormatter(verifiedAmount ?? data?.data?.cost?.total)}
                     </span>
                   </p>
                 </div>
