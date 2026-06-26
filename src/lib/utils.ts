@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { TWClassNames } from "./types";
+import {
+  formatBackendUtcDate,
+  formatBackendUtcDateTime,
+  formatBackendUtcTime,
+  parseBackendUtcDate,
+} from "./timezone";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -20,7 +26,8 @@ export function cls(
 }
 
 export function formatTimestampToReadable(dateString: string): string {
-  const date = new Date(dateString);
+  const date = parseBackendUtcDate(dateString);
+  if (!date) return "Invalid date";
 
   // Extract parts
   let hours = date.getHours();
@@ -38,9 +45,9 @@ export function formatTimestampToReadable(dateString: string): string {
 
 export function timeAgo(timestamp: string): string {
   const now = new Date();
-  const past = new Date(timestamp);
+  const past = parseBackendUtcDate(timestamp);
 
-  if (isNaN(past.getTime())) return "Invalid date";
+  if (!past) return "Invalid date";
 
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
   const seconds = diffInSeconds;
@@ -127,11 +134,7 @@ export function parseDateInput(input: string) {
 }
 
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = date.toLocaleString("en-US", { month: "short" });
-  const year = date.getFullYear();
-  return `${day} ${month}, ${year}`;
+  return formatBackendUtcDate(dateString).replace(",", "");
 }
 
 // Example:
@@ -153,12 +156,7 @@ export const allowOnlyNumbers = (event: React.KeyboardEvent<HTMLInputElement>) =
 };
 
 export function formatTo12Hour(timeString: string): string {
-  const date = new Date(timeString);
-  return date.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  return formatBackendUtcTime(timeString);
 }
 
 // Example
@@ -166,19 +164,7 @@ export function formatTo12Hour(timeString: string): string {
 // console.log(formatted); // 👉 "5:17 PM"
 
 export function formatDateTime(dateString: string): string {
-  const date = new Date(dateString);
-
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = date.toLocaleString("en-US", { month: "short" });
-  const year = date.getFullYear();
-
-  const time = date.toLocaleString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
-
-  return `${day} ${month} ${year}, ${time}`;
+  return formatBackendUtcDateTime(dateString);
 }
 
 
@@ -196,8 +182,8 @@ export function formatStatus(status: string) {
 export const toDateTimeLocalInput = (value?: string | null) => {
   if (!value) return "";
 
-  const date = new Date(value);
-  if (isNaN(date.getTime())) return "";
+  const date = parseBackendUtcDate(value);
+  if (!date) return "";
 
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60000);

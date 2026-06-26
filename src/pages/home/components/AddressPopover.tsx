@@ -532,7 +532,7 @@ export function AddressPopover({
                   />
                   {isStreetInvalid && (
                     <p className="mt-1 text-[11px] text-red-500">
-                      Street address should contain alphabets only.
+                      Street address can only contain letters, numbers, and spaces.
                     </p>
                   )}
                   {isStreetTooLong && (

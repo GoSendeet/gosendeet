@@ -396,7 +396,7 @@ export function AddressModal({
             />
             {isStreetInvalid && (
               <p className="text-xs text-red-500 mt-1">
-                Street address should contain alphabets only.
+                Street address can only contain letters, numbers, and spaces.
               </p>
             )}
             {isStreetTooLong && (
