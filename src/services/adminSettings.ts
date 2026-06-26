@@ -353,3 +353,57 @@ export const deleteCrossAreaRoute = async (id: string) => {
     throwApiError(error);
   }
 };
+
+
+
+export const createPromoCode = async (data: any) => {
+  try {
+    const res = await api.post(`/promo-codes`, data);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
+export const getPromoCodes = async (options?: { page?: number; search?: string }) => {
+  try {
+    const params = new URLSearchParams();
+    if (options?.page !== undefined) {
+      params.append("page", options.page.toString());
+    }
+    if (options?.search !== undefined) {
+      params.append("search", options.search);
+    }
+    const res = await api.get(`/promo-codes?${params.toString()}`);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
+export const updatePromoCode = async (id: string, data: any) => {
+  try {
+    const res = await api.put(`/promo-codes/${id}`, data);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
+export const updatePromoCodeStatus = async (id: string, isActive: boolean) => {
+  try {
+    const res = await api.patch(`/promo-codes/${id}/status?isActive=${isActive}`);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
+export const deletePromoCode = async (id: string) => {
+  try {
+    const res = await api.delete(`/promo-codes/${id}`);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};

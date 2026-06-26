@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import Layout from "@/layouts/BookingFlowLayout";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { payForBooking } from "@/services/user";
+import { payForBooking, validatePromoCode } from "@/services/user";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import {
   ArrowRight,
@@ -15,6 +15,8 @@ import {
   Navigation,
   Package,
   PencilLine,
+  Tag,
+  X,
 } from "lucide-react";
 import { Stepper } from "@/components/ui/stepper";
 import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
@@ -38,6 +40,13 @@ const Checkout = () => {
   const errorUrl = `${APP_BASE_URL}/error-page`;
 
   //const [isChecked, setIsChecked] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    discountType: string;
+  } | null>(null);
+
   const { data: packageTypes } = useGetPackageType({ minimize: true });
   const packages = Array.isArray(packageTypes?.data)
     ? packageTypes.data
@@ -51,7 +60,8 @@ const Checkout = () => {
     resolvedPackage?.title ||
     "Package";
   const logisticsName = bookingData?.courierName || "Selected logistics partner";
-  const discount = Number(bookingData?.discount ?? bookingData?.discountAmount ?? 0);
+  const quoteDiscount = Number(bookingData?.discount ?? bookingData?.discountAmount ?? 0);
+  const promoDiscount = appliedPromo?.discountAmount ?? 0;
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -83,18 +93,43 @@ const Checkout = () => {
     sessionStorage.setItem(CHECKOUT_BOOKING_STORAGE_KEY, JSON.stringify(bookingData));
     track(EVENT.CHECKOUT_INITIATED, {
       courier_name: bookingData?.courierName,
-      total_amount: Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0),
+      total_amount: subtotal,
       currency: bookingData?.currency ?? "NGN",
     });
   }, [bookingData, navigate]);
 
-  const total = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
+  const subtotal = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
+  const total = Math.max(0, subtotal - promoDiscount);
 
   const ALLOWED_PAYMENT_ORIGINS = [
     "https://checkout.paystack.com",
     "https://standard.paystack.com",
     "https://paystack.com",
   ];
+
+  const { mutate: applyPromo, isPending: applyingPromo } = useMutation({
+    mutationFn: (code: string) => validatePromoCode(code),
+    onSuccess: (data: any) => {
+      const promo = data?.data;
+      if (!promo) {
+        toast.error("Invalid promo code");
+        return;
+      }
+      const discountType = promo.discountType ?? "FIXED_AMOUNT";
+      const rawDiscount = Number(promo.discount ?? 0);
+      const discountAmount =
+        discountType === "PERCENTAGE"
+          ? Math.min((subtotal * rawDiscount) / 100, subtotal)
+          : Number(promo.discountAmount ?? rawDiscount);
+
+      setAppliedPromo({ code: promo.code, discountAmount, discountType });
+      toast.success(`Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`);
+      setPromoInput("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Invalid or expired promo code");
+    },
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: ({
@@ -140,7 +175,13 @@ const Checkout = () => {
       specialHandling,
       ...paymentBookingData
     } = bookingData;
-    mutate({ bookingData: paymentBookingData, successUrl, errorUrl });
+
+    const payload = {
+      ...paymentBookingData,
+      ...(appliedPromo ? { promoCode: appliedPromo.code } : {}),
+    };
+
+    mutate({ bookingData: payload, successUrl, errorUrl });
   };
 
   return (
@@ -291,6 +332,56 @@ const Checkout = () => {
 
               <hr className="my-3 border-[#EAECF0]" />
 
+              {/* Promo code input */}
+              {!appliedPromo ? (
+                <div className="flex gap-2 mb-3">
+                  <div className="flex items-center flex-1 gap-2 border border-[#EAECF0] rounded-lg px-3 py-2 bg-[#FCFCFD]">
+                    <Tag className="h-4 w-4 text-[#667085] shrink-0" />
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                      placeholder="Promo code"
+                      className="flex-1 text-sm outline-none bg-transparent text-[#111827] placeholder:text-[#667085]"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (promoInput.trim()) applyPromo(promoInput.trim());
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="shrink-0 border-green500 text-green100 hover:bg-green500/10 text-sm px-3"
+                    onClick={() => {
+                      if (promoInput.trim()) applyPromo(promoInput.trim());
+                    }}
+                    loading={applyingPromo}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2 mb-3 rounded-lg border border-green500/30 bg-green500/5 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-green100 shrink-0" />
+                    <span className="text-sm font-mono font-semibold text-green100">
+                      {appliedPromo.code}
+                    </span>
+                    <span className="text-xs text-[#667085]">applied</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAppliedPromo(null)}
+                    className="text-[#667085] hover:text-[#F56630] transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col gap-2">
                 <p className="flex justify-between items-start gap-4 font-medium text-sm">
                   <span className="text-[#667085]">Delivery fee</span>
@@ -298,11 +389,19 @@ const Checkout = () => {
                     ₦ {CurrencyFormatter(bookingData?.courierCost)}
                   </span>
                 </p>
-                {discount > 0 && (
+                {quoteDiscount > 0 && (
                   <p className="flex justify-between items-start gap-4 font-medium text-sm">
                     <span className="text-[#667085]">Discount</span>
                     <span className="text-right text-green100">
-                      - ₦ {CurrencyFormatter(discount)}
+                      - ₦ {CurrencyFormatter(quoteDiscount)}
+                    </span>
+                  </p>
+                )}
+                {appliedPromo && (
+                  <p className="flex justify-between items-start gap-4 font-medium text-sm">
+                    <span className="text-[#667085]">Promo ({appliedPromo.code})</span>
+                    <span className="text-right text-green100">
+                      - ₦ {CurrencyFormatter(appliedPromo.discountAmount)}
                     </span>
                   </p>
                 )}
@@ -401,7 +500,6 @@ const Checkout = () => {
           <Button
             type="submit"
             className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-            
             onClick={submit}
             loading={isPending}
           >
