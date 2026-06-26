@@ -89,39 +89,39 @@ jobs:
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v3
 
-  deploy:
-    name: Deploy to Vercel
-    runs-on: ubuntu-latest
-    needs:
-      - quality-security
-      - codeql
-    if: github.event_name == 'push'
-    environment:
-      name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
+  # deploy:
+  #   name: Deploy to Vercel
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - quality-security
+  #     - codeql
+  #   if: github.event_name == 'push'
+  #   environment:
+  #     name: ${{ github.ref_name == 'main' && 'production' || 'preview' }}
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: yarn
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: yarn
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
 
-      - name: Deploy preview
-        if: github.ref_name != 'main'
-        run: npx vercel@latest deploy --yes --token="${{ secrets.VERCEL_TOKEN }}"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # - name: Deploy preview
+      #   if: github.ref_name != 'main'
+      #   run: npx vercel@latest deploy --yes --token="${{ secrets.VERCEL_TOKEN }}"
+      #   env:
+      #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      - name: Deploy production
-        if: github.ref_name == 'main'
-        run: npx vercel@latest deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}"
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      # - name: Deploy production
+      #   if: github.ref_name == 'main'
+      #   run: npx vercel@latest deploy --prod --yes --token="${{ secrets.VERCEL_TOKEN }}"
+      #   env:
+      #     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      #     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
