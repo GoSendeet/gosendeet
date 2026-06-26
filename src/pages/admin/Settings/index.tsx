@@ -5,6 +5,7 @@ import CoverageArea from "./components/CoverageArea";
 // import LocationCode from "./components/LocationCode";
 import DeliveryProgress from "./components/DeliveryProgress";
 import CrossAreaRoutes from "./components/CrossAreaRoutes";
+import PromoCodes from "./components/PromoCodes";
 
 const Settings = () => {
   const initialTab = sessionStorage.getItem("settingsTab");
@@ -21,6 +22,7 @@ const Settings = () => {
     // { key: "code", label: "Location Codes" },
     { key: "cross", label: "Cross Area Routes" },
     { key: "progress", label: "Delivery Progress" },
+    { key: "promo", label: "Promo Codes" },
   ];
 
   const updateUnderline = (index: number) => {
@@ -99,6 +101,7 @@ const Settings = () => {
             {/* {activeTab === "code" && <LocationCode />} */}
             {activeTab === "cross" && <CrossAreaRoutes />}
             {activeTab === "progress" && <DeliveryProgress />}
+            {activeTab === "promo" && <PromoCodes />}
           </div>
         </div>
       </div>
