@@ -1,4 +1,4 @@
-import { getAdminDimensionUnits, getAdminWeightUnits, getCoverageArea, getCrossAreaRoute, getDeliveryProgress, getLocationCode, getPackageType, getPickupOptions, getServiceLevel } from "@/services/adminSettings";
+import { getAdminDimensionUnits, getAdminWeightUnits, getCoverageArea, getCrossAreaRoute, getDeliveryProgress, getLocationCode, getPackageType, getPickupOptions, getPromoCodes, getServiceLevel } from "@/services/adminSettings";
 import { useQuery } from "@tanstack/react-query";
 
 export const useGetServiceLevel = (options?: { page?: number; minimize?: boolean }) => {
@@ -112,6 +112,22 @@ export const useGetCrossAreaRoute = (options?: { page?: number; minimize?: boole
   const query = useQuery({
     queryKey: ["cross_area_routes", options],
     queryFn: () => getCrossAreaRoute(options),
+  });
+  return {
+    isLoading: query.isPending,
+    isSuccess: query.isSuccess,
+    isError: query.isError,
+    data: query.data,
+  };
+};
+
+export const useGetPromoCodes = (options?: { page?: number; search?: string }) => {
+  const query = useQuery({
+    queryKey: ["promo_codes", options],
+    queryFn: () => getPromoCodes(options),
+    staleTime: 0,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
   return {
     isLoading: query.isPending,

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { payForBooking } from "@/services/user";
+import { payForBooking, validatePromoCode } from "@/services/user";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import {
   ArrowRight,
@@ -15,12 +15,15 @@ import {
   Navigation,
   Package,
   PencilLine,
+  Tag,
+  X,
 } from "lucide-react";
 import { Stepper } from "@/components/ui/stepper";
 import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
+const CHECKOUT_BOOKING_STORAGE_KEY = "checkoutBookingData";
 const bookingSteps = [
   { label: "Route & Package" },
   { label: "Sender & Receiver" },
@@ -36,7 +39,14 @@ const Checkout = () => {
   const successUrl = `${APP_BASE_URL}/success-page`;
   const errorUrl = `${APP_BASE_URL}/error-page`;
 
-  const [isChecked, setIsChecked] = useState(false);
+  //const [isChecked, setIsChecked] = useState(false);
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string;
+    discountAmount: number;
+    discountType: string;
+  } | null>(null);
+
   const { data: packageTypes } = useGetPackageType({ minimize: true });
   const packages = Array.isArray(packageTypes?.data)
     ? packageTypes.data
@@ -50,7 +60,8 @@ const Checkout = () => {
     resolvedPackage?.title ||
     "Package";
   const logisticsName = bookingData?.courierName || "Selected logistics partner";
-  const discount = Number(bookingData?.discount ?? bookingData?.discountAmount ?? 0);
+  const quoteDiscount = Number(bookingData?.discount ?? bookingData?.discountAmount ?? 0);
+  const promoDiscount = appliedPromo?.discountAmount ?? 0;
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -78,20 +89,47 @@ const Checkout = () => {
       navigate("/", { replace: true });
       return;
     }
+
+    sessionStorage.setItem(CHECKOUT_BOOKING_STORAGE_KEY, JSON.stringify(bookingData));
     track(EVENT.CHECKOUT_INITIATED, {
       courier_name: bookingData?.courierName,
-      total_amount: Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0),
+      total_amount: subtotal,
       currency: bookingData?.currency ?? "NGN",
     });
   }, [bookingData, navigate]);
 
-  const total = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
+  const subtotal = Number(bookingData?.tax ?? 0) + Number(bookingData?.courierCost ?? 0);
+  const total = Math.max(0, subtotal - promoDiscount);
 
   const ALLOWED_PAYMENT_ORIGINS = [
     "https://checkout.paystack.com",
     "https://standard.paystack.com",
     "https://paystack.com",
   ];
+
+  const { mutate: applyPromo, isPending: applyingPromo } = useMutation({
+    mutationFn: (code: string) => validatePromoCode(code),
+    onSuccess: (data: any) => {
+      const promo = data?.data;
+      if (!promo) {
+        toast.error("Invalid promo code");
+        return;
+      }
+      const discountType = promo.discountType ?? "FIXED_AMOUNT";
+      const rawDiscount = Number(promo.discount ?? 0);
+      const discountAmount =
+        discountType === "PERCENTAGE"
+          ? Math.min((subtotal * rawDiscount) / 100, subtotal)
+          : Number(promo.discountAmount ?? rawDiscount);
+
+      setAppliedPromo({ code: promo.code, discountAmount, discountType });
+      toast.success(`Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`);
+      setPromoInput("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Invalid or expired promo code");
+    },
+  });
 
   const { mutate, isPending } = useMutation({
     mutationFn: ({
@@ -137,7 +175,13 @@ const Checkout = () => {
       specialHandling,
       ...paymentBookingData
     } = bookingData;
-    mutate({ bookingData: paymentBookingData, successUrl, errorUrl });
+
+    const payload = {
+      ...paymentBookingData,
+      ...(appliedPromo ? { promoCode: appliedPromo.code } : {}),
+    };
+
+    mutate({ bookingData: payload, successUrl, errorUrl });
   };
 
   return (
@@ -165,10 +209,10 @@ const Checkout = () => {
                     <Navigation className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Pickup
                     </p>
-                    <p className="mt-2 break-words text-base font-medium text-[#111827]">
+                    <p className="mt-2 wrap-break-words text-sm font-light text-[#35383e]">
                       {bookingData?.pickupLocation}
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -190,10 +234,10 @@ const Checkout = () => {
                     <MapPin className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Destination
                     </p>
-                    <p className="mt-2 break-words text-base font-medium text-[#111827]">
+                    <p className="mt-2 break-words text-sm font-light text-[#35383e]">
                       {bookingData?.destination}
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -215,7 +259,7 @@ const Checkout = () => {
                     <Package className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#667085]">
+                    <p className="text-base font-semibold uppercase tracking-wide text-brand">
                       Package, pickup & instruction
                     </p>
                     <div className="mt-2 flex flex-col gap-2 text-sm text-[#475467] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-4">
@@ -288,6 +332,56 @@ const Checkout = () => {
 
               <hr className="my-3 border-[#EAECF0]" />
 
+              {/* Promo code input */}
+              {!appliedPromo ? (
+                <div className="flex gap-2 mb-3">
+                  <div className="flex items-center flex-1 gap-2 border border-[#EAECF0] rounded-lg px-3 py-2 bg-[#FCFCFD]">
+                    <Tag className="h-4 w-4 text-[#667085] shrink-0" />
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                      placeholder="Promo code"
+                      className="flex-1 text-sm outline-none bg-transparent text-[#111827] placeholder:text-[#667085]"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (promoInput.trim()) applyPromo(promoInput.trim());
+                        }
+                      }}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="shrink-0 border-green500 text-green100 hover:bg-green500/10 text-sm px-3"
+                    onClick={() => {
+                      if (promoInput.trim()) applyPromo(promoInput.trim());
+                    }}
+                    loading={applyingPromo}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2 mb-3 rounded-lg border border-green500/30 bg-green500/5 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-green100 shrink-0" />
+                    <span className="text-sm font-mono font-semibold text-green100">
+                      {appliedPromo.code}
+                    </span>
+                    <span className="text-xs text-[#667085]">applied</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setAppliedPromo(null)}
+                    className="text-[#667085] hover:text-[#F56630] transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
               <div className="flex flex-col gap-2">
                 <p className="flex justify-between items-start gap-4 font-medium text-sm">
                   <span className="text-[#667085]">Delivery fee</span>
@@ -295,11 +389,19 @@ const Checkout = () => {
                     ₦ {CurrencyFormatter(bookingData?.courierCost)}
                   </span>
                 </p>
-                {discount > 0 && (
+                {quoteDiscount > 0 && (
                   <p className="flex justify-between items-start gap-4 font-medium text-sm">
                     <span className="text-[#667085]">Discount</span>
                     <span className="text-right text-green100">
-                      - ₦ {CurrencyFormatter(discount)}
+                      - ₦ {CurrencyFormatter(quoteDiscount)}
+                    </span>
+                  </p>
+                )}
+                {appliedPromo && (
+                  <p className="flex justify-between items-start gap-4 font-medium text-sm">
+                    <span className="text-[#667085]">Promo ({appliedPromo.code})</span>
+                    <span className="text-right text-green100">
+                      - ₦ {CurrencyFormatter(appliedPromo.discountAmount)}
                     </span>
                   </p>
                 )}
@@ -314,7 +416,7 @@ const Checkout = () => {
 
               {/* Desktop-only: inline T&C + button */}
               <div className="mt-4 hidden lg:block">
-                <label className="mb-4 flex cursor-pointer gap-3 rounded-lg border border-[#EAECF0] bg-[#FCFCFD] p-3">
+                {/* <label className="mb-4 flex cursor-pointer gap-3 rounded-lg border border-[#EAECF0] bg-[#FCFCFD] p-3">
                   <input
                     type="checkbox"
                     className="mt-0.5 h-5 w-5 shrink-0 rounded
@@ -334,12 +436,11 @@ const Checkout = () => {
                   <span className="text-sm leading-5 text-[#111827]">
                     I have reviewed this booking and agree with Sendeet Terms and Conditions.
                   </span>
-                </label>
+                </label> */}
 
                 <Button
                   type="submit"
                   className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-                  disabled={!isChecked}
                   onClick={submit}
                   loading={isPending}
                 >
@@ -378,7 +479,7 @@ const Checkout = () => {
             <PencilLine className="h-4 w-4" />
             Back to pickup time
           </Button>
-          <label className="mb-3 flex cursor-pointer gap-3">
+          {/* <label className="mb-3 flex cursor-pointer gap-3">
             <input
               type="checkbox"
               className="mt-0.5 h-5 w-5 shrink-0 rounded
@@ -395,11 +496,10 @@ const Checkout = () => {
             <span className="text-xs leading-4 text-[#111827]">
               I agree with Sendeet Terms and Conditions.
             </span>
-          </label>
+          </label> */}
           <Button
             type="submit"
             className="w-full rounded-full bg-green100 px-8 py-3 text-white hover:bg-green800"
-            disabled={!isChecked}
             onClick={submit}
             loading={isPending}
           >

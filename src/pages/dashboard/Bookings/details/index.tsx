@@ -48,6 +48,7 @@ export function BookingDetails({ bookingData }: BookingDetailsProps) {
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
     bookingId,
   );
+
   const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownloadInvoice = async () => {
@@ -192,10 +193,24 @@ export function BookingDetails({ bookingData }: BookingDetailsProps) {
                     ₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}
                   </span>
                 </p>
+                {Number(data?.data?.cost?.discountAmount ?? 0) > 0 && (
+                  <p className="flex justify-between items-center md:px-8 px-4 text-green-600">
+                    {data?.data?.promoCode ? `Promo (${data.data.promoCode})` : "Promo Discount"}
+                    <span className="font-clash font-semibold">
+                      - ₦ {CurrencyFormatter(data?.data?.cost?.discountAmount)}
+                    </span>
+                  </p>
+                )}
                 <p className="flex justify-between  items-center md:px-8 px-4 py-4 font-clash font-semibold bg-brand-light rounded-full">
                   TOTAL COSTS + VAT
                   <span className="text-brand">
-                    ₦ {CurrencyFormatter(data?.data?.cost?.total)}
+                    ₦ {CurrencyFormatter(
+                      Math.max(
+                        0,
+                        Number(data?.data?.cost?.total ?? 0) -
+                          Number(data?.data?.cost?.discountAmount ?? 0)
+                      )
+                    )}
                   </span>
                 </p>
               </div>

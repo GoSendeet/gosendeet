@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { franchiseDashboardTab } from "@/constants";
 import FranchiseDashboard from "./FranchiseDashboard";
 import Deliveries from "./Deliveries";
@@ -12,6 +13,7 @@ import {
   Truck,
   TrendingUp,
   BarChart2,
+  Bell,
   Settings,
 } from "lucide-react";
 
@@ -20,14 +22,17 @@ const mobileNavItems = [
   { key: "deliveries", label: "Deliveries", icon: Truck },
   { key: "earnings", label: "Earnings", icon: TrendingUp },
   { key: "performance", label: "Performance", icon: BarChart2 },
+  { key: "notifications", label: "Alerts", icon: Bell },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
-const STORAGE_KEY = "franchiseDashboardTab";
+interface FranchiseContext {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
 
 const Franchise = () => {
-  const initialTab = sessionStorage.getItem(STORAGE_KEY) || franchiseDashboardTab[0].key;
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const { activeTab, onTabChange } = useOutletContext<FranchiseContext>();
   const [deliveryStatusTab, setDeliveryStatusTab] = useState("All Status");
   const [underlineLeft, setUnderlineLeft] = useState(0);
   const [underlineWidth, setUnderlineWidth] = useState(0);
@@ -56,8 +61,7 @@ const Franchise = () => {
 
   const handleTabChange = (key: string, index: number) => {
     updateUnderline(index);
-    setActiveTab(key);
-    sessionStorage.setItem(STORAGE_KEY, key);
+    onTabChange(key);
     if (key === "dashboard") setDeliveryStatusTab("All Status");
   };
 

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { MENU } from "../../constants";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
@@ -13,20 +12,39 @@ import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/authSession";
 import { resetUser } from "@/lib/analytics";
 
-const DashboardNavbar = () => {
+const DASHBOARD_TABS = [
+  { key: "overview", label: "Overview" },
+  { key: "notifications", label: "Notifications" },
+  { key: "bookings", label: "Bookings" },
+  { key: "settings", label: "Profile Settings" },
+  { key: "security", label: "Security" },
+];
+
+type DashboardNavTab = {
+  key: string;
+  label: string;
+};
+
+interface DashboardNavbarProps {
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+  tabs?: DashboardNavTab[];
+  showDesktopTabs?: boolean;
+}
+
+const DashboardNavbar = ({
+  activeTab,
+  onTabChange,
+  tabs = DASHBOARD_TABS,
+  showDesktopTabs = true,
+}: DashboardNavbarProps) => {
   const navigate = useNavigate();
   const [navOpen, setNavOpen] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
-  const handleNavToggle = () => {
-    setNavOpen(!navOpen);
-  };
-
-  const location = useLocation(); // Get current location
-
   const userId = sessionStorage.getItem("userId") || "";
   const storedProfileImage = sessionStorage.getItem("profileImage") || "";
-  const { data: userData, refetchUserData } = useGetUserDetails(userId);
+  const { data: userData } = useGetUserDetails(userId);
 
   const profile = userData?.data;
   const username = profile?.username;
@@ -53,15 +71,8 @@ const DashboardNavbar = () => {
         />
       );
     }
-
     return <span>{letter || "U"}</span>;
   };
-
-  useEffect(() => {
-    if (userId) {
-      refetchUserData();
-    }
-  }, [userId]);
 
   useEffect(() => {
     setHasAvatarError(false);
@@ -72,105 +83,110 @@ const DashboardNavbar = () => {
     onSuccess: () => {
       resetUser();
       clearAuthSession();
-      navigate("/");
+      navigate("/signin");
     },
     onError: (error: any) => {
       toast.error(error?.error);
     },
   });
 
+  const handleTabClick = (key: string) => {
+    onTabChange?.(key);
+    setNavOpen(false);
+  };
+
   return (
     <nav className="w-full">
       <div className="flex justify-between items-center lg:py-5 py-4 xl:px-30 md:px-20 px-6 bg-white border-b border-b-neutral300">
-        {/* Logo or Brand Name */}
+        {/* Logo */}
         <div>
-          <Link to="/">
+          <Link to="/dashboard">
             <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>
 
-        {/* Hamburger Icon (mobile view) */}
+        {/* Mobile: avatar + hamburger */}
         <div className="lg:hidden flex items-center gap-4">
-          <div className="flex flex-row gap-4 items-center">
-            <div className="w-10 h-10 flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
-              {renderAvatar()}
-            </div>
+          <div className="w-10 h-10 flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
+            {renderAvatar()}
           </div>
-          <button onClick={handleNavToggle}>
+          <button onClick={() => setNavOpen(!navOpen)}>
             <HiBars3 size={24} />
           </button>
         </div>
 
-        {/* Links (desktop view) */}
-        <ul className="hidden lg:flex xl:space-x-16 lg:space-x-6">
-          {MENU.map((link, index) => {
-            const isActive = link.route === location.pathname;
-            return (
-              <li
-                key={index}
-                className=" text-center rounded-3xl cursor-pointer"
-              >
-                <Link
-                  to={link.route}
-                  className={`block py-2 text-neutral600 hover:border-b-2 hover:border-darkGreen  ${
-                    isActive ? "border-b-2 border-darkGreen" : ""
-                  }`}
-                >
-                  {link.title}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        {/* Desktop: tab links */}
+        {onTabChange && showDesktopTabs && (
+          <ul className="hidden lg:flex xl:space-x-10 lg:space-x-5">
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <li key={tab.key} className="text-center cursor-pointer">
+                  <button
+                    onClick={() => handleTabClick(tab.key)}
+                    className={`block py-2 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "border-b-2 border-darkGreen text-[#064E3B]"
+                        : "text-neutral600 hover:border-b-2 hover:border-darkGreen"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
-        <div className="hidden lg:flex lg:flex-row items-center flex-col">
-          <div className="w-[40px] h-[40px] flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
+        {/* Desktop: avatar + logout */}
+        <div className="hidden lg:flex lg:flex-row items-center gap-2">
+          <div className="w-10 h-10 flex justify-center items-center font-bold text-md rounded-full text-white bg-brand">
             {renderAvatar()}
           </div>
           <Button
-            variant={"ghost"}
-            className="h-[40px]"
+            variant="ghost"
+            className="h-10"
             loading={isPending}
             onClick={() => mutate()}
           >
-            Log out <PiSignOutBold />{" "}
+            Log out <PiSignOutBold />
           </Button>
         </div>
 
-        {/* Links (mobile view) */}
+        {/* Mobile sidebar */}
         <div
           className={`lg:hidden absolute top-0 left-0 w-full h-[70vh] z-20 bg-white py-6 md:px-20 px-10 transition-transform duration-300 ${
-            navOpen ? "transform translate-x-0" : "transform -translate-x-full"
+            navOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex justify-between">
-            <p>MENU</p>
-
-            <button onClick={handleNavToggle}>
+          <div className="flex justify-between items-center mb-2">
+            <p className="font-semibold text-sm tracking-widest uppercase text-neutral500">
+              Menu
+            </p>
+            <button onClick={() => setNavOpen(false)}>
               <GoX size={26} />
             </button>
           </div>
 
-          <ul className="flex flex-col my-[3rem]">
-            {MENU.map((link, index) => {
-              const isActive = link.route === location.pathname;
-              return (
-                <Link
-                  to={link.route}
-                  className="hover:text-gray-300 my-3 w-[80%]"
-                  key={index}
-                >
+          {onTabChange && (
+            <ul className="flex flex-col my-10">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
                   <li
-                    className={` w-full  hover:bg-white hover:text-green cursor-pointer ${
-                      isActive ? " text-green " : ""
+                    key={tab.key}
+                    onClick={() => handleTabClick(tab.key)}
+                    className={`w-full cursor-pointer py-3 text-base font-medium border-b border-neutral100 ${
+                      isActive ? "text-[#064E3B]" : "text-neutral600"
                     }`}
                   >
-                    {link.title}
+                    {tab.label}
                   </li>
-                </Link>
-              );
-            })}
-          </ul>
+                );
+              })}
+            </ul>
+          )}
+
           <Button
             className="border-2 w-full font-semibold px-4 py-4 bg-black text-white rounded"
             loading={isPending}

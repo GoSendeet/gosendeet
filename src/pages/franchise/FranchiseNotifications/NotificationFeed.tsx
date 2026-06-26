@@ -1,17 +1,34 @@
-import { Settings } from "lucide-react";
+import { Loader2, Settings, TriangleAlert } from "lucide-react";
 import NotificationRow, { type Notification } from "./NotificationRow";
 
 type NotificationFeedProps = {
   notifications?: Notification[];
+  isError?: boolean;
+  isLoading?: boolean;
   onMarkRead?: (id: string) => void;
 };
 
-const NotificationFeed = ({ notifications, onMarkRead }: NotificationFeedProps) => {
+const NotificationFeed = ({
+  notifications,
+  isError,
+  isLoading,
+  onMarkRead,
+}: NotificationFeedProps) => {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm max-h-100 overflow-y-scroll w-full [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-600">
       {/* List */}
       <div className="divide-y divide-gray-100">
-        {!notifications?.length ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <Loader2 size={28} className="animate-spin text-brand" />
+            <p className="text-sm text-gray-500">Loading notifications...</p>
+          </div>
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-2">
+            <TriangleAlert size={28} className="text-amber-500" />
+            <p className="text-sm text-gray-500">Unable to load notifications</p>
+          </div>
+        ) : !notifications?.length ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <Settings size={28} className="text-gray-200" />
             <p className="text-sm text-gray-400">No notifications yet</p>

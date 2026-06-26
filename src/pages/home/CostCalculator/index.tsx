@@ -1,4 +1,4 @@
-import Layout from "@/layouts/HomePageLayout"
+import Layout from "@/layouts/BookingFlowLayout"
 import Calculator from "./components/Calculator"
 
 const CostCalculator = () => {

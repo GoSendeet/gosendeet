@@ -18,10 +18,10 @@ const Header = () => {
   ];
 
   const stats = [
-    { value: "99.8%", label: "Delivery Success Rate" },
-    { value: "15k+", label: "Active Users Monthly" },
-    { value: "45m", label: "Avg. Local Delivery" },
-    { value: "24/7", label: "Live Human Support" },
+    { value: "100%", label: "Insured Deliveries" },
+    { value: "Verified", label: "Courier Partners" },
+    { value: "Tracking", label: "Parcel Tracking" },
+    { value: "24/7", label: "Support Active" },
   ];
 
   return (
@@ -66,7 +66,11 @@ const Header = () => {
             animate={false}
           />
           <div className="w-96.75 lg:w-[1120px] px-2 py-3">
-            <FormHorizontalBar variant="minimal" activeMode={formMode} />
+            <FormHorizontalBar
+              variant="minimal"
+              activeMode={formMode}
+              autoFocusPickup
+            />
           </div>
         </div>
 

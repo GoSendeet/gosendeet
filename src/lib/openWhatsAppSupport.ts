@@ -8,7 +8,9 @@ const SUPPORT_NUMBER = import.meta.env.VITE_SUPPORT_WHATSAPP ?? "";
  */
 const openWhatsAppSupport = (message?: string) => {
   if (!SUPPORT_NUMBER) {
-    console.warn("VITE_SUPPORT_WHATSAPP is not set in .env");
+    if (import.meta.env.DEV) {
+      console.warn("VITE_SUPPORT_WHATSAPP is not set in .env");
+    }
     return;
   }
 

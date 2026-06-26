@@ -7,6 +7,7 @@ export type Transaction = {
   yourFee: string;
   commission: string;
   date: string;
+  status: string;
 };
 
 type Props = {
@@ -37,7 +38,7 @@ const TransactionsTable = ({ data = [], isLoading = false }: Props) => {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-100">
-            {["Tracking ID", "Customer Paid", "Your Fee", "Commission", "Date"].map((h) => (
+            {["Tracking ID", "Customer Paid", "Your Fee", "Commission", "Date", "Status"].map((h) => (
               <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">
                 {h}
               </th>
@@ -56,6 +57,11 @@ const TransactionsTable = ({ data = [], isLoading = false }: Props) => {
               <td className="px-4 py-4 font-bold text-gray-800">{row.yourFee}</td>
               <td className="px-4 py-4 font-medium text-red-500">{row.commission}</td>
               <td className="px-4 py-4 text-gray-400 text-xs whitespace-nowrap">{row.date}</td>
+              <td className="px-4 py-4">
+                <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600 whitespace-nowrap">
+                  {row.status}
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

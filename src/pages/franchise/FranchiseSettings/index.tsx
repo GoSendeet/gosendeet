@@ -1,12 +1,12 @@
 import { User, CreditCard, Truck, Bell } from "lucide-react";
 import { useState } from "react";
 import ProfileTab, { ProfileData, MOCK_PROFILE } from "./ProfileTab";
-import CusstomerSupportCard from "@/components/ui/CusstomerSupportCard";
 import BankTab from "./BankTab";
 import VehicleTab from "./VehicleTab";
 import AlertTab from "./AlertTab";
 import { useGetFranchiseProfile } from "@/queries/franchise/useFranchiseSettings";
 import { FranchiseProfile } from "@/services/franchise";
+import SupportPanel from "@/components/SupportPanel";
 
 type Tab = "profile" | "bank" | "vehicle" | "alerts";
 
@@ -71,7 +71,7 @@ const FranchiseSettings = ({ profile = MOCK_PROFILE }: SettingsPageProps) => {
           </div>
         </div>
 
-        <CusstomerSupportCard />
+        <SupportPanel />
       </div>
     </>
   );

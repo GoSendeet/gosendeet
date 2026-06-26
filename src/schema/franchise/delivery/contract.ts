@@ -44,8 +44,8 @@ export const BACKEND_TO_FRANCHISE_TASK_STATUS: Record<
   BackendTaskStatus,
   TaskStatus
 > = {
-  DRAFT: "DRAFT",
-  DISPATCHED: "DISPATCHED",
+  DRAFT: "PENDING_DISPATCH",
+  DISPATCHED: "DRAFT",
   ACCEPTED: "DISPATCHED",
   DECLINED: "CANCELLED",
   ACTIVE: "STARTED",
@@ -117,7 +117,7 @@ export const mapTaskDtoToDeliveryTask = (task: TaskDto): DeliveryTask => ({
   bookingId: task.bookingId,
   companyName: task.companyName ?? EMPTY_VALUE,
   companyId: task.companyId ?? EMPTY_VALUE,
-  taskType: task.taskType === "DROPOFF" ? "DROPOFF" : "PICKUP",
+  taskType: task.taskType,
   status: mapBackendTaskStatus(task.status),
   destinationAddress: task.destinationAddress,
   completionRequirement: mapCompletionRequirement(task.completionRequirement),

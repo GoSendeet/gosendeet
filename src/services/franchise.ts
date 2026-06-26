@@ -66,9 +66,16 @@ export type FranchiseEarningsTransaction = {
   feePaid: number;
   commission: number;
   dateCreated: string;
+  status: "PENDING_SETTLEMENT" | "PAID";
+  paymentReference?: string | null;
+  paidAt?: string | null;
 };
 
-export type FranchiseSettlementStatus = "Draft" | "Pending Approval" | "Paid";
+export type FranchiseSettlementStatus =
+  | "Draft"
+  | "Pending Approval"
+  | "Payout Failed"
+  | "Paid";
 
 export type FranchiseSettlement = {
   id: string;
@@ -218,7 +225,7 @@ export type FranchiseNotification = {
   actionUrl?: string | null;
 };
 
-const cleanParams = (params: FranchiseDeliveriesParams) =>
+const cleanParams = (params: FranchiseDeliveriesParams = {}) =>
   Object.fromEntries(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== ""),
   );
@@ -255,6 +262,32 @@ export const declineFranchiseDelivery = async ({
 }) => {
   try {
     const res = await api.post(`/franchise/deliveries/${bookingId}/decline`, {
+      reason,
+    });
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const acceptFranchiseTask = async (taskId: string) => {
+  try {
+    const res = await api.post(`/franchise/tasks/${taskId}/accept`);
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const declineFranchiseTask = async ({
+  taskId,
+  reason,
+}: {
+  taskId: string;
+  reason: string;
+}) => {
+  try {
+    const res = await api.post(`/franchise/tasks/${taskId}/decline`, {
       reason,
     });
     return res.data;
@@ -356,6 +389,20 @@ export const getFranchiseEarningsTransactions = async (
   try {
     const res = await api.get<PageResponse<FranchiseEarningsTransaction>>(
       "/franchise/earnings/transactions",
+      { params: cleanParams(params) },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const getFranchisePendingSettlementTransactions = async (
+  params: FranchiseDeliveriesParams,
+): Promise<PageResponse<FranchiseEarningsTransaction>> => {
+  try {
+    const res = await api.get<PageResponse<FranchiseEarningsTransaction>>(
+      "/franchise/settlements/transactions",
       { params: cleanParams(params) },
     );
     return res.data;
@@ -544,7 +591,7 @@ export const updateFranchiseAlertPreferences = async (
 };
 
 export const getFranchiseNotifications = async ({
-  page = 0,
+  page = 1,
   size = 20,
   status,
 }: {

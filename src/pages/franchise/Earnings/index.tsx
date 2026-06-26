@@ -7,6 +7,7 @@ import {
   useDownloadFranchiseSettlementPdf,
   useGetFranchiseEarningsSummary,
   useGetFranchiseEarningsTransactions,
+  useGetFranchisePendingSettlementTransactions,
   useGetFranchiseSettlements,
 } from "@/queries/franchise/useFranchiseEarnings";
 import type { Transaction } from "./TransactionsTable";
@@ -62,11 +63,61 @@ const formatTransactionDate = (value: string) =>
     year: "numeric",
   }).format(new Date(value));
 
+const formatOptionalDate = (value?: string | null) =>
+  value ? formatTransactionDate(value) : undefined;
+
+const formatAdjustments = (value?: number | string) => {
+  const amount = Number(value ?? 0);
+  if (amount === 0) return formatCurrency(0);
+  return amount < 0
+    ? formatCurrency(amount)
+    : `-${formatCurrency(Math.abs(amount))}`;
+};
+
+const formatTransactionStatus = (status?: string) => {
+  if (status === "PENDING_SETTLEMENT") return "Pending Settlement";
+  if (status === "PAID") return "Paid";
+  return status ?? "--";
+};
+
+const currentMonthValue = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+
+const monthRange = (value: string) => {
+  const [year, month] = value.split("-").map(Number);
+  const start = new Date(year, month - 1, 1);
+  const end = new Date(year, month, 0);
+  const toDateInput = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+  return {
+    startDate: toDateInput(start),
+    endDate: toDateInput(end),
+  };
+};
+
 const Earnings = () => {
+  const [selectedMonth, setSelectedMonth] = React.useState(currentMonthValue);
+  const selectedMonthRange = React.useMemo(
+    () => monthRange(selectedMonth),
+    [selectedMonth],
+  );
   const { data: summary, isPending: isSummaryLoading } =
     useGetFranchiseEarningsSummary();
   const { data: transactionsResponse, isPending: isTransactionsLoading } =
-    useGetFranchiseEarningsTransactions({ page: 0, size: 50 });
+    useGetFranchiseEarningsTransactions({
+      page: 0,
+      size: 100,
+      ...selectedMonthRange,
+    });
+  const { data: pendingSettlementsResponse, isPending: isPendingSettlementsLoading } =
+    useGetFranchisePendingSettlementTransactions({
+      page: 0,
+      size: 100,
+      ...selectedMonthRange,
+    });
   const { data: settlementsResponse, isPending: isSettlementsLoading } =
     useGetFranchiseSettlements({ page: 0, size: 50 });
   const downloadSettlement = useDownloadFranchiseSettlementPdf();
@@ -104,24 +155,43 @@ const Earnings = () => {
       yourFee: formatCurrency(transaction.feePaid),
       commission: `-${formatCurrency(transaction.commission)}`,
       date: formatTransactionDate(transaction.dateCreated),
+      status: formatTransactionStatus(transaction.status),
     }),
   );
 
-  const settlements: Settlement[] = (settlementsResponse?.content ?? []).map(
+  const apiSettlements: Settlement[] = (settlementsResponse?.content ?? []).map(
     (settlement) => ({
       id: settlement.id,
       period: settlement.period,
       dateRange: settlement.dateRange,
       deliveries: settlement.deliveries,
       gross: formatCurrency(settlement.gross),
-      adjustments:
-        Number(settlement.adjustments) < 0
-          ? formatCurrency(settlement.adjustments)
-          : `-${formatCurrency(Math.abs(Number(settlement.adjustments ?? 0)))}`,
+      adjustments: formatAdjustments(settlement.adjustments),
       netPayout: formatCurrency(settlement.netPayout),
       status: settlement.status,
+      paymentReference: settlement.paymentReference ?? undefined,
+      paymentMethod: settlement.paymentMethod ?? undefined,
+      paidAt: formatOptionalDate(settlement.paidAt),
     }),
   );
+
+  const pendingSettlementRows: Settlement[] = (pendingSettlementsResponse?.content ?? []).map(
+    (transaction) => ({
+      id: `pending-${transaction.id}`,
+      period: transaction.trackingId,
+      dateRange: formatTransactionDate(transaction.dateCreated),
+      deliveries: 1,
+      gross: formatCurrency(transaction.amountPaid),
+      adjustments: formatCurrency(0),
+      netPayout: formatCurrency(transaction.feePaid),
+      status: "Pending Settlement",
+      paymentReference: transaction.paymentReference ?? undefined,
+      paidAt: formatOptionalDate(transaction.paidAt),
+      generated: true,
+    }),
+  );
+
+  const settlements = [...pendingSettlementRows, ...apiSettlements];
 
   const saveBlob = (blob: Blob, settlementId: string) => {
     const url = URL.createObjectURL(blob);
@@ -188,11 +258,27 @@ const Earnings = () => {
         ))}
       </div>
 
-        {/* settlements and transactions table with toggle switch */}
+      <div className="mt-6 flex flex-col gap-2 sm:max-w-xs">
+        <label
+          htmlFor="earnings-month"
+          className="text-xs font-semibold uppercase tracking-wide text-gray-400"
+        >
+          Filter by month
+        </label>
+        <input
+          id="earnings-month"
+          type="month"
+          value={selectedMonth}
+          onChange={(event) => setSelectedMonth(event.target.value || currentMonthValue())}
+          className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+        />
+      </div>
+
+      {/* settlements and transactions table with toggle switch */}
       <div className="mt-6">
         <SettlementsEarningTable
           settlements={settlements}
-          settlementsLoading={isSettlementsLoading}
+          settlementsLoading={isSettlementsLoading || isPendingSettlementsLoading}
           transactions={transactions}
           transactionsLoading={isTransactionsLoading}
           onViewSettlement={handleViewSettlement}

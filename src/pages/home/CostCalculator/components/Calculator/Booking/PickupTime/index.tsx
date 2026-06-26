@@ -12,7 +12,7 @@ import {
   Snowflake,
   Wine,
 } from "lucide-react";
-import Layout from "@/layouts/HomePageLayout";
+import Layout from "@/layouts/BookingFlowLayout";
 import { Button } from "@/components/ui/button";
 import { Stepper } from "@/components/ui/stepper";
 import { formatDate, parseDateInput } from "@/lib/utils";
@@ -206,7 +206,7 @@ const PickupTime = () => {
     ];
 
     const response = await getQuotes(quotePayload, false, {
-      page: 0,
+      page: 1,
       size: 50,
       companyName: nextBookingData.courierName,
     });

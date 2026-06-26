@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ComponentType } from "react";
-import { Button } from "@/components/ui/button";
 import { PopoverContent } from "@/components/ui/popover";
 import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
 import { cn } from "@/lib/utils";
@@ -43,9 +42,8 @@ interface ResolvedPackageOption {
   helper: string;
   icon: ComponentType<{ className?: string }>;
   imageUrl?: string;
-  defaultWeight: string;
   packageData: PackageTypeOption;
-};
+}
 
 const WEIGHT_PRESETS = [
   { label: "0-1kg", value: "1", helper: "Very light" },
@@ -59,38 +57,22 @@ const normalizeName = (value?: string) => value?.toLowerCase().trim() || "";
 
 const getFallbackIcon = (pkg: PackageTypeOption) => {
   const normalized = normalizeName(`${pkg.name} ${pkg.code || ""}`);
-
-  if (normalized.includes("document") || normalized.includes("envelope")) {
-    return FiFileText;
-  }
-  if (normalized.includes("bag") || normalized.includes("backpack")) {
-    return LuBackpack;
-  }
+  if (normalized.includes("document") || normalized.includes("envelope")) return FiFileText;
+  if (normalized.includes("bag") || normalized.includes("backpack")) return LuBackpack;
   if (
     normalized.includes("bulky") ||
     normalized.includes("crate") ||
     normalized.includes("pallet") ||
     normalized.includes("extra large")
-  ) {
-    return LuPackageOpen;
-  }
+  ) return LuPackageOpen;
   if (normalized.includes("box")) return FiBox;
   return FiPackage;
-};
-
-const getDefaultWeight = (pkg: PackageTypeOption) => {
-  const maxWeight = Number(pkg.maxWeight);
-  if (Number.isFinite(maxWeight) && maxWeight > 0) {
-    return String(Math.min(maxWeight, 5));
-  }
-  return "5";
 };
 
 const getPackageHelper = (pkg: PackageTypeOption) => {
   const normalized = normalizeName(
     `${pkg.name} ${pkg.code || ""} ${pkg.description || ""}`,
   );
-
   if (
     normalized.includes("bulky") ||
     normalized.includes("crate") ||
@@ -98,19 +80,13 @@ const getPackageHelper = (pkg: PackageTypeOption) => {
     normalized.includes("extra large") ||
     normalized.includes("furniture") ||
     normalized.includes("appliance")
-  ) {
-    return "Requires a van";
-  }
-
+  ) return "Requires a van";
   if (
     normalized.includes("large box") ||
     normalized.includes("medium box") ||
     normalized.includes("large") ||
     normalized.includes("car")
-  ) {
-    return "Requires a car";
-  }
-
+  ) return "Requires a car";
   return "Fits on a bike";
 };
 
@@ -136,9 +112,7 @@ export function PackageTypePopover({
   } = useGetPackageType({ minimize: true });
 
   const packages = useMemo<PackageTypeOption[]>(() => {
-    if (Array.isArray(packageTypes?.data)) {
-      return packageTypes.data as PackageTypeOption[];
-    }
+    if (Array.isArray(packageTypes?.data)) return packageTypes.data as PackageTypeOption[];
     return (packageTypes?.data?.content || []) as PackageTypeOption[];
   }, [packageTypes?.data]);
 
@@ -149,7 +123,6 @@ export function PackageTypePopover({
       helper: getPackageHelper(pkg),
       icon: getFallbackIcon(pkg),
       imageUrl: pkg.imageUrl,
-      defaultWeight: getDefaultWeight(pkg),
       packageData: pkg,
     }));
   }, [packages]);
@@ -159,46 +132,55 @@ export function PackageTypePopover({
   const [manualWeight, setManualWeight] = useState("");
   const [showManualWeight, setShowManualWeight] = useState(false);
 
+  // Restore previous selection only if one exists
   useEffect(() => {
     if (options.length === 0) return;
 
-    const matchingOption = options.find(
-      (option) => String(option.packageData.id) === selectedPackageId,
-    );
-    const fallbackOption = matchingOption || options[0];
+    if (selectedPackageId) {
+      const match = options.find((o) => String(o.packageData.id) === selectedPackageId);
+      if (match) setSelectedKey(match.key);
+    }
 
-    setSelectedKey(fallbackOption.key);
-    setSelectedWeight(currentWeight || fallbackOption.defaultWeight || "");
+    setSelectedWeight(currentWeight || "");
     setManualWeight(currentWeight || "");
     setShowManualWeight(false);
   }, [currentWeight, options, selectedPackageId]);
 
-  const selectedOption =
-    options.find((option) => option.key === selectedKey) || options[0];
-  const effectiveWeight = showManualWeight ? manualWeight : selectedWeight;
-  const canApply = Boolean(selectedOption?.packageData?.id && effectiveWeight);
-
-  const handlePackageSelect = (key: string) => {
-    const option = options.find((item) => item.key === key);
-    if (!option) return;
-
-    setSelectedKey(key);
-    setShowManualWeight(false);
-    setSelectedWeight(option.defaultWeight);
-  };
-
-  const handleApply = () => {
-    if (!canApply || !selectedOption) return;
-
+  const applySelection = (pkgKey: string, weight: string) => {
+    const option = options.find((o) => o.key === pkgKey);
+    if (!option || !weight) return;
     onConfirm(
-      String(selectedOption.packageData.id),
-      selectedOption.label,
-      effectiveWeight,
-      formatDimensions(selectedOption.packageData),
+      String(option.packageData.id),
+      option.label,
+      weight,
+      formatDimensions(option.packageData),
       currentItemPrice,
-      selectedOption.packageData,
+      option.packageData,
     );
     onOpenChange(false);
+  };
+
+  const handlePackageSelect = (key: string) => {
+    setSelectedKey(key);
+    setShowManualWeight(false);
+    const effectiveWeight = showManualWeight ? manualWeight : selectedWeight;
+    if (effectiveWeight) {
+      applySelection(key, effectiveWeight);
+    }
+  };
+
+  const handleWeightSelect = (value: string) => {
+    setShowManualWeight(false);
+    setSelectedWeight(value);
+    if (selectedKey) {
+      applySelection(selectedKey, value);
+    }
+  };
+
+  const handleManualWeightCommit = () => {
+    if (manualWeight && selectedKey) {
+      applySelection(selectedKey, manualWeight);
+    }
   };
 
   return (
@@ -211,9 +193,7 @@ export function PackageTypePopover({
     >
       <div className="space-y-5">
         <div>
-          <h3 className="text-sm font-bold text-[#0F172A]">
-            1. Choose a package type
-          </h3>
+          <h3 className="text-sm font-bold text-[#0F172A]">Choose a package type</h3>
           <p className="mt-1 text-xs text-[#64748B]">
             Pick the closest match. You can enter exact weight manually.
           </p>
@@ -224,9 +204,7 @@ export function PackageTypePopover({
         )}
 
         {!isPackageTypesLoading && isPackageTypesError && (
-          <p className="text-sm text-red-500">
-            Unable to load package types right now.
-          </p>
+          <p className="text-sm text-red-500">Unable to load package types right now.</p>
         )}
 
         {!isPackageTypesLoading && !isPackageTypesError && (
@@ -278,9 +256,7 @@ export function PackageTypePopover({
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-bold text-[#0F172A]">
-                2. Approximate weight
-              </h3>
+              <h3 className="text-sm font-bold text-[#0F172A]">Approximate weight</h3>
               <p className="mt-1 text-xs text-[#64748B]">
                 Choose a preset or enter the exact weight.
               </p>
@@ -296,17 +272,13 @@ export function PackageTypePopover({
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
             {WEIGHT_PRESETS.map((preset) => {
-              const isSelected =
-                !showManualWeight && selectedWeight === preset.value;
+              const isSelected = !showManualWeight && selectedWeight === preset.value;
 
               return (
                 <button
                   key={preset.value}
                   type="button"
-                  onClick={() => {
-                    setShowManualWeight(false);
-                    setSelectedWeight(preset.value);
-                  }}
+                  onClick={() => handleWeightSelect(preset.value)}
                   className={cn(
                     "relative rounded-xl border px-3 py-3 text-center transition-colors",
                     isSelected
@@ -338,10 +310,18 @@ export function PackageTypePopover({
               <input
                 type="text"
                 value={manualWeight}
+                autoFocus
                 onChange={(event) => {
                   const value = event.target.value;
                   if (/^\d*\.?\d*$/.test(value)) {
                     setManualWeight(value);
+                  }
+                }}
+                onBlur={handleManualWeightCommit}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleManualWeightCommit();
                   }
                 }}
                 placeholder="e.g. 3.5"
@@ -350,16 +330,6 @@ export function PackageTypePopover({
             </div>
           )}
         </div>
-
-        <Button
-          type="button"
-          size="custom"
-          onClick={handleApply}
-          disabled={!canApply}
-          className="w-full justify-center bg-[#064E3B] py-3 font-bold"
-        >
-          Apply
-        </Button>
       </div>
     </PopoverContent>
   );

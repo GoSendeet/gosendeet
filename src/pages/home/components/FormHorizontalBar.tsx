@@ -1,149 +1,35 @@
-import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import { getQuotes } from "@/services/user";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { FiFlag, FiMapPin } from "react-icons/fi";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
+import { Popover, PopoverAnchor, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { trackBookingsHandler } from "@/hooks/useTrackBookings";
+import { MAX_SUPPORTED_ITEM_VALUE } from "@/constants/booking";
+import { isServiceableAddress } from "@/utils/address";
 import { AddressPopover } from "./AddressPopover";
 import { PackageTypePopover } from "./PackageTypePopover";
-import { Popover, PopoverAnchor, PopoverTrigger } from "@/components/ui/popover";
-import { FiFlag, FiMapPin, FiPackage } from "react-icons/fi";
-import { FaAngleDown } from "react-icons/fa";
-import { NIGERIAN_STATES_AND_CITIES } from "@/constants/nigeriaLocations";
-import { trackBookingsHandler } from "@/hooks/useTrackBookings";
-import { GoArrowRight } from "react-icons/go";
-import { track, EVENT } from "@/lib/analytics";
-
-const MAX_SUPPORTED_ITEM_VALUE = 100000;
-
-const normalizeStateKey = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/\s*state$/, "")
-    .trim();
-
-const normalizeCityKey = (value: string) =>
-  value.toLowerCase().replace(/\s+/g, " ").trim();
-
-const STATE_LOOKUP = NIGERIAN_STATES_AND_CITIES.reduce<Record<string, string>>(
-  (acc, { state }) => {
-    acc[normalizeStateKey(state)] = state;
-    return acc;
-  },
-  {},
-);
-
-const CITY_STATE_MAP = NIGERIAN_STATES_AND_CITIES.reduce<
-  Record<string, string>
->((acc, { state, cities }) => {
-  cities.forEach((city) => {
-    acc[city] = state;
-  });
-  return acc;
-}, {});
-
-const NORMALIZED_CITY_LOOKUP = Object.keys(CITY_STATE_MAP).reduce<
-  Record<string, string>
->((acc, city) => {
-  acc[normalizeCityKey(city)] = city;
-  return acc;
-}, {});
-
-const extractLocationFromAddress = (
-  address?: string,
-): { city: string; state: string } => {
-  if (!address) return { city: "", state: "" };
-
-  const parts = address
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0);
-
-  if (parts.length === 0) {
-    return { city: "", state: "" };
-  }
-
-  let detectedState = "";
-  let stateIndex = -1;
-
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const normalized = normalizeStateKey(parts[i]);
-    if (STATE_LOOKUP[normalized]) {
-      detectedState = STATE_LOOKUP[normalized];
-      stateIndex = i;
-      break;
-    }
-  }
-
-  if (!detectedState) {
-    const lagosPartIndex = parts.findIndex((part) =>
-      normalizeStateKey(part).includes("lagos"),
-    );
-    if (lagosPartIndex !== -1) {
-      detectedState = "Lagos State";
-      stateIndex = lagosPartIndex;
-    } else {
-      const oyoPartIndex = parts.findIndex((part) =>
-        normalizeStateKey(part).includes("oyo"),
-      );
-      if (oyoPartIndex !== -1) {
-        detectedState = "Oyo State";
-        stateIndex = oyoPartIndex;
-      }
-    }
-  }
-
-  let detectedCity = "";
-  const searchStart = stateIndex !== -1 ? stateIndex - 1 : parts.length - 1;
-  for (let i = searchStart; i >= 0; i--) {
-    const normalized = normalizeCityKey(parts[i]);
-    if (NORMALIZED_CITY_LOOKUP[normalized]) {
-      detectedCity = NORMALIZED_CITY_LOOKUP[normalized];
-      break;
-    }
-  }
-
-  if (!detectedCity && searchStart >= 0) {
-    detectedCity = parts[searchStart];
-  }
-
-  if (!detectedState && detectedCity && CITY_STATE_MAP[detectedCity]) {
-    detectedState = CITY_STATE_MAP[detectedCity];
-  }
-
-  return { city: detectedCity, state: detectedState };
-};
-
-const isServiceableAddress = (address?: string) => {
-  if (!address) return false;
-
-  const { city, state } = extractLocationFromAddress(address);
-  const normalizedState = normalizeStateKey(state);
-  const normalizedCity = normalizeCityKey(city);
-
-  if (normalizedState === "lagos") {
-    return true;
-  }
-
-  if (normalizedState === "oyo") {
-    return normalizedCity.startsWith("ibadan");
-  }
-
-  return false;
-};
+import { AddressFieldCard } from "./quote-form/AddressFieldCard";
+import { FormHorizontalBarSkeleton } from "./quote-form/FormHorizontalBarSkeleton";
+import { PackageFieldCard } from "./quote-form/PackageFieldCard";
+import { QuoteSubmitButton } from "./quote-form/QuoteSubmitButton";
+import { TrackingNumberForm } from "./quote-form/TrackingNumberForm";
+import {
+  type BookingQuoteFormData,
+  useBookingQuoteForm,
+} from "./quote-form/useBookingQuoteForm";
+import { useQuoteSubmission } from "./quote-form/useQuoteSubmission";
 
 interface FormHorizontalBarProps {
   variant?: "bold" | "minimal" | "floating";
   bookingRequest?: any;
   setData?: any;
-  activeMode?: "gosendeet" | "compare" | "tracking"; // Current active mode
+  activeMode?: "gosendeet" | "compare" | "tracking";
+  autoFocusPickup?: boolean;
+  onQuoteResult?: (result: any, inputData: any, mode: FormMode) => void;
+  forcedIsDashboard?: boolean;
+  onModeChange?: (mode: FormMode) => void;
 }
 
 const FormHorizontalBar = ({
@@ -151,143 +37,57 @@ const FormHorizontalBar = ({
   bookingRequest,
   setData,
   activeMode = "gosendeet",
+  autoFocusPickup = false,
+  onQuoteResult,
+  forcedIsDashboard,
+  onModeChange,
 }: FormHorizontalBarProps) => {
-  const [inputData, setInputData] = useState<any>({});
   const [trackingNumber, setTrackingNumber] = useState("");
-  const [isHydrated, setIsHydrated] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Detect dashboard route early so we can adjust styles/layout
-  const isDashboard = location.pathname.includes("dashboard");
-  const [currentMode, setCurrentMode] = useState<FormMode>(activeMode);
-  const mode = isDashboard ? currentMode : activeMode;
-
-  // Sync external activeMode prop changes with internal currentMode when on dashboard
-  useEffect(() => {
-    if (isDashboard) {
-      setCurrentMode(activeMode);
-    }
-  }, [activeMode, isDashboard]);
-
-  // Modal states for Direct mode
-  const [activeCard, setActiveCard] = useState<"pickup" | "destination" | null>(
-    "pickup",
-  );
+  const [trackingLoading, setTrackingLoading] = useState(false);
+  const [showCursorHint, setShowCursorHint] = useState(true);
+  const [activeCard, setActiveCard] = useState<
+    "pickup" | "destination" | "package" | null
+  >("pickup");
   const [pickupModalOpen, setPickupModalOpen] = useState(false);
   const [destinationModalOpen, setDestinationModalOpen] = useState(false);
   const [packageModalOpen, setPackageModalOpen] = useState(false);
   const [pickupSearchQuery, setPickupSearchQuery] = useState("");
   const [destinationSearchQuery, setDestinationSearchQuery] = useState("");
-  const pickupInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Store package name and data for display
-  const [packageName, setPackageName] = useState("");
-  const [selectedPackageData, setSelectedPackageData] = useState<any>(null);
+  const pickupInputRef = useRef<HTMLInputElement | null>(null);
+  const hasAutoFocusedPickupRef = useRef(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isDashboard =
+    forcedIsDashboard !== undefined
+      ? forcedIsDashboard
+      : location.pathname.includes("dashboard");
+  const [currentMode, setCurrentMode] = useState<FormMode>(activeMode);
+  const mode = isDashboard ? currentMode : activeMode;
 
   const {
-    mutate: getQuotesDirectly,
-    isPending: isQuoteLoading,
-    reset: resetQuoteMutation,
-  } = useMutation({
-    mutationFn: (vars: { data: any; direct?: boolean }) =>
-      getQuotes(vars.data, vars.direct),
-
-    onSuccess: (response: any) => {
-      const quotes = Array.isArray(response?.data?.content)
-        ? response.data.content
-        : Array.isArray(response?.data)
-          ? response.data
-          : [];
-
-      track(EVENT.QUOTE_COMPLETED, {
-        mode,
-        quote_count: quotes.length,
-        pickup_location: inputData?.pickupLocation,
-        drop_off_location: inputData?.dropOffLocation,
-      });
-
-      if (quotes.length === 0) {
-        toast.success("No quotes available for the provided details.");
-        navigate("/cost-calculator", {
-          state: {
-            inputData,
-            results: response,
-            mode: mode, // Use the actual current mode
-            autoScrollToResults: isDashboard,
-          },
-        });
-
-        if (typeof setData === "function") {
-          setData(response);
-        }
-
-        resetQuoteMutation();
-        return;
-      }
-
-      toast.success("Successful");
-
-      navigate("/cost-calculator", {
-        state: {
-          inputData,
-          results: response,
-          mode: mode, // Use the actual current mode
-          autoScrollToResults: isDashboard,
-        },
-      });
-
-      if (typeof setData === "function") {
-        setData(response);
-      }
-
-      resetQuoteMutation();
-    },
-
-    onError: (error: any) => {
-      toast.error(error?.message || "Something went wrong.");
-      resetQuoteMutation();
-    },
-  });
-
-  const { data: packageTypes } = useGetPackageType({ minimize: true });
-  const packages = Array.isArray(packageTypes?.data)
-    ? packageTypes.data
-    : packageTypes?.data?.content || [];
-
-  const schema = z.object({
-    pickupLocation: z
-      .string({ required_error: "Pickup location is required" })
-      .min(1, { message: "Enter pickup location" }),
-    dropOffLocation: z
-      .string({ required_error: "Drop off location is required" })
-      .min(1, { message: "Enter drop off location" }),
-    packageTypeId: z
-      .string({ required_error: "Package type is required" })
-      .min(1, { message: "Enter package type" }),
-    weight: z
-      .string({ required_error: "Weight is required" })
-      .min(1, { message: "Enter weight" }),
-    dimensions: z.string().optional(),
-    itemPrice: z.string().optional(),
-  });
+    form,
+    isHydrated,
+    packageName,
+    selectedPackageData,
+    setPackageName,
+    setSelectedPackageData,
+    saveInputData,
+  } = useBookingQuoteForm({ bookingRequest });
 
   const {
     handleSubmit,
-    reset,
     setValue,
     watch,
+    getValues,
     formState: { errors },
-  } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      pickupLocation: "",
-      dropOffLocation: "",
-      packageTypeId: "",
-      weight: "",
-      dimensions: "",
-      itemPrice: "",
-    },
+  } = form;
+
+  const { isQuoteLoading, submitQuote } = useQuoteSubmission({
+    isDashboard,
+    onQuoteResult,
+    setData,
   });
 
   const pickupLocation = watch("pickupLocation");
@@ -298,6 +98,34 @@ const FormHorizontalBar = ({
   const itemPrice = watch("itemPrice");
 
   useEffect(() => {
+    if (isDashboard) {
+      setCurrentMode(activeMode);
+    }
+  }, [activeMode, isDashboard]);
+
+  useEffect(() => {
+    if (
+      !autoFocusPickup ||
+      hasAutoFocusedPickupRef.current ||
+      !isHydrated ||
+      mode === "tracking"
+    ) {
+      return;
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      if (!pickupInputRef.current) return;
+
+      pickupInputRef.current.focus();
+      setActiveCard("pickup");
+      setPickupModalOpen(true);
+      hasAutoFocusedPickupRef.current = true;
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [autoFocusPickup, isHydrated, mode]);
+
+  useEffect(() => {
     setPickupSearchQuery(pickupLocation || "");
   }, [pickupLocation]);
 
@@ -305,114 +133,7 @@ const FormHorizontalBar = ({
     setDestinationSearchQuery(dropOffLocation || "");
   }, [dropOffLocation]);
 
-  const normalizeData = (data: any) => {
-    const rest = { ...(data || {}) };
-    delete rest.pickupDate;
-    return {
-      ...rest,
-      packageTypeId: String(data?.packageTypeId ?? ""),
-    };
-  };
-
-  const saveInputData = (data: any) => {
-    const normalized = normalizeData(data);
-    setInputData(normalized);
-    sessionStorage.setItem("bookingInputData", JSON.stringify(normalized));
-  };
-
-  useEffect(() => {
-    const stored = sessionStorage.getItem("bookingInputData");
-    const storedData = stored ? normalizeData(JSON.parse(stored)) : null;
-
-    if (storedData) {
-      setInputData(storedData);
-      reset({
-        pickupLocation: storedData.pickupLocation ?? "",
-        dropOffLocation: storedData.dropOffLocation ?? "",
-        packageTypeId: storedData.packageTypeId ?? "",
-        weight: storedData.weight ?? "",
-        dimensions: storedData.dimensions ?? "",
-        itemPrice: storedData.itemPrice ?? "",
-      });
-    } else if (bookingRequest) {
-      const normalized = normalizeData(bookingRequest);
-      setInputData(normalized);
-      reset(normalized);
-    }
-    setIsHydrated(true);
-  }, [bookingRequest, reset]);
-
-  useEffect(() => {
-    if (inputData?.packageTypeId && packages?.length > 0) {
-      setValue("packageTypeId", String(inputData.packageTypeId), {
-        shouldValidate: false,
-      });
-
-      // Restore package display state (name and data)
-      const pkg = packages.find(
-        (p: any) => String(p.id) === String(inputData.packageTypeId),
-      );
-      if (pkg) {
-        setPackageName(pkg.name);
-        setSelectedPackageData(pkg);
-      }
-    }
-  }, [inputData?.packageTypeId, packages, setValue]);
-
-  // ----- Handle unauthenticated quick quote -----
-  useEffect(() => {
-    const isUnauthenticated =
-      sessionStorage.getItem("unauthenticated") === "true";
-    if (!isUnauthenticated) return;
-
-    const stored = sessionStorage.getItem("bookingInputData");
-    if (!stored) return;
-
-    let parsed;
-    try {
-      parsed = normalizeData(JSON.parse(stored));
-    } catch {
-      console.error("Invalid bookingInputData in sessionStorage");
-      return;
-    }
-
-    getQuotesDirectly({
-      data: [
-        {
-          ...parsed,
-          quantity: 1,
-          itemValue: Number(parsed.itemPrice) || 0,
-          packageDescription: {
-            isFragile: false,
-            isPerishable: false,
-            isExclusive: false,
-            isHazardous: false,
-          },
-        },
-      ],
-      direct: false,
-    });
-
-    sessionStorage.removeItem("unauthenticated");
-  }, []);
-
-  const onSubmit = (data: z.infer<typeof schema>) => {
-    saveInputData(data);
-  };
-  const [loading, setLoading] = useState(false);
-  // Handle tracking form submission
-  const handleTrackingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!trackingNumber.trim()) {
-      toast.error("Please enter a tracking number");
-      return;
-    }
-    trackBookingsHandler(trackingNumber, navigate, setLoading);
-  };
-
-  // Variant-specific styling
   const containerStyles = cn(
-    // Dashboard uses a tighter, card-like container with subtle border
     isDashboard
       ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
       : "w-full mx-auto max-w-[354px] lg:max-w-[1120px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
@@ -428,807 +149,277 @@ const FormHorizontalBar = ({
   );
 
   const inputStyles = cn(
-    "w-full outline-0 bg-transparent text-base py-2 px-1  transition-colors",
+    "w-full outline-0 bg-transparent text-base py-2 px-1 transition-colors",
     variant === "bold" &&
       "border-[#e5e5e5] text-[#1a1a1a] placeholder:text-[#CAD5E2]",
     (variant === "minimal" || variant === "floating") &&
       "border-[#e5e5e5] font-bold tracking-wider font-arial text-[#1a1a1a] placeholder:text-[#CAD5E2]",
   );
 
-  // Determine if form should be vertical (dashboard route)
-  const containerClass = isDashboard
-    ? `space-y-2`
-    : "grid grid-cols-1 gap-y-2 lg:gap-6 items-end lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_auto]";
+  const quoteGridClass = isDashboard
+    ? "space-y-4"
+    : cn(
+        "grid grid-cols-1 gap-y-4 lg:gap-6 items-end",
+        mode === "compare"
+          ? "lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto]"
+          : "lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_auto]",
+      );
 
-  // Compare mode has 3 cards + button, so use a different grid
-  const compareContainerClass = isDashboard
-    ? `space-y-2`
-    : "grid grid-cols-1 gap-y-2 items-end  lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] ";
+  const handleTrackingSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!trackingNumber.trim()) {
+      toast.error("Please enter a tracking number");
+      return;
+    }
+    trackBookingsHandler(trackingNumber, navigate, setTrackingLoading);
+  };
 
-  // Show loading skeleton while hydrating
-  if (!isHydrated) {
-    return (
-      <div className={containerStyles}>
-        <div>
-          {/* Desktop Grid Skeleton */}
-          <div className="hidden lg:grid lg:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-6">
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="flex gap-3 items-end min-w-[280px]">
-              <div className="h-14 bg-gray-300 rounded flex-[2]"></div>
-              <div className="h-14 bg-gray-200 rounded flex-[1]"></div>
-            </div>
-          </div>
-          {/* Mobile Stack Skeleton */}
-          <div className="lg:hidden space-y-4">
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-12 bg-gray-200 rounded"></div>
-              </div>
-              <div className="space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                <div className="h-12 bg-gray-200 rounded"></div>
-              </div>
-            </div>
-            <div className="h-14 bg-gray-300 rounded"></div>
-            <div className="h-14 bg-gray-200 rounded"></div>
-          </div>
-        </div>
-      </div>
+  const handleAddressSelect = (
+    field: "pickupLocation" | "dropOffLocation",
+    location: string,
+  ) => {
+    setValue(field, location, { shouldValidate: true });
+    saveInputData({ ...getValues(), [field]: location });
+  };
+
+  const handlePackageConfirm = (
+    id: string,
+    name: string,
+    weightValue: string,
+    dimensionsValue: string,
+    itemPriceValue: string,
+    packageData: any,
+  ) => {
+    setValue("packageTypeId", id, { shouldValidate: true });
+    setValue("weight", weightValue, { shouldValidate: true });
+    setValue("dimensions", dimensionsValue);
+    setValue("itemPrice", itemPriceValue, { shouldValidate: true });
+    setPackageName(name);
+    setSelectedPackageData(packageData);
+    saveInputData({
+      ...getValues(),
+      packageTypeId: id,
+      packageName: name,
+      weight: weightValue,
+      dimensions: dimensionsValue,
+      itemPrice: itemPriceValue,
+    });
+  };
+
+  const validateSupportedValue = (data: BookingQuoteFormData) => {
+    if ((Number(data.itemPrice) || 0) > MAX_SUPPORTED_ITEM_VALUE) {
+      toast.error("We currently do not support item values above ₦100,000.");
+      return false;
+    }
+    return true;
+  };
+
+  const validateDirectServiceArea = (data: BookingQuoteFormData) => {
+    const invalidFields: string[] = [];
+
+    if (!isServiceableAddress(data.pickupLocation)) invalidFields.push("pickup");
+    if (!isServiceableAddress(data.dropOffLocation)) {
+      invalidFields.push("destination");
+    }
+
+    if (invalidFields.length === 0) return true;
+
+    const fieldText =
+      invalidFields.length === 2
+        ? "pickup and destination addresses"
+        : `${invalidFields[0]} address`;
+
+    toast.error(
+      `We currently only operate in Lagos and Ibadan. Please update your ${fieldText}.`,
     );
+    return false;
+  };
+
+  const handleQuoteSubmit = (direct: boolean, quoteMode: FormMode) =>
+    handleSubmit((data) => {
+      if (!validateSupportedValue(data)) return;
+      if (direct && !validateDirectServiceArea(data)) return;
+
+      const normalized = saveInputData(data);
+      submitQuote({ data: normalized, direct, mode: quoteMode });
+    });
+
+  const activatePickup = () => {
+    pickupInputRef.current?.focus();
+    setActiveCard("pickup");
+    setPickupModalOpen(true);
+  };
+
+  const activateDestination = () => {
+    setActiveCard("destination");
+    setDestinationModalOpen(true);
+  };
+
+  const activatePackage = () => {
+    setActiveCard("package");
+  };
+
+  const renderQuoteForm = (direct: boolean) => {
+    const pickupClassName = cn(
+      direct ? "direct-send" : "compare-pickup-from",
+      isDashboard && "mt-4 w-full!",
+      activeCard === "pickup" && "outline outline-2 outline-[#fbbf24]",
+    );
+    const destinationClassName = cn(
+      direct ? "direct-send" : "compare-pickup-destination",
+      isDashboard && (direct ? "w-full!" : "!w-full"),
+      activeCard === "destination" && "outline outline-2 outline-[#fbbf24]",
+    );
+    const packageClassName = cn(
+      "direct-send-package",
+      isDashboard && (direct ? "w-full!" : "!w-full"),
+      activeCard === "package" && "outline outline-2 outline-[#fbbf24]",
+    );
+
+    return (
+      <form onSubmit={handleSubmit((data) => saveInputData(data))}>
+        <div className={quoteGridClass}>
+          <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
+            <PopoverAnchor asChild>
+              <AddressFieldCard
+                ref={pickupInputRef}
+                id={direct ? "pickup-location-input" : "compare-pickup-location-input"}
+                label="Pickup address"
+                value={pickupSearchQuery}
+                placeholder="Choose Starting Point"
+                icon={FiMapPin}
+                className={pickupClassName}
+                labelClassName={labelStyles}
+                error={errors.pickupLocation}
+                showCursorHint={showCursorHint && activeCard === "pickup"}
+                onActivate={activatePickup}
+                onChange={setPickupSearchQuery}
+                onHideCursorHint={() => setShowCursorHint(false)}
+              />
+            </PopoverAnchor>
+            <AddressPopover
+              type="pickup"
+              open={pickupModalOpen}
+              query={pickupSearchQuery}
+              otherAddress={dropOffLocation || ""}
+              onOpenChange={setPickupModalOpen}
+              onQueryChange={setPickupSearchQuery}
+              onSelect={(location) => handleAddressSelect("pickupLocation", location)}
+            />
+          </Popover>
+
+          <Popover
+            open={destinationModalOpen}
+            onOpenChange={setDestinationModalOpen}
+          >
+            <PopoverAnchor asChild>
+              <AddressFieldCard
+                id={
+                  direct
+                    ? "destination-location-input"
+                    : "compare-destination-location-input"
+                }
+                label="Destination address"
+                mobileLabel="Deliver To"
+                value={destinationSearchQuery}
+                placeholder="Choose Destination"
+                icon={FiFlag}
+                className={destinationClassName}
+                labelClassName={labelStyles}
+                error={errors.dropOffLocation}
+                showCursorHint={showCursorHint && activeCard === "destination"}
+                onActivate={activateDestination}
+                onChange={setDestinationSearchQuery}
+                onHideCursorHint={() => setShowCursorHint(false)}
+              />
+            </PopoverAnchor>
+            <AddressPopover
+              type="destination"
+              open={destinationModalOpen}
+              query={destinationSearchQuery}
+              otherAddress={pickupLocation || ""}
+              onOpenChange={setDestinationModalOpen}
+              onQueryChange={setDestinationSearchQuery}
+              onSelect={(location) => handleAddressSelect("dropOffLocation", location)}
+            />
+          </Popover>
+
+          <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
+            <PopoverTrigger asChild>
+              <PackageFieldCard
+                className={packageClassName}
+                labelClassName={labelStyles}
+                packageName={packageName}
+                weight={weight || ""}
+                weightUnit={selectedPackageData?.weightUnit}
+                packageError={errors.packageTypeId}
+                weightError={errors.weight}
+                onClick={activatePackage}
+                onFocus={activatePackage}
+              />
+            </PopoverTrigger>
+            <PackageTypePopover
+              selectedPackageId={packageTypeId || ""}
+              currentWeight={weight || ""}
+              currentDimensions={dimensions || ""}
+              currentItemPrice={itemPrice || ""}
+              onOpenChange={setPackageModalOpen}
+              onConfirm={handlePackageConfirm}
+            />
+          </Popover>
+
+          <QuoteSubmitButton
+            isDashboard={isDashboard}
+            loading={isQuoteLoading}
+            className={direct ? undefined : "shadow-lg"}
+            onClick={handleQuoteSubmit(direct, direct ? "gosendeet" : "compare")}
+          />
+        </div>
+      </form>
+    );
+  };
+
+  if (!isHydrated) {
+    return <FormHorizontalBarSkeleton containerClassName={containerStyles} />;
   }
 
   return (
     <div className="relative w-full mx-auto max-w-[354px] lg:max-w-[1120px]">
+      <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px] 
+        className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px]
                   bg-[linear-gradient(90deg,#A4F4CF_0%,#DCFCE7_50%,#CBFBF1_100%)]
                   blur-[40px] opacity-50 z-0 translate-y-5"
-      ></div>
+      />
       <div className={cn(containerStyles, "relative z-10")}>
         {isDashboard && (
           <div className="absolute left-1/2 transform -translate-x-1/2 top-[-39px]">
             <ModeSwitcher
               mode={mode}
-              onModeChange={setCurrentMode}
+              onModeChange={(newMode) => {
+                setCurrentMode(newMode);
+                onModeChange?.(newMode);
+              }}
               variant="pill"
               animate={false}
             />
           </div>
         )}
-        {/* Tracking Mode Form */}
-        {mode === "tracking" ? (
-          <form onSubmit={handleTrackingSubmit}>
-            <div
-              className={cn(
-                isDashboard
-                  ? "flex flex-col gap-4"
-                  : "flex flex-col lg:flex-row lg:items-end gap-4",
-              )}
-            >
-              <div className={isDashboard ? "mt-4 w-full" : "flex-1"}>
-                <div className="tracking-section">
-                  <label
-                    htmlFor="trackingNumber"
-                    className={cn(
-                      labelStyles,
-                      "flex justify-between items-center",
-                    )}
-                  >
-                    <p className="text-[#90A1B9] font-arial text-xs tracking-widest uppercase">
-                      Tracking Number
-                    </p>
-                    <div className="border-2 border-[#CAD5E2] p-1 rounded-full w-4 h-4"></div>
-                  </label>
-                  <input
-                    type="text"
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    placeholder="Enter tracking number (GOS*****)"
-                    className={inputStyles}
-                  />
-                </div>
-              </div>
 
-              <Button
-                type="submit"
-                loading={loading}
-                size="custom"
-                className={cn(
-                  "font-bold bg-[#064E3B] ",
-                  isDashboard
-                    ? "w-full px-6 py-3 justify-center"
-                    : "gosend-custom-button",
-                )}
-              >
-                <GoArrowRight
-                  className="text-white mr-1.5 "
-                  style={{ width: "32px", height: "32px" }}
-                />
-                <span className="text-[#D0FAE5CC] font-arial font-bold text-xs">
-                  {isDashboard ? (
-                    <span className="capitalize">Track Shipment</span>
-                  ) : (
-                    <span className="uppercase">Track</span>
-                  )}
-                </span>
-              </Button>
-            </div>
-          </form>
-        ) : mode === "gosendeet" ? (
-          // Direct Mode with Modal Triggers
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className={containerClass}>
-              <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
-                <PopoverAnchor asChild>
-                  <div
-                    className={cn(
-                      "direct-send",
-                      isDashboard && "mt-4 w-full!",
-                      activeCard === "pickup" &&
-                        !pickupLocation &&
-                        "ring-2 ring-brand/40",
-                    )}
-                    onClick={() => {
-                      pickupInputRef.current?.focus();
-                      setActiveCard("pickup");
-                      setPickupModalOpen(true);
-                    }}
-                  >
-                    <label
-                      htmlFor="pickup-location-input"
-                      className={cn(
-                        labelStyles,
-                        "flex items-center justify-between gap-2",
-                      )}
-                    >
-                      <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Pickup address
-                      </p>
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-
-                    <div className="w-full flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiMapPin size={18} />
-                      </span>
-                      <input
-                        ref={pickupInputRef}
-                        id="pickup-location-input"
-                        type="text"
-                        value={pickupSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("pickup");
-                          setPickupModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("pickup");
-                          setPickupSearchQuery(event.target.value);
-                          setPickupModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
-                    </div>
-                    {errors.pickupLocation && (
-                      <p className="w-fit text-xs text-red-500 mt-1">
-                        {errors.pickupLocation.message}
-                      </p>
-                    )}
-                  </div>
-                </PopoverAnchor>
-                <AddressPopover
-                  type="pickup"
-                  open={pickupModalOpen}
-                  query={pickupSearchQuery}
-                  otherAddress={dropOffLocation || ""}
-                  onOpenChange={setPickupModalOpen}
-                  onQueryChange={setPickupSearchQuery}
-                  onSelect={(location) => {
-                    setValue("pickupLocation", location, {
-                      shouldValidate: true,
-                    });
-                    const currentData = watch();
-                    saveInputData({ ...currentData, pickupLocation: location });
-                  }}
-                />
-              </Popover>
-
-              <Popover
-                open={destinationModalOpen}
-                onOpenChange={setDestinationModalOpen}
-              >
-                <PopoverAnchor asChild>
-                  <div className={cn("direct-send", isDashboard && "w-full!")}>
-                    <label
-                      htmlFor="destination-location-input"
-                      className={cn(
-                        labelStyles,
-                        "flex justify-between items-center gap-2",
-                      )}
-                    >
-                      <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Destination address
-                      </p>
-                      <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Deliver To
-                      </p>
-
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-
-                    <div
-                      className="w-full flex items-center gap-2"
-                      onClick={() => {
-                        setActiveCard("destination");
-                        setDestinationModalOpen(true);
-                      }}
-                    >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiFlag size={18} />
-                      </span>
-                      <input
-                        id="destination-location-input"
-                        type="text"
-                        value={destinationSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("destination");
-                          setDestinationModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("destination");
-                          setDestinationSearchQuery(event.target.value);
-                          setDestinationModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
-                    </div>
-                    {errors.dropOffLocation && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.dropOffLocation.message}
-                      </p>
-                    )}
-                  </div>
-                </PopoverAnchor>
-                <AddressPopover
-                  type="destination"
-                  open={destinationModalOpen}
-                  query={destinationSearchQuery}
-                  otherAddress={pickupLocation || ""}
-                  onOpenChange={setDestinationModalOpen}
-                  onQueryChange={setDestinationSearchQuery}
-                  onSelect={(location) => {
-                    setValue("dropOffLocation", location, {
-                      shouldValidate: true,
-                    });
-                    const currentData = watch();
-                    saveInputData({ ...currentData, dropOffLocation: location });
-                  }}
-                />
-              </Popover>
-
-              <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "direct-send-package text-left",
-                      isDashboard && "w-full!",
-                    )}
-                  >
-                    <label
-                      className={cn(
-                        labelStyles,
-                        "flex items-center justify-between gap-2",
-                      )}
-                    >
-                      <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Package
-                      </p>
-
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-                    <div className="w-full flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiPackage size={18} />
-                      </span>
-                      <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                        {packageName ? (
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-[#1a1a1a]">
-                              {packageName}
-                            </span>
-                            {weight && (
-                              <span className="block truncate text-xs text-[#64748B]">
-                                {weight}
-                                {selectedPackageData?.weightUnit || "kg"}
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="min-w-0 truncate font-arial text-sm text-[#9ca3af]">
-                            Select package
-                          </span>
-                        )}
-                        <FaAngleDown
-                          size={18}
-                          className="shrink-0 text-[#CAD5E2]"
-                        />
-                      </span>
-                    </div>
-
-                    {(errors.packageTypeId || errors.weight) && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.packageTypeId?.message || errors.weight?.message}
-                      </p>
-                    )}
-                  </button>
-                </PopoverTrigger>
-                <PackageTypePopover
-                  selectedPackageId={packageTypeId || ""}
-                  currentWeight={weight || ""}
-                  currentDimensions={dimensions || ""}
-                  currentItemPrice={itemPrice || ""}
-                  onOpenChange={setPackageModalOpen}
-                  onConfirm={(
-                    id,
-                    name,
-                    weightValue,
-                    dimensionsValue,
-                    itemPriceValue,
-                    packageData,
-                  ) => {
-                    setValue("packageTypeId", id, { shouldValidate: true });
-                    setValue("weight", weightValue, { shouldValidate: true });
-                    setValue("dimensions", dimensionsValue);
-                    setValue("itemPrice", itemPriceValue, {
-                      shouldValidate: true,
-                    });
-                    setPackageName(name);
-                    setSelectedPackageData(packageData);
-                    const currentData = watch();
-                    saveInputData({
-                      ...currentData,
-                      packageTypeId: id,
-                      packageName: name,
-                      weight: weightValue,
-                      dimensions: dimensionsValue,
-                      itemPrice: itemPriceValue,
-                    });
-                  }}
-                />
-              </Popover>
-
-              {/* Buttons */}
-              <div
-                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
-              >
-                <Button
-                  type="button"
-                  size={"custom"}
-                  className={cn(
-                    "font-bold bg-[#064E3B]",
-                    isDashboard
-                      ? "w-full px-6 py-3 justify-center"
-                      : "gosend-custom-button",
-                  )}
-                  loading={isQuoteLoading}
-                  onClick={handleSubmit((data) => {
-                    if ((Number(data.itemPrice) || 0) > MAX_SUPPORTED_ITEM_VALUE) {
-                      toast.error("We currently do not support item values above ₦100,000.");
-                      return;
-                    }
-
-                    const invalidFields: string[] = [];
-
-                    if (!isServiceableAddress(data.pickupLocation)) {
-                      invalidFields.push("pickup");
-                    }
-
-                    if (!isServiceableAddress(data.dropOffLocation)) {
-                      invalidFields.push("destination");
-                    }
-
-                    if (invalidFields.length > 0) {
-                      const fieldText =
-                        invalidFields.length === 2
-                          ? "pickup and destination addresses"
-                          : `${invalidFields[0]} address`;
-
-                      toast.error(
-                        `We currently only operate in Lagos and Ibadan. Please update your ${fieldText}.`,
-                      );
-                      return;
-                    }
-
-                    saveInputData(data);
-                    track(EVENT.QUOTE_STARTED, {
-                      mode: "gosendeet",
-                      pickup_location: data.pickupLocation,
-                      drop_off_location: data.dropOffLocation,
-                      package_type_id: data.packageTypeId,
-                      weight: data.weight,
-                    });
-                    getQuotesDirectly({
-                      data: [
-                        {
-                          ...data,
-                          itemValue: Number(data.itemPrice) || 0,
-                          quantity: 1,
-                          packageDescription: {
-                            isFragile: false,
-                            isPerishable: false,
-                            isExclusive: false,
-                            isHazardous: false,
-                          },
-                        },
-                      ],
-                      direct: true,
-                    });
-                  })}
-                >
-                  <GoArrowRight
-                    className="text-white mr-1.5 "
-                    style={{ width: "32px", height: "32px" }}
-                  />
-                  <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
-                    Get Quote
-                  </span>
-                </Button>
-              </div>
-            </div>
-          </form>
-        ) : mode === "compare" ? (
-          // Compare Mode with Modal Triggers (no Pickup Date)
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className={compareContainerClass}>
-              <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
-                <PopoverAnchor asChild>
-                  <div
-                    className={cn(
-                      "compare-pickup-from",
-                      isDashboard && "mt-4 w-full!",
-                      activeCard === "pickup" &&
-                        !pickupLocation &&
-                        "ring-2 ring-brand/40",
-                    )}
-                    onClick={() => {
-                      pickupInputRef.current?.focus();
-                      setActiveCard("pickup");
-                      setPickupModalOpen(true);
-                    }}
-                  >
-                    <label
-                      htmlFor="compare-pickup-location-input"
-                      className={cn(
-                        labelStyles,
-                        "flex justify-between items-center gap-2",
-                      )}
-                    >
-                      <p className="font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Pickup address
-                      </p>
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-                    <div className="w-full flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiMapPin size={18} />
-                      </span>
-                      <input
-                        ref={pickupInputRef}
-                        id="compare-pickup-location-input"
-                        type="text"
-                        value={pickupSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("pickup");
-                          setPickupModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("pickup");
-                          setPickupSearchQuery(event.target.value);
-                          setPickupModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
-                    </div>
-                    {errors.pickupLocation && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.pickupLocation.message}
-                      </p>
-                    )}
-                  </div>
-                </PopoverAnchor>
-                <AddressPopover
-                  type="pickup"
-                  open={pickupModalOpen}
-                  query={pickupSearchQuery}
-                  otherAddress={dropOffLocation || ""}
-                  onOpenChange={setPickupModalOpen}
-                  onQueryChange={setPickupSearchQuery}
-                  onSelect={(location) => {
-                    setValue("pickupLocation", location, {
-                      shouldValidate: true,
-                    });
-                    const currentData = watch();
-                    saveInputData({ ...currentData, pickupLocation: location });
-                  }}
-                />
-              </Popover>
-
-              <Popover
-                open={destinationModalOpen}
-                onOpenChange={setDestinationModalOpen}
-              >
-                <PopoverAnchor asChild>
-                  <div
-                    className={cn(
-                      "compare-pickup-destination",
-                      isDashboard && "!w-full",
-                    )}
-                    onClick={() => {
-                      setActiveCard("destination");
-                      setDestinationModalOpen(true);
-                    }}
-                  >
-                    <label
-                      htmlFor="compare-destination-location-input"
-                      className={cn(
-                        labelStyles,
-                        "flex justify-between items-center gap-2",
-                      )}
-                    >
-                      <p className="hidden lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Destination address
-                      </p>
-                      <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Deliver To
-                      </p>
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-                    <div className="w-full flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiFlag size={18} />
-                      </span>
-                      <input
-                        id="compare-destination-location-input"
-                        type="text"
-                        value={destinationSearchQuery}
-                        onFocus={() => {
-                          setActiveCard("destination");
-                          setDestinationModalOpen(true);
-                        }}
-                        onChange={(event) => {
-                          setActiveCard("destination");
-                          setDestinationSearchQuery(event.target.value);
-                          setDestinationModalOpen(true);
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                          }
-                        }}
-                        placeholder="Enter street, area, or landmark"
-                        className="min-w-0 flex-1 bg-transparent font-arial text-sm text-[#1a1a1a] outline-none placeholder:text-[#9ca3af]"
-                      />
-                    </div>
-
-                    {errors.dropOffLocation && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.dropOffLocation.message}
-                      </p>
-                    )}
-                  </div>
-                </PopoverAnchor>
-                <AddressPopover
-                  type="destination"
-                  open={destinationModalOpen}
-                  query={destinationSearchQuery}
-                  otherAddress={pickupLocation || ""}
-                  onOpenChange={setDestinationModalOpen}
-                  onQueryChange={setDestinationSearchQuery}
-                  onSelect={(location) => {
-                    setValue("dropOffLocation", location, {
-                      shouldValidate: true,
-                    });
-                    const currentData = watch();
-                    saveInputData({ ...currentData, dropOffLocation: location });
-                  }}
-                />
-              </Popover>
-
-              <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
-                <PopoverTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(
-                      "direct-send-package text-left",
-                      isDashboard && "!w-full",
-                    )}
-                  >
-                    <label
-                      className={cn(
-                        labelStyles,
-                        "flex items-center justify-between gap-2",
-                      )}
-                    >
-                      <p className="lg:block font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                        Package
-                      </p>
-
-                      <span className="h-2 w-2 rounded-full bg-brand" />
-                    </label>
-                    <div className="w-full flex items-center gap-2">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-                        <FiPackage size={18} />
-                      </span>
-                      <span className="flex min-w-0 flex-1 items-center justify-between gap-2">
-                        {packageName ? (
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-bold text-[#1a1a1a]">
-                              {packageName}
-                            </span>
-                            {weight && (
-                              <span className="block truncate text-xs text-[#64748B]">
-                                {weight}
-                                {selectedPackageData?.weightUnit || "kg"}
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="min-w-0 truncate font-arial text-sm text-[#9ca3af]">
-                            Select package
-                          </span>
-                        )}
-                        <FaAngleDown
-                          size={18}
-                          className="shrink-0 text-[#CAD5E2]"
-                        />
-                      </span>
-                    </div>
-
-                    {(errors.packageTypeId || errors.weight) && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.packageTypeId?.message || errors.weight?.message}
-                      </p>
-                    )}
-                  </button>
-                </PopoverTrigger>
-                <PackageTypePopover
-                  selectedPackageId={packageTypeId || ""}
-                  currentWeight={weight || ""}
-                  currentDimensions={dimensions || ""}
-                  currentItemPrice={itemPrice || ""}
-                  onOpenChange={setPackageModalOpen}
-                  onConfirm={(
-                    id,
-                    name,
-                    weightValue,
-                    dimensionsValue,
-                    itemPriceValue,
-                    packageData,
-                  ) => {
-                    setValue("packageTypeId", id, { shouldValidate: true });
-                    setValue("weight", weightValue, { shouldValidate: true });
-                    setValue("dimensions", dimensionsValue);
-                    setValue("itemPrice", itemPriceValue, {
-                      shouldValidate: true,
-                    });
-                    setPackageName(name);
-                    setSelectedPackageData(packageData);
-                    const currentData = watch();
-                    saveInputData({
-                      ...currentData,
-                      packageTypeId: id,
-                      packageName: name,
-                      weight: weightValue,
-                      dimensions: dimensionsValue,
-                      itemPrice: itemPriceValue,
-                    });
-                  }}
-                />
-              </Popover>
-
-              {/* Compare Button */}
-              <div
-                className={isDashboard ? "mt-4 w-full" : "flex gap-3 items-end"}
-              >
-                <Button
-                  type="button"
-                  size={"custom"}
-                  className={cn(
-                    "font-bold bg-[#064E3B] shadow-lg",
-                    isDashboard
-                      ? "w-full px-6 py-3 justify-center"
-                      : "gosend-custom-button",
-                  )}
-                  loading={isQuoteLoading}
-                  onClick={handleSubmit((data) => {
-                    if ((Number(data.itemPrice) || 0) > MAX_SUPPORTED_ITEM_VALUE) {
-                      toast.error("We currently do not support item values above ₦100,000.");
-                      return;
-                    }
-
-                    saveInputData(data);
-                    track(EVENT.QUOTE_STARTED, {
-                      mode: "compare",
-                      pickup_location: data.pickupLocation,
-                      drop_off_location: data.dropOffLocation,
-                      package_type_id: data.packageTypeId,
-                      weight: data.weight,
-                    });
-                    // Compare directly - get quotes immediately without opening modal
-                    getQuotesDirectly({
-                      data: [
-                        {
-                          ...data,
-                          itemValue: Number(data.itemPrice) || 0,
-                          quantity: 1,
-                          packageDescription: {
-                            isFragile: false,
-                            isPerishable: false,
-                            isExclusive: false,
-                            isHazardous: false,
-                          },
-                        },
-                      ],
-                      direct: false,
-                    });
-                  })}
-                >
-                  <GoArrowRight
-                    className="text-white mr-1.5 "
-                    style={{ width: "32px", height: "32px" }}
-                  />
-                  <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
-                    Get Quote
-                  </span>
-                </Button>
-              </div>
-            </div>
-          </form>
-        ) : null}
-
+        {mode === "tracking" && (
+          <TrackingNumberForm
+            trackingNumber={trackingNumber}
+            loading={trackingLoading}
+            isDashboard={isDashboard}
+            labelClassName={labelStyles}
+            inputClassName={inputStyles}
+            onTrackingNumberChange={setTrackingNumber}
+            onSubmit={handleTrackingSubmit}
+          />
+        )}
+        {mode === "gosendeet" && renderQuoteForm(true)}
+        {mode === "compare" && renderQuoteForm(false)}
       </div>
     </div>
   );

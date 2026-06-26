@@ -1,13 +1,13 @@
 import { CheckCheck } from "lucide-react";
 import NotificationFeed from "./NotificationFeed";
 import { type Notification } from "./NotificationRow";
-import CusstomerSupportCard from "@/components/ui/CusstomerSupportCard";
 import {
   useGetFranchiseNotifications,
   useMarkAllFranchiseNotificationsRead,
   useMarkFranchiseNotificationRead,
 } from "@/queries/franchise/useFranchiseNotifications";
 import type { FranchiseNotification } from "@/services/franchise";
+import SupportPanel from "@/components/SupportPanel";
 
 const formatNotificationTime = (value: string) => {
   const date = new Date(value);
@@ -38,9 +38,13 @@ const mapNotification = (item: FranchiseNotification): Notification => ({
 });
 
 const FranchiseNotifications = () => {
-  const page = 0;
+  const page = 1;
   const size = 20;
-  const { data: notificationPage, isLoading } = useGetFranchiseNotifications(page, size);
+  const {
+    data: notificationPage,
+    isError,
+    isLoading,
+  } = useGetFranchiseNotifications(page, size);
   const { mutate: markAllRead, isPending: isMarkingAllRead } =
     useMarkAllFranchiseNotificationsRead(page, size);
   const { mutate: markRead } = useMarkFranchiseNotificationRead(page, size);
@@ -80,7 +84,7 @@ const FranchiseNotifications = () => {
           >
             <CheckCheck size={15} />
             <span className="text-sm text-frch-text-gray font-semibold flex items-center justify-between">
-              {isMarkingAllRead ? "Marking..." : "Mark all read"}
+              {isMarkingAllRead ? "Marking..." : "Mark all as read"}
             </span>
           </button>
         )}
@@ -88,11 +92,13 @@ const FranchiseNotifications = () => {
 
       <div className="mt-6 flex flex-col lg:flex-row item-center gap-4">
         <NotificationFeed
-          notifications={isLoading ? [] : notifications}
+          isError={isError}
+          isLoading={isLoading}
+          notifications={notifications}
           onMarkRead={(id) => markRead(id)}
         />
 
-        <CusstomerSupportCard />
+       <SupportPanel />
       </div>
     </>
   );

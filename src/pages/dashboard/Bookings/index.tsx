@@ -67,6 +67,7 @@ const Bookings = () => {
       setLastPage(totalPages);
     }
   }, [data?.data?.page?.totalPages]);
+  
   const [bookingData, setBookingData] = useState({});
   // removed activeModalId state; popover is now uncontrolled
   useEffect(() => {
