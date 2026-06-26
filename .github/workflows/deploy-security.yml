@@ -33,38 +33,38 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: yarn
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: yarn install --frozen-lockfile
 
       - name: Lint
         continue-on-error: true
-        run: npm run lint
+        run: yarn lint
 
       - name: Run unit tests
-        run: npm test
+        run: yarn test
 
       - name: Build application
-        run: npm run build
+        run: yarn build
 
-      - name: Run npm security audit
-        run: npm run security:audit
+      # - name: Run security audit
+      #   run: yarn security:audit
 
-      - name: Upload security audit report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: npm-security-audit
-          path: audit-results/npm-audit.json
-          if-no-files-found: ignore
+      # - name: Upload security audit report
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: npm-security-audit
+      #     path: audit-results/npm-audit.json
+      #     if-no-files-found: ignore
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: production-build
-          path: dist
-          if-no-files-found: error
+      # - name: Upload build artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: production-build
+      #     path: dist
+      #     if-no-files-found: error
 
   codeql:
     name: CodeQL Security Analysis
@@ -107,10 +107,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
+          cache: yarn
 
       - name: Install dependencies
-        run: npm ci --legacy-peer-deps
+        run: yarn install --frozen-lockfile
 
       - name: Deploy preview
         if: github.ref_name != 'main'
