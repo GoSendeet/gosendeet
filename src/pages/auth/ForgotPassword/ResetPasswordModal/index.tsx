@@ -27,11 +27,12 @@ export function ResetPasswordModal({
         <>
           <div className="py-4 text-sm">
             <p className="mb-2">
-              We’ve just sent a password reset link to <b>{email}</b>.
+              If an active account exists for <b>{email}</b>, we’ll send a
+              password reset link to that inbox.
             </p>
             <p className="mb-4">
-              Please check your inbox (and your spam folder, just in case) and
-              click the link to reset your password.
+              Please check your inbox and spam folder. If you do not receive an
+              email, confirm the address or create an account.
             </p>
           </div>
 

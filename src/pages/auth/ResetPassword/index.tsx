@@ -11,12 +11,25 @@ import { Link, useLocation } from "react-router-dom";
 import { resetPassword } from "@/services/auth";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import {Check} from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { getErrorMessage } from "@/lib/utils";
+import { AlertCircle, Check } from "lucide-react";
+
+const PASSWORD_REUSE_MESSAGE =
+  "You cannot reuse a previously used password. Please choose a different password.";
+
 const ResetPassword = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const resetToken = queryParams.get("resetToken") || "";
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [resetErrorMessage, setResetErrorMessage] = useState("");
 
   const [toggle, setToggle] = useState(false);
 
@@ -49,7 +62,15 @@ const ResetPassword = () => {
       setIsSuccess(true);
     },
     onError: (data) => {
-      toast.error(data?.message);
+      const message = getErrorMessage(data, "Unable to reset password");
+
+      if (message === PASSWORD_REUSE_MESSAGE) {
+        setResetErrorMessage(message);
+        setErrorModalOpen(true);
+        return;
+      }
+
+      toast.error(message);
     },
   });
 
@@ -69,7 +90,7 @@ const ResetPassword = () => {
             // ✅ Success Screen
             <div className="flex flex-col justify-center items-center text-center min-h-[350px] my-auto">
               <div className="bg-green500 w-20 h-20 mx-auto flex rounded-full font-bold justify-center items-center text-white">
-            <Check size={40}/>
+                <Check size={40} />
               </div>
               <h1 className="text-2xl text-neutral600 font-semibold font-inter tracking-tight my-3">
                 Password reset was successful!
@@ -169,6 +190,27 @@ const ResetPassword = () => {
           )}
         </div>
       </div>
+
+      <Dialog open={errorModalOpen} onOpenChange={setErrorModalOpen}>
+        <DialogContent className="gap-0">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <AlertCircle size={28} />
+          </div>
+          <DialogTitle className="text-[20px] font-semibold font-clash mb-2">
+            Choose a different password
+          </DialogTitle>
+          <DialogDescription className="font-medium text-sm text-neutral800">
+            {resetErrorMessage || PASSWORD_REUSE_MESSAGE}
+          </DialogDescription>
+          <Button
+            variant="secondary"
+            className="w-fit mt-5 mb-2"
+            onClick={() => setErrorModalOpen(false)}
+          >
+            Try another password
+          </Button>
+        </DialogContent>
+      </Dialog>
     </AuthLayout>
   );
 };
