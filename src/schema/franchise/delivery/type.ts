@@ -39,6 +39,7 @@ export type DeliveryTask = {
   createdAt: string;
   updatedAt: string;
   completionProofs: DeliveryProof[];
+  confirmationOtp?: string | null;
   previewToken: string;
 };
 

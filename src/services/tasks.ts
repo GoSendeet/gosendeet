@@ -42,6 +42,7 @@ export interface TaskDto {
     fileUrl?: string;
     fileName?: string;
   }>;
+  confirmationOtp?: string | null;
   proofPhotos?: string[];
   previewToken?: string;
   terminationReason?: string;

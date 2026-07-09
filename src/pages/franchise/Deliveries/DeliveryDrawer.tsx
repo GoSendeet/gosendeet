@@ -17,6 +17,11 @@ import {
   TaskType,
   TaskStatus,
 } from "@/schema/franchise/delivery/type";
+import {
+  OneTimePasswordField,
+  OneTimePasswordFieldInput,
+} from "@radix-ui/react-one-time-password-field";
+
 
 type DeliveryDrawerProps = {
   delivery: DeliveryType | null;
@@ -25,7 +30,7 @@ type DeliveryDrawerProps = {
   onAcceptTask?: (task: DeliveryTask) => void;
   onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
-  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[], otpCode: string) => void;
   taskActionPendingId?: string | null;
 };
 
@@ -258,11 +263,12 @@ const TaskCard = ({
   onAcceptTask?: (task: DeliveryTask) => void;
   onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
-  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[], otpCode: string) => void;
   pending?: boolean;
   lockedReason?: string | null;
 }) => {
   const [proofPhotos, setProofPhotos] = useState<File[]>([]);
+  const [otpCode, setOtpCode] = useState("");
   const typeStyle = taskTypeStyles[task.taskType];
   const status = taskStatusConfig[task.status];
   const afterDt = formatDateTime(task.completeAfter);
@@ -270,6 +276,7 @@ const TaskCard = ({
   const summary = buildWindowSummary(task.completeAfter, task.completeBefore);
   const needsPhoto = task.completionRequirement === "PHOTO";
   const needsSig = task.completionRequirement === "SIGNATURE";
+  const needsOtp = task.taskType === "PICKUP" || task.taskType === "DROPOFF";
   const isLocked = Boolean(lockedReason);
 
   return (
@@ -409,10 +416,36 @@ const TaskCard = ({
               />
             </label>
           )}
+          {needsOtp && (
+            <label className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3">
+              <span className="text-xs font-semibold text-gray-500">
+                Confirmation OTP
+              </span>
+              <OneTimePasswordField
+                value={otpCode}
+                onValueChange={(value) => setOtpCode(value.slice(0, 4))}
+                validationType="numeric"
+                autoComplete="one-time-code"
+                className="flex items-center gap-2"
+                aria-label="Confirmation OTP"
+              >
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <OneTimePasswordFieldInput
+                    key={index}
+                    index={index}
+                    className="h-11 w-11 rounded-lg border border-gray-200 bg-white text-center text-base font-bold text-gray-900 outline-none transition-colors focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                  />
+                ))}
+              </OneTimePasswordField>
+              <span className="text-[11px] text-gray-400">
+                Ask the sender for pickup or the receiver for drop-off.
+              </span>
+            </label>
+          )}
           <button
             type="button"
-            disabled={pending || (needsPhoto && proofPhotos.length === 0)}
-            onClick={() => onCompleteTask?.(task, proofPhotos)}
+            disabled={pending || (needsPhoto && proofPhotos.length === 0) || (needsOtp && otpCode.length !== 4)}
+            onClick={() => onCompleteTask?.(task, proofPhotos, otpCode)}
             className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60"
           >
             {pending ? "Completing..." : `Complete ${typeStyle.label.toLowerCase()}`}

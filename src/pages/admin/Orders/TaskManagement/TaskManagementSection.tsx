@@ -308,13 +308,14 @@ const TaskManagementSection = ({
           {/* Desktop Table View */}
           <div className="hidden lg:block overflow-x-auto">
             <div className="min-w-[1100px]">
-              <div className="grid grid-cols-[60px_repeat(8,minmax(0,1fr))_140px] gap-4 text-xs font-semibold uppercase text-neutral500 border-b border-neutral200 pb-2">
+              <div className="grid grid-cols-[60px_repeat(9,minmax(0,1fr))_140px] gap-4 text-xs font-semibold uppercase text-neutral500 border-b border-neutral200 pb-2">
                 <span>Select</span>
                 <span>Task</span>
                 <span>Destination</span>
                 <span>Company</span>
                 <span>Schedule</span>
                 <span>Requirement</span>
+                <span>OTP</span>
                 <span>Proof</span>
                 <span>Status Info</span>
                 <span>Dispatch Link</span>
@@ -330,7 +331,7 @@ const TaskManagementSection = ({
                   return (
                     <div
                       key={task.id}
-                      className="grid grid-cols-[60px_repeat(8,minmax(0,1fr))_140px] gap-4 py-4 text-sm items-start group hover:bg-neutral50"
+                      className="grid grid-cols-[60px_repeat(9,minmax(0,1fr))_140px] gap-4 py-4 text-sm items-start group hover:bg-neutral50"
                     >
                       <div className="pt-1">
                         <Checkbox
@@ -393,6 +394,15 @@ const TaskManagementSection = ({
                             Depends on {task.dependsOn.length} task
                             {task.dependsOn.length > 1 ? "s" : ""}
                           </p>
+                        )}
+                      </div>
+                      <div className="text-neutral700">
+                        {task.confirmationOtp ? (
+                          <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2 py-1 font-mono text-sm font-bold tracking-widest text-emerald-700">
+                            {task.confirmationOtp}
+                          </span>
+                        ) : (
+                          <p className="text-xs text-neutral500">Not required</p>
                         )}
                       </div>
                       <div className="text-neutral700">
@@ -616,6 +626,12 @@ const TaskManagementSection = ({
                         {task.completionRequirement
                           ? formatStatus(task.completionRequirement)
                           : "Not required"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-neutral500 uppercase">OTP</p>
+                      <p className="font-mono font-bold tracking-widest text-emerald-700">
+                        {task.confirmationOtp ?? "Not required"}
                       </p>
                     </div>
                   </div>

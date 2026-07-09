@@ -135,6 +135,7 @@ export const mapTaskDtoToDeliveryTask = (task: TaskDto): DeliveryTask => ({
   createdAt: task.createdAt ?? "",
   updatedAt: task.updatedAt ?? "",
   completionProofs: normalizeProofs(task),
+  confirmationOtp: task.confirmationOtp ?? null,
   previewToken: task.previewToken ?? "",
 });
 

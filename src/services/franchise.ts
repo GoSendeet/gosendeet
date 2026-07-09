@@ -309,15 +309,17 @@ export const completeFranchiseTask = async ({
   taskId,
   proofPhotos,
   message,
+  otpCode,
 }: {
   taskId: string;
   proofPhotos?: File[];
   message?: string;
+  otpCode?: string;
 }) => {
   const formData = new FormData();
   formData.append(
     "request",
-    new Blob([JSON.stringify({ message: message ?? "" })], {
+    new Blob([JSON.stringify({ message: message ?? "", otpCode: otpCode ?? "" })], {
       type: "application/json",
     }),
     "request.json",

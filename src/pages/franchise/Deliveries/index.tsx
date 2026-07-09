@@ -874,10 +874,11 @@ const Deliveries = ({
     startTask.mutate(task.id);
   };
 
-  const handleCompleteTask = (task: DeliveryTask, proofPhotos: File[]) => {
+  const handleCompleteTask = (task: DeliveryTask, proofPhotos: File[], otpCode: string) => {
     completeTask.mutate({
       taskId: task.id,
       proofPhotos,
+      otpCode,
       message: `${task.taskType.toLowerCase()} completed from franchise dashboard`,
     });
   };
