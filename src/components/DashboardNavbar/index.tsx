@@ -43,6 +43,8 @@ const DashboardNavbar = ({
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
   const userId = sessionStorage.getItem("userId") || "";
+  const role = sessionStorage.getItem("role") || "";
+  const homePath = role === "developer" ? "/developer-dashboard" : "/dashboard";
   const storedProfileImage = sessionStorage.getItem("profileImage") || "";
   const { data: userData } = useGetUserDetails(userId);
 
@@ -100,7 +102,7 @@ const DashboardNavbar = ({
       <div className="flex justify-between items-center lg:py-5 py-4 xl:px-30 md:px-20 px-6 bg-white border-b border-b-neutral300">
         {/* Logo */}
         <div>
-          <Link to="/dashboard">
+          <Link to={homePath}>
             <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>

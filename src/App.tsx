@@ -29,11 +29,17 @@ import PrivateRoutes from "./lib/PrivateRoutes";
 import PublicRoutes from "./lib/PublicRoutes";
 import AdminRoutes from "./lib/AdminRoutes";
 import FranchiseRoutes from "./lib/FranchiseRoutes";
+import DeveloperRoutes from "./lib/DeveloperRoutes";
 import BookingRoutes from "./lib/BookingRoutes";
 import ErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking/ErrorPage";
 import PublicDispatchPage from "./pages/dispatch/PublicDispatchPage";
 import FranchiseLayout from "./layouts/FranchiseLayout";
 import Franchise from "./pages/franchise";
+import DeveloperLayout from "./layouts/DeveloperLayout";
+import DeveloperDashboard from "./pages/developer";
+import DeveloperDocumentation from "./pages/developer/Documentation";
+import DeveloperStatus from "./pages/developer/Status";
+import DeveloperAuth from "./pages/developer/Auth";
 import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 import PageTracker from "./components/PageTracker";
@@ -46,7 +52,10 @@ const AppRoutes = () => {
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
-          <Route path="/track-booking" element={<Tracking />} />
+            <Route path="/track-booking" element={<Tracking />} />
+          <Route path="/developer/documentation" element={<DeveloperDocumentation />} />
+          <Route path="/status" element={<DeveloperStatus />} />
+          <Route path="/domain/auth" element={<DeveloperAuth />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
@@ -80,6 +89,12 @@ const AppRoutes = () => {
         <Route element={<FranchiseRoutes />}>
           <Route path="franchise" element={<FranchiseLayout />}>
             <Route index element={<Franchise />} />
+          </Route>
+        </Route>
+
+        <Route element={<DeveloperRoutes />}>
+          <Route path="developer-dashboard" element={<DeveloperLayout />}>
+            <Route index element={<DeveloperDashboard />} />
           </Route>
         </Route>
 

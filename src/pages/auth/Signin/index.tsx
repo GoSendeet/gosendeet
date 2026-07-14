@@ -15,6 +15,10 @@ import { identifyUser, track, EVENT } from "@/lib/analytics";
 import { storeAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
 import { getPreSigninQuoteDashboardRoute } from "@/lib/preSigninQuote";
+import {
+  isUnverifiedAccountError,
+  sendVerificationMailAndNavigate,
+} from "@/lib/accountVerification";
 
 const schema = z.object({
   email: z
@@ -83,10 +87,16 @@ const Signin = () => {
 
       navigate(getDefaultRouteForRole(user.role));
     },
-    onError: (
+    onError: async (
       error: { message?: string; data?: string },
       submittedData,
     ) => {
+      if (isUnverifiedAccountError(error)) {
+        setFailedEmail(submittedData.email);
+        await sendVerificationMailAndNavigate(submittedData.email, navigate);
+        return;
+      }
+
       // Backend returns EMAIL_NOT_VERIFIED only after the password check
       // passed, so the banner is shown strictly for unverified accounts
       setFailedEmail(

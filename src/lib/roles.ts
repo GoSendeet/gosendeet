@@ -4,16 +4,25 @@ export const isAdminRole = (role: string | null) =>
 export const isFranchiseRole = (role: string | null) =>
   ["partner", "franchise"].includes((role || "").toLowerCase());
 
+export const isDeveloperRole = (role: string | null) =>
+  (role || "").toLowerCase() === "developer";
+
 export const getDefaultRouteForRole = (role: string | null) => {
-  if (role === "user") {
+  const normalizedRole = (role || "").toLowerCase();
+
+  if (normalizedRole === "user") {
     return "/dashboard";
   }
 
-  if (isFranchiseRole(role)) {
+  if (isDeveloperRole(normalizedRole)) {
+    return "/developer-dashboard";
+  }
+
+  if (isFranchiseRole(normalizedRole)) {
     return "/franchise";
   }
 
-  if (isAdminRole(role)) {
+  if (isAdminRole(normalizedRole)) {
     return "/admin-dashboard";
   }
 
