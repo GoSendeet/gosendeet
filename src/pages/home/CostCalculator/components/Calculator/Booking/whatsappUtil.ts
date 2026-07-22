@@ -12,7 +12,7 @@ export const formatWhatsAppNumber = (rawNumber: string) => {
 export const handleBackToWhatsapp = (userWhatsappNumber: string) => {
   if (!userWhatsappNumber) return;
   const formattedNumber = formatWhatsAppNumber(userWhatsappNumber);
-  console.log(formatWhatsAppNumber)
+  console.log(formattedNumber)
   const defaultTestNumber = `15551523182`
   // TODO: update defaultTestNumber, pull whatsapp number from env and remove whatsapp number from the urls
   window.location.href = `https://wa.me/${defaultTestNumber}`;
