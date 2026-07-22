@@ -1,283 +1,87 @@
 import Layout from "@/layouts/BookingFlowLayout";
 import { Button } from "@/components/ui/button";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
-import { Spinner } from "@/components/Spinner";
-import { formatDate } from "@/lib/utils";
-import { trackBookingsHandler } from "@/hooks/useTrackBookings";
 import { Check } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { verifyBookingPayment, verifyWhatsappBookingPayment } from "@/services/user";
-import CurrencyFormatter from "@/components/CurrencyFormatter";
 import openChatwootChat from "@/lib/openChatwootChat";
-import openWhatsAppSupport from "@/lib/openWhatsAppSupport";
 import { track, EVENT } from "@/lib/analytics";
+import { FaWhatsapp } from "react-icons/fa";
+import { handleBackToWhatsapp } from "../whatsappUtil";
+import { useParams, useSearchParams } from "react-router-dom";
 
 const Confirmation = () => {
-    const [searchParams] = useSearchParams();
     const params = useParams();
-
-    const [bookingId, setBookingId] = useState("");
-    const [verificationComplete, setVerificationComplete] = useState(false);
-    const [verifiedAmount, setVerifiedAmount] = useState<number | null>(null);
-    const [loading, setLoading] = useState(false);
-
-    const navigate = useNavigate();
-    const verifiedReferenceRef = useRef<string | null>(null);
+    const [searchParams] = useSearchParams();
     const userWhatsappNumber = params?.whatsappPhoneNumber || "";
-    const { data, isLoading, isSuccess, isError } = useGetBookingsById(bookingId);
-    console.log("User whatsapp number:", userWhatsappNumber);
     const reference = searchParams.get("reference")
         || searchParams.get("trxref")
         || "";
-
-    const { mutate: verifyPayment, isPending: isVerifyingPayment } = useMutation({
-        mutationFn: verifyWhatsappBookingPayment,
-        onSuccess: (response: any) => {
-            const paymentStatus = response?.data?.status;
-            const verifiedBookingId = response?.data?.bookingId;
-
-            if (paymentStatus !== "SUCCESS") {
-                toast.error(response?.data?.message || "Payment was not successful.");
-                navigate("/error-page", { replace: true });
-                return;
-            }
-
-            if (!verifiedBookingId) {
-                toast.error("Payment succeeded, but the order could not be created.");
-                navigate("/error-page", { replace: true });
-                return;
-            }
-
-            track(EVENT.BOOKING_CONFIRMED, { booking_id: verifiedBookingId });
-            setBookingId(verifiedBookingId);
-            setVerifiedAmount(response?.data?.amount ?? null);
-            setVerificationComplete(true);
-            sessionStorage.setItem("bookingCompleted", "true");
-            sessionStorage.removeItem("bookingInputData");
-        },
-        onError: (error: any) => {
-            toast.error(error?.message || "We could not verify your payment.");
-            navigate("/error-page", { replace: true });
-        },
-    });
-
-    useEffect(() => {
-        if (!reference) {
-            toast.error("Payment reference is missing.");
-            navigate("/error-page", { replace: true });
-            return;
-        }
-
-        if (verifiedReferenceRef.current === reference) return;
-        verifiedReferenceRef.current = reference;
-        verifyPayment(reference);
-    }, [navigate, reference, verifyPayment]);
-
-    useEffect(() => {
-        const handleBack = () => {
-            navigate("/", { replace: true });
-        };
-
-        // Only runs when user presses BACK
-        window.addEventListener("popstate", handleBack);
-
-        return () => {
-            window.removeEventListener("popstate", handleBack);
-        };
-    }, [navigate]);
-
-    const onSubmit = () => {
-        trackBookingsHandler(data?.data?.trackingNumber, navigate, setLoading);
-    };
-
+    console.log("User whatsapp number:", userWhatsappNumber);
+    console.log("Reference:", reference);
     return (
         <Layout>
-            {(isVerifyingPayment ||
-                (verificationComplete && isLoading && !isSuccess)) && (
-                    <div className="h-[50vh] w-full flex items-center justify-center">
-                        <Spinner />
-                    </div>
-                )}
-
-            {verificationComplete && isError && !isLoading && (
-                <div className="h-[50vh] w-full flex justify-center flex-col items-center">
-                    <p className="font-semibold font-inter text-xl text-center">
-                        There was an error getting the data
-                    </p>
-                </div>
-            )}
-
-            {verificationComplete &&
-                !isLoading &&
-                isSuccess &&
-                data &&
-                data?.data && (
-                    <div className="py-10 xl:w-[70%] md:w-[80%] w-full mx-auto px-6 ">
-                        <div className="flex lg:flex-row flex-col gap-6 justify-between ">
-                            <div className="lg:w-[65%] flex flex-col gap-6">
-                                <div className="px-4 py-20 bg-neutral900 rounded-xl">
-                                    <div className="flex flex-col gap-2 justify-center items-center text-center">
-                                        <div className="w-[70px] h-[70px] rounded-full bg-green500 text-white flex justify-center items-center">
-                                            <Check size={50} />
-                                        </div>
-                                        <h2 className="font-clash font-semibold text-2xl mt-1">
-                                            Order Placed Successfully
-                                        </h2>
-
-                                        <div className="text-neutral600 md:w-[90%] mb-6">
-                                            <p>Sit back and relax. </p>
-                                            <p>
-                                                Your order is being processed and you will get a
-                                                response from us in approximately 15 minutes.
-                                            </p>
-                                        </div>
-                                        <Button
-                                            onClick={onSubmit}
-                                            loading={loading}
-                                            className=" bg-green500 hover:bg-green800 text-white"
-                                        >
-                                            Track Order Progress
-                                        </Button>
-                                    </div>
-
-                                    <div className="flex flex-col gap-4 items-center justify-center mt-18">
-                                        <p className="font-medium">Need help with delivery?</p>
-                                        <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
-                                            <Button
-                                                variant="secondary"
-                                                className="bg-green-500"
-                                                onClick={(e) => { track(EVENT.SUPPORT_OPENED, { channel: "chat", source: "confirmation" }); openChatwootChat(e); }}
-                                            >
-                                                Live Chat
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                className="bg-brand"
-                                                onClick={() => { track(EVENT.SUPPORT_OPENED, { channel: "whatsapp", source: "confirmation" }); openWhatsAppSupport(); }}
-                                            >
-                                                WhatsApp Support
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
+            <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-6 py-10">
+                <div className="w-full max-w-3xl">
+                    <div className="px-6 py-20 bg-neutral900 rounded-xl">
+                        <div className="flex flex-col gap-2 justify-center items-center text-center">
+                            <div className="w-[70px] h-[70px] rounded-full bg-green500 text-white flex justify-center items-center">
+                                <Check size={50} />
                             </div>
-                            <div className="lg:w-[35%] flex">
-                                <div className="p-4 relative bg-neutral100 border border-neutral200 rounded-xl flex-1">
-                                    <h2 className="font-clash font-semibold text-md mt-1">
-                                        Summary
-                                    </h2>
-                                    <hr className="border-b border-b-neutral200 my-2" />
 
-                                    <div className="flex flex-col gap-6 mb-6">
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">To</span>
-                                            <span className="text-right">
-                                                {data?.data?.receiver?.name}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Phone Number</span>
-                                            <span className="text-right">
-                                                {data?.data?.receiver?.phoneNumber}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Destination</span>
-                                            <span className="text-right">
-                                                {data?.data?.receiver?.address}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Pickup Date</span>
-                                            <span className="text-right">
-                                                {formatDate(data?.data?.pickupDate)}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Logistics</span>
-                                            <span className="text-right">
-                                                {data?.data?.company?.name}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Delivery Date</span>
-                                            <span className="text-right">
-                                                {formatDate(data?.data?.estimatedDeliveryDate)}
-                                            </span>
-                                        </p>
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Tracking Number</span>
-                                            <span className="text-right font-semibold">
-                                                {data?.data?.trackingNumber}
-                                            </span>
-                                        </p>
-                                    </div>
+                            <h2 className="font-clash font-semibold text-2xl mt-1">
+                                Order Placed Successfully
+                            </h2>
 
-                                    <hr className="border-b border-b-neutral200 my-6" />
+                            <div className="text-neutral600 md:w-[90%] mb-6">
+                                <p>Sit back and relax.</p>
+                                <p>
+                                    Your order is being processed and you will get a response
+                                    from us in approximately 15 minutes.
+                                </p>
+                            </div>
 
-                                    <h2 className="font-clash font-semibold text-md mt-1">
-                                        Price Details
-                                    </h2>
-                                    <hr className="border-b border-b-neutral200 my-2" />
+                            <Button
+                                onClick={() => handleBackToWhatsapp(userWhatsappNumber)}
+                                className="bg-green-500 hover:bg-green-600 from-transparent to-transparent"
+                            >
+                                <FaWhatsapp />
+                                Back to Whatsapp
+                            </Button>
+                        </div>
 
-                                    <div className="flex flex-col gap-6">
-                                        <p className="flex justify-between items-center font-medium text-sm">
-                                            <span className="text-neutral600">Subtotal</span>
-                                            <span className="text-right">
-                                                ₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}
-                                            </span>
-                                        </p>
+                        <div className="flex flex-col gap-4 items-center justify-center mt-18">
+                            <p className="font-medium">Need help with delivery?</p>
 
-                                        {(() => {
-                                            const subTotal = Number(data?.data?.cost?.subTotal ?? 0);
-                                            const paid = verifiedAmount ?? Number(data?.data?.cost?.total ?? 0);
-                                            const promoDiscount = data?.data?.cost?.discountAmount
-                                                ? Number(data.data.cost.discountAmount)
-                                                : subTotal - paid > 0
-                                                    ? subTotal - paid
-                                                    : 0;
+                            <div className="flex flex-col lg:flex-row items-center justify-center gap-4">
+                                <Button
+                                    variant="secondary"
+                                    className="bg-green-500"
+                                    onClick={(e) => {
+                                        track(EVENT.SUPPORT_OPENED, {
+                                            channel: "chat",
+                                            source: "confirmation",
+                                        });
+                                        openChatwootChat(e);
+                                    }}
+                                >
+                                    Live Chat
+                                </Button>
 
-                                            return promoDiscount > 0 ? (
-                                                <p className="flex justify-between items-center font-medium text-sm">
-                                                    <span className="text-neutral600">
-                                                        Promo{data?.data?.promoCode ? ` (${data.data.promoCode})` : ""}
-                                                    </span>
-                                                    <span className="text-right text-green-600">
-                                                        - ₦ {CurrencyFormatter(promoDiscount)}
-                                                    </span>
-                                                </p>
-                                            ) : null;
-                                        })()}
-                                    </div>
-
-                                    <hr className="border-b border-b-neutral200 my-4" />
-
-                                    <p className="flex justify-between items-center font-semibold">
-                                        <span className="text-neutral600">Total</span>
-                                        <span className="text-right">
-                                            ₦ {CurrencyFormatter(verifiedAmount ?? data?.data?.cost?.total)}
-                                        </span>
-                                    </p>
-                                </div>
+                                <Button
+                                    variant="secondary"
+                                    className="bg-brand"
+                                    onClick={() => {
+                                        track(EVENT.SUPPORT_OPENED, {
+                                            channel: "whatsapp",
+                                            source: "confirmation",
+                                        });
+                                    }}
+                                >
+                                    WhatsApp Support
+                                </Button>
                             </div>
                         </div>
                     </div>
-                )}
-
-            {verificationComplete &&
-                data &&
-                !data?.data &&
-                !isLoading &&
-                isSuccess && (
-                    <div className="h-[50vh] w-full flex justify-center flex-col items-center">
-                        <p className="font-semibold font-inter text-xl text-center">
-                            There are no results
-                        </p>
-                    </div>
-                )}
+                </div>
+            </div>
         </Layout>
     );
 };

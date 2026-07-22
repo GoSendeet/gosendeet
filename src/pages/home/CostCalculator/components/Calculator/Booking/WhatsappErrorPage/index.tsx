@@ -1,8 +1,6 @@
 import Layout from "@/layouts/HomePageLayout";
 import { Button } from "@/components/ui/button";
 import { useParams, useSearchParams } from "react-router-dom";
-// import { useEffect } from "react";
-// import { toast } from "sonner";
 import { XCircle } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { handleBackToWhatsapp } from "../whatsappUtil";
