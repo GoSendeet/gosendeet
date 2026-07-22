@@ -44,6 +44,9 @@ import ChatwootWidget from "./components/ChatwootWidget";
 import ValidateGoogleLogin from "./pages/auth/ValidateGoogleLogin";
 import PageTracker from "./components/PageTracker";
 import { useSessionSync } from "./hooks/useSessionSync";
+import WhatsappBookingResultRoutes from "./lib/WhatsappBookingResultRoutes";
+import WhatsappConfirmation from "./pages/home/CostCalculator/components/Calculator/Booking/WhatsappConfirmation";
+import WhatsappErrorPage from "./pages/home/CostCalculator/components/Calculator/Booking/WhatsappErrorPage";
 
 const AppRoutes = () => {
   useSessionSync();
@@ -60,31 +63,36 @@ const AppRoutes = () => {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
 
-        <Route element={<PublicRoutes />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/signin" element={<Signin />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify-account" element={<VerifyEmail />} />
-          <Route path="/:id/verify-email" element={<VerifyEmail />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/:id/reset-password" element={<ResetPassword />} />
-          <Route path="/oauth2/callback" element={<ValidateGoogleLogin />} />
-        </Route>
+    <Route element={<PublicRoutes />}>
+      <Route path="/" element={<Home />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/signin" element={<Signin />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-account" element={<VerifyEmail />} />
+      <Route path="/:id/verify-email" element={<VerifyEmail />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/:id/reset-password" element={<ResetPassword />} />
+      <Route path="/oauth2/callback" element={<ValidateGoogleLogin />} />
+    </Route>
 
-        <Route element={<BookingRoutes />}>
-          <Route path="/delivery" element={<Delivery />} />
-          <Route path="/pickup-time" element={<PickupTime />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/success-page" element={<Confirmation />} />
-          <Route path="/error-page" element={<ErrorPage />} />
-        </Route>
+    <Route element={<BookingRoutes />}>
+      <Route path="/delivery" element={<Delivery />} />
+      <Route path="/pickup-time" element={<PickupTime />} />
+      <Route path="/checkout" element={<Checkout />} />
+      <Route path="/success-page" element={<Confirmation />} />
+      <Route path="/error-page" element={<ErrorPage />} />
+    </Route>
 
-        <Route element={<PrivateRoutes />}>
-          <Route path="dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-          </Route>
-        </Route>
+    <Route element={<WhatsappBookingResultRoutes />}>
+      <Route path="/whatsapp-payment-success/:whatsappPhoneNumber" element={<WhatsappConfirmation />} />
+      <Route path="/whatsapp-payment-error/:whatsappPhoneNumber" element={<WhatsappErrorPage />} />
+    </Route>
+
+    <Route element={<PrivateRoutes />}>
+      <Route path="dashboard" element={<DashboardLayout />}>
+        <Route index element={<Dashboard />} />
+      </Route>
+    </Route>
 
         <Route element={<FranchiseRoutes />}>
           <Route path="franchise" element={<FranchiseLayout />}>
@@ -98,18 +106,19 @@ const AppRoutes = () => {
           </Route>
         </Route>
 
-        <Route element={<AdminRoutes />}>
-          <Route path="admin-dashboard" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="user/:id" element={<UserProfiles />} />
-            <Route path="order/:id" element={<OrderDetails />} />
-            <Route path="companies/add-company" element={<AddCompany />} />
-            <Route path="companies/add-company/:id" element={<AddCompany />} />
-            <Route path="company/:id" element={<CompanyDetails />} />
-          </Route>
-        </Route>
+    <Route element={<AdminRoutes />}>
+      <Route path="admin-dashboard" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="user/:id" element={<UserProfiles />} />
+        <Route path="order/:id" element={<OrderDetails />} />
+        <Route path="companies/add-company" element={<AddCompany />} />
+        <Route path="companies/add-company/:id" element={<AddCompany />} />
+        <Route path="company/:id" element={<CompanyDetails />} />
+      </Route>
+    </Route>
 
-      </Routes>;
+  </Routes>;
+
 };
 
 function App() {
