@@ -2,6 +2,7 @@ import {
   getAllBookings,
   getBookingsById,
   getBookingStats,
+  getBookingProviderStatus,
   trackBookings,
 } from "@/services/bookings";
 import { fetchSharedQuotes } from "@/services/user";
@@ -80,6 +81,22 @@ export const useGetTrackBookings = (id: string) => {
     isError: query.isError,
     data: query.data,
     refetchUserData: query.refetch,
+  };
+};
+
+export const useGetBookingProviderStatus = (id: string) => {
+  const query = useQuery({
+    queryKey: ["booking-provider-status", id],
+    queryFn: () => getBookingProviderStatus(id),
+    enabled: false,
+    retry: false,
+  });
+  return {
+    isFetching: query.isFetching,
+    isSuccess: query.isSuccess,
+    isError: query.isError,
+    data: query.data,
+    fetch: query.refetch,
   };
 };
 
