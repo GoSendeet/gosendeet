@@ -101,6 +101,15 @@ export const trackBookings = async (id: string) => {
 };
 
 
+export const getBookingProviderStatus = async (id: string) => {
+  try {
+    const res = await api.get(`/bookings/${id}/provider-status`);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
 export const createRatings = async (data: any) => {
   try {
     const res = await api.post(`/ratings`, data);

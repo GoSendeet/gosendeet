@@ -8,7 +8,7 @@ import { UpdateProgressModal } from "../modals/UpdateProgressModal";
 import { cn, formatDate, formatDateTime, formatStatus } from "@/lib/utils";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { statusClasses } from "@/constants";
-import { useGetBookingsById } from "@/queries/user/useGetUserBookings";
+import { useGetBookingsById, useGetBookingProviderStatus } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
 import OrderHistory from "@/pages/home/Track/Tracking/components/OrderHistory";
 import { TaskManagementSection } from "../TaskManagement";
@@ -21,6 +21,13 @@ const OrderDetails = () => {
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
     bookingData.id
   );
+  const {
+    isFetching: providerStatusFetching,
+    isSuccess: providerStatusSuccess,
+    isError: providerStatusError,
+    data: providerStatusData,
+    fetch: fetchProviderStatus,
+  } = useGetBookingProviderStatus(bookingData.id);
   return (
     <div className="md:px-20 px-6 py-8 bg-neutral100">
       {isLoading && !isSuccess && (
@@ -37,7 +44,7 @@ const OrderDetails = () => {
         </div>
       )}
 
-      {!isLoading && isSuccess && data && data?.data?.length > 0 && (
+      {!isLoading && isSuccess && !!data?.data && (
         <>
           <div className="flex justify-between items-center mb-8">
             <Button
@@ -271,6 +278,72 @@ const OrderDetails = () => {
               <OrderHistory data={data} />
             </div>
           </div>
+
+          {data?.data?.providerReference && (
+            <div className="mt-6">
+              <div className="px-3 xl:px-4 py-4 text-md font-inter text-brand font-semibold bg-brand-light w-full flex items-center justify-between">
+                <p>Provider Tracking ({data?.data?.company?.name})</p>
+                <button
+                  onClick={() => fetchProviderStatus()}
+                  disabled={providerStatusFetching}
+                  className="text-sm font-medium bg-brand text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {providerStatusFetching ? "Fetching..." : "Check Status"}
+                </button>
+              </div>
+              <div className="px-3 xl:px-4 py-4 bg-white mb-6">
+                <div className="flex flex-wrap gap-8 mb-4">
+                  <div>
+                    <p className="text-neutral600 text-xs mb-1">Waybill Number</p>
+                    <p className="font-medium text-brand">{data?.data?.providerReference}</p>
+                  </div>
+                  {providerStatusSuccess && providerStatusData?.data?.order?.orderStatus && (
+                    <div>
+                      <p className="text-neutral600 text-xs mb-1">Current Status</p>
+                      <p className="font-medium">
+                        {providerStatusData.data.order.orderStatus.replace(/_/g, " ")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {providerStatusError && (
+                  <p className="text-red-500 text-sm mt-2">
+                    Failed to fetch provider status. Please try again.
+                  </p>
+                )}
+
+                {providerStatusSuccess && (
+                  <div className="mt-4">
+                    <p className="text-brand font-medium mb-3 text-sm">Tracking History</p>
+                    {!providerStatusData?.data?.history?.length ? (
+                      <p className="text-neutral600 text-sm">No tracking history yet.</p>
+                    ) : (
+                      <div className="grid">
+                        {providerStatusData.data.history.map((item: any, idx: number) => (
+                          <div key={idx} className="flex gap-4 py-4 border-b border-neutral200 last:border-0">
+                            <div className="flex flex-col items-center pt-1">
+                              <span className="w-[10px] h-[10px] rounded-full bg-green500 shrink-0" />
+                              {idx < providerStatusData.data.history.length - 1 && (
+                                <span className="flex-1 w-[1.5px] bg-green500/50 mt-1" />
+                              )}
+                            </div>
+                            <div className="pb-2">
+                              <h4 className="font-semibold font-inter mb-1 text-sm">
+                                {item.orderStatus?.replace(/_/g, " ")}
+                              </h4>
+                              <p className="text-neutral500 text-xs mb-1">{item.statusCreationDate}</p>
+                              <p className="text-neutral600 text-[13px]">{item.statusDescription}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <UpdateProgressModal
             open={open}
