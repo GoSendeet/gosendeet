@@ -25,12 +25,12 @@ export type DeliveryTask = {
   status: TaskStatus;
   destinationAddress: string;
   completionRequirement: CompletionRequirement;
-  completeBefore: string;
-  completeAfter: string;
+  completeBefore: string | null;
+  completeAfter: string | null;
   estimatedTime: string | null;
   estimatedTimeWindowStart: string | null;
   estimatedTimeWindowEnd: string | null;
-  notes: string;
+  notes: string | null;
   dependsOn: string[];
   dispatchedAt: string | null;
   respondedAt: string | null;
@@ -54,6 +54,8 @@ export type DeliveryStatus =
 export type DeliveryType = {
   id: string;
   bookingId?: string;
+  orderNumber?: string;
+  trackingNumber?: string;
   isNew: boolean;
   status: DeliveryStatus;
   from: string;
@@ -61,11 +63,19 @@ export type DeliveryType = {
   package: string;
   weight: string;
   date: string; // ISO format: YYYY-MM-DD
-  time: string;
+  time: string | null;
+  estimatedDeliveryDate: string | null;
+  estimatedDeliveryTime: string | null;
   earnings: string;
   fromAddress?: string;
   toAddress?: string;
   customerName: string;
   customerPhone: string;
+  deliveryInstructions: string | null;
+  itemValue: number | null;
+  isFragile: boolean;
+  isPerishable: boolean;
+  isExclusive: boolean;
+  isHazardous: boolean;
   tasks?: DeliveryTask[];
 };

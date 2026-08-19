@@ -1,11 +1,13 @@
 import ActivityStats from "./ActivityStats";
 import { Truck, Zap } from "lucide-react";
 import RecentActivity from "./RecentActivity";
+import RoutingOffersBanner from "./RoutingOffersBanner";
 import {
   useGetFranchiseDashboardActivity,
   useGetFranchiseDashboardSummary,
   useUpdateFranchiseAvailability,
 } from "@/queries/franchise/useFranchiseDashboard";
+import { useGetPendingRoutingOffers } from "@/queries/franchise/useFranchiseRoutingOffers";
 import { toast } from "sonner";
 
 const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries: (statusTab: string) => void }) => {
@@ -18,6 +20,7 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
     isPending: activityLoading,
   } = useGetFranchiseDashboardActivity(10);
   const availabilityMutation = useUpdateFranchiseAvailability(7);
+  const { data: pendingOffers = [] } = useGetPendingRoutingOffers();
   const isOnline = summary?.online ?? false;
   const todayLabel = new Intl.DateTimeFormat("en-US", {
     weekday: "long",
@@ -97,8 +100,13 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
         </div>
       </div>
 
+      {/* Pending routing offers — appears only when offers are waiting */}
+      <div className="mt-6">
+        <RoutingOffersBanner offers={pendingOffers} />
+      </div>
+
       {/* dashboard statistics */}
-      <div className="mt-10">
+      <div className="mt-4">
         <ActivityStats summary={summary} isLoading={summaryLoading} />
       </div>
 

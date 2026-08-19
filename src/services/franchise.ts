@@ -633,3 +633,57 @@ export const markFranchiseNotificationRead = async (
     return throwApiError(error);
   }
 };
+
+export type RoutingOffer = {
+  id: string;
+  routingSessionId: string;
+  companyId: string;
+  companyName: string;
+  offerRank: number;
+  offeredAt: string;
+  expiresAt: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "TIMED_OUT";
+  rejectionReason?: string | null;
+  responseAt?: string | null;
+  trackingNumber: string;
+  pickupLocation: string;
+  destination: string;
+  pickupState?: string | null;
+  deliveryState?: string | null;
+};
+
+export const getPendingRoutingOffers = async (): Promise<RoutingOffer[]> => {
+  try {
+    const res = await api.get<RoutingOffer[]>("/franchise/routing-offers");
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const acceptRoutingOffer = async (offerId: string): Promise<RoutingOffer> => {
+  try {
+    const res = await api.post<RoutingOffer>(`/franchise/routing-offers/${offerId}/accept`);
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
+export const declineRoutingOffer = async ({
+  offerId,
+  reason,
+}: {
+  offerId: string;
+  reason?: string;
+}): Promise<RoutingOffer> => {
+  try {
+    const res = await api.post<RoutingOffer>(
+      `/franchise/routing-offers/${offerId}/decline`,
+      reason ? { reason } : {},
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};

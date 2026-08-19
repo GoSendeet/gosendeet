@@ -196,7 +196,7 @@ const PickupTime = () => {
         weight: nextBookingData.weight,
         itemValue: nextItemValue,
         quantity: nextBookingData.quantity ?? 1,
-        packageDescription: nextBookingData.packageDescription ?? {
+        packageDescription: {
           isFragile: specialHandling === "Fragile",
           isPerishable: specialHandling === "Perishable",
           isExclusive: specialHandling === "High value",

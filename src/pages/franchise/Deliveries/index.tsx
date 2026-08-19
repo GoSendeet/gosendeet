@@ -28,6 +28,17 @@ import { useGetFranchiseDashboardSummary } from "@/queries/franchise/useFranchis
 
 //Lets create an array of data
 
+const deliveryBase = {
+  estimatedDeliveryDate: null as string | null,
+  estimatedDeliveryTime: null as string | null,
+  deliveryInstructions: null as string | null,
+  itemValue: null as number | null,
+  isFragile: false,
+  isPerishable: false,
+  isExclusive: false,
+  isHazardous: false,
+};
+
 type statusStyleProps = {
   text: string;
   bg: string;
@@ -37,6 +48,7 @@ type statusStyleProps = {
 const deliveries: DeliveryType[] = [
   {
     id: "GS-NJ75ZDW",
+    ...deliveryBase,
     isNew: true,
     status: "Pending",
     from: "Lekki",
@@ -105,6 +117,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-KL92MXP",
+    ...deliveryBase,
     isNew: true,
     status: "Pending",
     from: "Lagos Island",
@@ -173,6 +186,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-ABC123",
+    ...deliveryBase,
     isNew: false,
     status: "In Transit",
     from: "Victoria Island",
@@ -241,6 +255,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-DEF456",
+    ...deliveryBase,
     isNew: false,
     status: "Accepted",
     from: "Victoria Island",
@@ -309,6 +324,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-GHI789",
+    ...deliveryBase,
     isNew: false,
     status: "Picked Up",
     from: "Ikoyi",
@@ -377,6 +393,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-JKL012",
+    ...deliveryBase,
     isNew: false,
     status: "Delivered",
     from: "Lagos Island",
@@ -445,6 +462,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-MNO345",
+    ...deliveryBase,
     isNew: false,
     status: "Delivered",
     from: "Lekki",
@@ -513,6 +531,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-PQR678",
+    ...deliveryBase,
     isNew: false,
     status: "Delivered",
     from: "Ikoyi",
@@ -581,6 +600,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-STU901",
+    ...deliveryBase,
     isNew: false,
     status: "Declined",
     from: "Victoria Island",
@@ -649,6 +669,7 @@ const deliveries: DeliveryType[] = [
   },
   {
     id: "GS-VWX234",
+    ...deliveryBase,
     isNew: true,
     status: "In Transit",
     from: "Victoria Island",
