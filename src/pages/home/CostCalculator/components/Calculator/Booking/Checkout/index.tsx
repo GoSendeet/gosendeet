@@ -24,6 +24,18 @@ import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 const CHECKOUT_BOOKING_STORAGE_KEY = "checkoutBookingData";
+
+const pickupTimeSlotToIso = (slot: string): string | undefined => {
+  if (!slot) return undefined;
+  const match = slot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return undefined;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, "0")}:${minutes}`;
+};
 const bookingSteps = [
   { label: "Route & Package" },
   { label: "Sender & Receiver" },
@@ -176,8 +188,18 @@ const Checkout = () => {
       ...paymentBookingData
     } = bookingData;
 
+    const pickupTime = pickupTimeSlotToIso(pickupTimeSlot);
+
     const payload = {
       ...paymentBookingData,
+      ...(pickupTime ? { pickupTime } : {}),
+      ...(deliveryInstruction ? { deliveryInstructions: deliveryInstruction } : {}),
+      packageDescription: {
+        isFragile: specialHandling === "Fragile",
+        isPerishable: specialHandling === "Perishable",
+        isExclusive: specialHandling === "High value",
+        isHazardous: false,
+      },
       ...(appliedPromo ? { promoCode: appliedPromo.code } : {}),
     };
 
