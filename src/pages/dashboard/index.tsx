@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import Overview from "./Overview";
 import Notifications from "./Notifications";
@@ -6,6 +6,7 @@ import Bookings from "./Bookings";
 import ProfileSettings from "./ProfileSettings";
 import Security from "./Security";
 import { useGetUserDetails } from "@/queries/user/useGetUserDetails";
+import OnboardingGuide, { hasSeenOnboarding } from "@/components/OnboardingGuide";
 
 interface DashboardContext {
   activeTab: string;
@@ -17,6 +18,14 @@ const Dashboard = () => {
 
   const userId = sessionStorage.getItem("userId") || "";
   const { data: userData } = useGetUserDetails(userId);
+
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    if (!hasSeenOnboarding()) {
+      setShowOnboarding(true);
+    }
+  }, []);
 
   useEffect(() => {
     const hasPendingQuote =
@@ -30,6 +39,7 @@ const Dashboard = () => {
 
   return (
     <div className="md:px-20 px-6 py-10 bg-neutral100 min-h-screen">
+      <OnboardingGuide open={showOnboarding} onClose={() => setShowOnboarding(false)} />
       {activeTab === "overview" && <Overview data={userData} />}
       {activeTab === "notifications" && (
         <Notifications setActiveTab={onTabChange} />
