@@ -8,7 +8,10 @@ import { UpdateProgressModal } from "../modals/UpdateProgressModal";
 import { cn, formatDate, formatDateTime, formatStatus } from "@/lib/utils";
 import CurrencyFormatter from "@/components/CurrencyFormatter";
 import { statusClasses } from "@/constants";
-import { useGetBookingsById, useGetBookingProviderStatus } from "@/queries/user/useGetUserBookings";
+import {
+  useGetBookingsById,
+  useGetBookingProviderStatus,
+} from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
 import OrderHistory from "@/pages/home/Track/Tracking/components/OrderHistory";
 import { TaskManagementSection } from "../TaskManagement";
@@ -19,7 +22,7 @@ const OrderDetails = () => {
   const location = useLocation();
   const { bookingData } = location?.state ?? {};
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
-    bookingData.id
+    bookingData.id,
   );
   const {
     isFetching: providerStatusFetching,
@@ -92,7 +95,7 @@ const OrderDetails = () => {
                 className={cn(
                   statusClasses[data?.data?.status] ??
                     "bg-gray-100 text-gray-800", // fallback if status not found
-                  "px-2 py-1 w-fit font-medium rounded-2xl text-base"
+                  "px-2 py-1 w-fit font-medium rounded-2xl text-base",
                 )}
               >
                 {formatStatus(data?.data?.status)}
@@ -103,29 +106,51 @@ const OrderDetails = () => {
           <div className="xl:hidden mb-4">
             <MobileCard>
               <div className="mb-4">
-                <p className="font-semibold bg-brand-light p-3 rounded-md text-brand mb-2">Order Details</p>
+                <p className="font-semibold bg-brand-light p-3 rounded-md text-brand mb-2">
+                  Order Details
+                </p>
                 <div className="mb-2">
-                  <span className="block text-neutral600 text-xs mb-1">Pickup Created</span>
-                  <span className="block text-neutral800 text-sm">{formatDateTime(data?.data?.bookingDate)}</span>
+                  <span className="block text-neutral600 text-xs mb-1">
+                    Pickup Created
+                  </span>
+                  <span className="block text-neutral800 text-sm">
+                    {formatDateTime(data?.data?.bookingDate)}
+                  </span>
                 </div>
                 <div className="mb-2">
-                  <span className="block text-neutral600 text-xs mb-1">Pickup Date</span>
-                  <span className="block text-neutral800 text-sm">{formatDate(data?.data?.pickupDate)}</span>
+                  <span className="block text-neutral600 text-xs mb-1">
+                    Pickup Date
+                  </span>
+                  <span className="block text-neutral800 text-sm">
+                    {formatDate(data?.data?.pickupDate)}
+                  </span>
                 </div>
                 <div className="mb-2">
-                  <span className="block text-neutral600 text-xs mb-1">Estimated Delivery</span>
-                  <span className="block text-neutral800 text-sm">{formatDate(data?.data?.estimatedDeliveryDate)}</span>
+                  <span className="block text-neutral600 text-xs mb-1">
+                    Estimated Delivery
+                  </span>
+                  <span className="block text-neutral800 text-sm">
+                    {formatDate(data?.data?.estimatedDeliveryDate)}
+                  </span>
                 </div>
               </div>
               <div className="mb-4">
-                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">Company Details</p>
-                <span className="block text-neutral800 text-sm">{data?.data?.company?.name}</span>
+                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">
+                  Company Details
+                </p>
+                <span className="block text-neutral800 text-sm">
+                  {data?.data?.company?.name}
+                </span>
               </div>
               <div>
-                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">Order Summary</p>
+                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">
+                  Order Summary
+                </p>
                 <div className="flex justify-between mb-1">
                   <span className="text-neutral600 text-xs">Subtotal</span>
-                  <span className="text-neutral800 text-sm">₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}</span>
+                  <span className="text-neutral800 text-sm">
+                    ₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}
+                  </span>
                 </div>
                 {/* <div className="flex justify-between mb-1">
                   <span className="text-neutral600 text-xs">Shipping Fee</span>
@@ -133,12 +158,34 @@ const OrderDetails = () => {
                 </div> */}
                 <div className="flex justify-between mb-1">
                   <span className="text-neutral600 text-xs">Tax</span>
-                  <span className="text-neutral800 text-sm">₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}</span>
+
+                  <span className="text-neutral800 text-sm">
+                    ₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}
+                  </span>
                 </div>
+
+                {data.data?.cost?.promoCode && (
+                  <div className="flex justify-between border-t border-neutral200 my-2">
+                    <span className="text-green-800 text-xs font-bold">
+                      Promo Discount ({data.data?.cost?.promoCode})
+                    </span>
+                    <span className="text-red-500 text-sm">
+                      - ₦ {CurrencyFormatter(data?.data?.cost?.discountAmount ?? 0)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between font-medium">
                   <span className="text-brand">Total</span>
-                  <span className="text-brand">₦ {CurrencyFormatter(data?.data?.cost?.total)}</span>
+                  <span className="text-brand">
+                    ₦ {CurrencyFormatter(
+                      data?.data?.cost?.promoCode
+                        ? (data?.data?.cost?.total ?? 0) - (data?.data?.cost?.discountAmount ?? 0)
+                        : data?.data?.cost?.total
+                    )}
+                  </span>
                 </div>
+                
+
               </div>
             </MobileCard>
           </div>
@@ -155,15 +202,21 @@ const OrderDetails = () => {
                   <div className="flex justify-between text-left px-3 gap-4 xl:px-4 py-4 w-full bg-white">
                     <div className="flex-1 text-sm">
                       <div className="mb-8">
-                        <p className="font-medium mb-2 text-brand">Pickup Created</p>
+                        <p className="font-medium mb-2 text-brand">
+                          Pickup Created
+                        </p>
                         <p>{formatDateTime(data?.data?.bookingDate)}</p>
                       </div>
                       <div className="mb-8">
-                        <p className="font-medium mb-2 text-brand">Pickup Date</p>
+                        <p className="font-medium mb-2 text-brand">
+                          Pickup Date
+                        </p>
                         <p>{formatDate(data?.data?.pickupDate)}</p>
                       </div>
                       <div>
-                        <p className="font-medium mb-2 text-brand">Estimated Delivery Date</p>
+                        <p className="font-medium mb-2 text-brand">
+                          Estimated Delivery Date
+                        </p>
                         <p>{formatDate(data?.data?.estimatedDeliveryDate)}</p>
                       </div>
                     </div>
@@ -176,7 +229,9 @@ const OrderDetails = () => {
                     <div className="flex-1 text-sm">
                       <div className="flex justify-between items-center mb-2 pr-6">
                         <p className="text-neutral600">Subtotal</p>
-                        <p className="text-neutral800">₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}</p>
+                        <p className="text-neutral800">
+                          ₦ {CurrencyFormatter(data?.data?.cost?.subTotal)}
+                        </p>
                       </div>
                       {/* <div className="flex justify-between items-center mb-2 pr-6">
                         <p className="text-neutral600">Shipping Fee</p>
@@ -184,11 +239,29 @@ const OrderDetails = () => {
                       </div> */}
                       <div className="flex justify-between items-center mb-2 pr-6">
                         <p className="text-neutral600">Tax</p>
-                        <p className="text-neutral800">₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}</p>
+                        <p className="text-neutral800">
+                          ₦ {CurrencyFormatter(data?.data?.cost?.tax ?? 0)}
+                        </p>
                       </div>
+                      {data.data?.cost?.promoCode && (
+                        <div className="flex justify-between items-center mb-2 pr-6 border-t border-neutral200 pt-2">
+                          <p className="text-green-800 font-bold text-xs">
+                            Promo Discount ({data.data?.cost?.promoCode})
+                          </p>
+                          <p className="text-red-500">
+                            - ₦ {CurrencyFormatter(data?.data?.cost?.discountAmount ?? 0)}
+                          </p>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center mb-2 pr-6 font-medium">
                         <p className="text-brand">Total</p>
-                        <p className="text-brand">₦ {CurrencyFormatter(data?.data?.cost?.total)}</p>
+                        <p className="text-brand">
+                          ₦ {CurrencyFormatter(
+                            data?.data?.cost?.promoCode
+                              ? (data?.data?.cost?.total ?? 0) - (data?.data?.cost?.discountAmount ?? 0)
+                              : data?.data?.cost?.total
+                          )}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -196,33 +269,57 @@ const OrderDetails = () => {
               </div>
             </div>
           </div>
-          
+
           {/* second table structure */}
           {/* Card UI for second table structure (mobile) */}
           <div className="xl:hidden mb-4">
             <MobileCard>
               <div className="mb-4">
-                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">Parcel Specs</p>
+                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">
+                  Parcel Specs
+                </p>
                 <div className="mb-2">
-                  <span className="block text-neutral600 text-xs mb-1">Parcel Weight</span>
+                  <span className="block text-neutral600 text-xs mb-1">
+                    Parcel Weight
+                  </span>
                   <span className="block text-neutral800 text-sm">{`${bookingData?.weight} ${bookingData?.weightUnit} | ${bookingData?.length}x${bookingData?.width}x${bookingData?.height} ${bookingData?.dimensionsUnit}`}</span>
                 </div>
                 <div>
-                  <span className="block text-neutral600 text-xs mb-1">Category</span>
-                  <span className="block text-neutral800 text-sm">{bookingData?.packageType}</span>
+                  <span className="block text-neutral600 text-xs mb-1">
+                    Category
+                  </span>
+                  <span className="block text-neutral800 text-sm">
+                    {bookingData?.packageType}
+                  </span>
                 </div>
               </div>
               <div className="mb-4">
-                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">Pick From</p>
-                <span className="block text-brand font-medium mb-1">{data?.data?.sender?.username}</span>
-                <span className="block text-neutral600 text-sm mb-1">{data?.data?.pickupLocation}</span>
-                <span className="block text-neutral600 text-sm">{data?.data?.sender?.phone}</span>
+                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">
+                  Pick From
+                </p>
+                <span className="block text-brand font-medium mb-1">
+                  {data?.data?.sender?.username}
+                </span>
+                <span className="block text-neutral600 text-sm mb-1">
+                  {data?.data?.pickupLocation}
+                </span>
+                <span className="block text-neutral600 text-sm">
+                  {data?.data?.sender?.phone}
+                </span>
               </div>
               <div>
-                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">Ship To</p>
-                <span className="block text-brand font-medium mb-1">{data?.data?.receiver?.name}</span>
-                <span className="block text-neutral600 text-sm mb-1">{data?.data?.destination}</span>
-                <span className="block text-neutral600 text-sm">{data?.data?.receiver?.phoneNumber}</span>
+                <p className="font-semibold text-brand mb-2 bg-brand-light p-3 rounded-md">
+                  Ship To
+                </p>
+                <span className="block text-brand font-medium mb-1">
+                  {data?.data?.receiver?.name}
+                </span>
+                <span className="block text-neutral600 text-sm mb-1">
+                  {data?.data?.destination}
+                </span>
+                <span className="block text-neutral600 text-sm">
+                  {data?.data?.receiver?.phoneNumber}
+                </span>
               </div>
             </MobileCard>
           </div>
@@ -247,16 +344,28 @@ const OrderDetails = () => {
                 </div>
                 <div className="flex-1 text-sm">
                   <div className="mb-8">
-                    <p className="font-medium mb-2 text-brand">{data?.data?.sender?.username}</p>
-                    <p className="text-neutral600 mb-2">{data?.data?.pickupLocation}</p>
-                    <p className="text-neutral600">{data?.data?.sender?.phone}</p>
+                    <p className="font-medium mb-2 text-brand">
+                      {data?.data?.sender?.username}
+                    </p>
+                    <p className="text-neutral600 mb-2">
+                      {data?.data?.pickupLocation}
+                    </p>
+                    <p className="text-neutral600">
+                      {data?.data?.sender?.phone}
+                    </p>
                   </div>
                 </div>
                 <div className="flex-1 text-sm">
                   <div className="mb-8">
-                    <p className="font-medium mb-2 text-brand">{data?.data?.receiver?.name}</p>
-                    <p className="text-neutral600 mb-2">{data?.data?.destination}</p>
-                    <p className="text-neutral600">{data?.data?.receiver?.phoneNumber}</p>
+                    <p className="font-medium mb-2 text-brand">
+                      {data?.data?.receiver?.name}
+                    </p>
+                    <p className="text-neutral600 mb-2">
+                      {data?.data?.destination}
+                    </p>
+                    <p className="text-neutral600">
+                      {data?.data?.receiver?.phoneNumber}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -294,17 +403,27 @@ const OrderDetails = () => {
               <div className="px-3 xl:px-4 py-4 bg-white mb-6">
                 <div className="flex flex-wrap gap-8 mb-4">
                   <div>
-                    <p className="text-neutral600 text-xs mb-1">Waybill Number</p>
-                    <p className="font-medium text-brand">{data?.data?.providerReference}</p>
+                    <p className="text-neutral600 text-xs mb-1">
+                      Waybill Number
+                    </p>
+                    <p className="font-medium text-brand">
+                      {data?.data?.providerReference}
+                    </p>
                   </div>
-                  {providerStatusSuccess && providerStatusData?.data?.order?.orderStatus && (
-                    <div>
-                      <p className="text-neutral600 text-xs mb-1">Current Status</p>
-                      <p className="font-medium">
-                        {providerStatusData.data.order.orderStatus.replace(/_/g, " ")}
-                      </p>
-                    </div>
-                  )}
+                  {providerStatusSuccess &&
+                    providerStatusData?.data?.order?.orderStatus && (
+                      <div>
+                        <p className="text-neutral600 text-xs mb-1">
+                          Current Status
+                        </p>
+                        <p className="font-medium">
+                          {providerStatusData.data.order.orderStatus.replace(
+                            /_/g,
+                            " ",
+                          )}
+                        </p>
+                      </div>
+                    )}
                 </div>
 
                 {providerStatusError && (
@@ -315,28 +434,43 @@ const OrderDetails = () => {
 
                 {providerStatusSuccess && (
                   <div className="mt-4">
-                    <p className="text-brand font-medium mb-3 text-sm">Tracking History</p>
+                    <p className="text-brand font-medium mb-3 text-sm">
+                      Tracking History
+                    </p>
                     {!providerStatusData?.data?.history?.length ? (
-                      <p className="text-neutral600 text-sm">No tracking history yet.</p>
+                      <p className="text-neutral600 text-sm">
+                        No tracking history yet.
+                      </p>
                     ) : (
                       <div className="grid">
-                        {providerStatusData.data.history.map((item: any, idx: number) => (
-                          <div key={idx} className="flex gap-4 py-4 border-b border-neutral200 last:border-0">
-                            <div className="flex flex-col items-center pt-1">
-                              <span className="w-[10px] h-[10px] rounded-full bg-green500 shrink-0" />
-                              {idx < providerStatusData.data.history.length - 1 && (
-                                <span className="flex-1 w-[1.5px] bg-green500/50 mt-1" />
-                              )}
+                        {providerStatusData.data.history.map(
+                          (item: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="flex gap-4 py-4 border-b border-neutral200 last:border-0"
+                            >
+                              <div className="flex flex-col items-center pt-1">
+                                <span className="w-[10px] h-[10px] rounded-full bg-green500 shrink-0" />
+                                {idx <
+                                  providerStatusData.data.history.length -
+                                    1 && (
+                                  <span className="flex-1 w-[1.5px] bg-green500/50 mt-1" />
+                                )}
+                              </div>
+                              <div className="pb-2">
+                                <h4 className="font-semibold font-inter mb-1 text-sm">
+                                  {item.orderStatus?.replace(/_/g, " ")}
+                                </h4>
+                                <p className="text-neutral500 text-xs mb-1">
+                                  {item.statusCreationDate}
+                                </p>
+                                <p className="text-neutral600 text-[13px]">
+                                  {item.statusDescription}
+                                </p>
+                              </div>
                             </div>
-                            <div className="pb-2">
-                              <h4 className="font-semibold font-inter mb-1 text-sm">
-                                {item.orderStatus?.replace(/_/g, " ")}
-                              </h4>
-                              <p className="text-neutral500 text-xs mb-1">{item.statusCreationDate}</p>
-                              <p className="text-neutral600 text-[13px]">{item.statusDescription}</p>
-                            </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     )}
                   </div>
