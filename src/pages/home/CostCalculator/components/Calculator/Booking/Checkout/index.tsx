@@ -129,13 +129,21 @@ const Checkout = () => {
       }
       const discountType = promo.discountType ?? "FIXED_AMOUNT";
       const rawDiscount = Number(promo.discount ?? 0);
-      const discountAmount =
-        discountType === "PERCENTAGE"
-          ? Math.min((subtotal * rawDiscount) / 100, subtotal)
-          : Number(promo.discountAmount ?? rawDiscount);
+      let discountAmount: number;
+      if (discountType === "PERCENTAGE") {
+        discountAmount = Math.min((subtotal * rawDiscount) / 100, subtotal);
+      } else if (discountType === "FIXED_RATE") {
+        discountAmount = Math.max(0, subtotal - rawDiscount);
+      } else {
+        discountAmount = Number(promo.discountAmount ?? rawDiscount);
+      }
 
       setAppliedPromo({ code: promo.code, discountAmount, discountType });
-      toast.success(`Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`);
+      const toastMessage =
+        discountType === "FIXED_RATE"
+          ? `Fixed rate applied! You pay ₦${CurrencyFormatter(rawDiscount)} for this delivery`
+          : `Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`;
+      toast.success(toastMessage);
       setPromoInput("");
     },
     onError: (error: any) => {
