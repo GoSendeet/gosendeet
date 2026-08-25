@@ -38,6 +38,15 @@ export const throwApiError = (
   const axiosError = error as AxiosErrorShape;
   const status = axiosError?.response?.status;
   const responseData = axiosError?.response?.data;
+  const message =
+    extractMessage(responseData) || extractMessage(error) || fallbackMessage;
+
+  if (
+    isRecord(responseData) &&
+    responseData.data === "MAIL_SERVER_DOWN"
+  ) {
+    throw { ...responseData, message };
+  }
 
   // 5xx and network errors (no status) may contain internal server details —
   // never forward those to the UI; use the fallback instead.
@@ -46,9 +55,6 @@ export const throwApiError = (
   if (isServerError) {
     throw { message: fallbackMessage };
   }
-
-  const message =
-    extractMessage(responseData) || extractMessage(error) || fallbackMessage;
 
   if (isRecord(responseData)) {
     throw { ...responseData, message };

@@ -22,6 +22,8 @@ const VerifyEmail = () => {
   const queryParams = new URLSearchParams(location.search);
   const status = queryParams.get("status");
   const emailFromQuery = queryParams.get("email") || "";
+  const wasSentFromLogin = queryParams.get("sent") === "1";
+  const hasMailServerError = queryParams.get("mailError") === "1";
 
   const [email, setEmail] = useState(emailFromQuery);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -182,14 +184,28 @@ const VerifyEmail = () => {
 
               {!isLoading && !isVerified && (
                 <div className="py-6">
-                  <div className="w-[72px] h-[72px] rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto">
-                    <CircleAlert className="w-10 h-10" />
+                  <div className="w-[72px] h-[72px] rounded-full bg-green400/30 text-green700 flex items-center justify-center mx-auto">
+                    {hasMailServerError ? (
+                      <CircleAlert className="w-10 h-10" />
+                    ) : wasSentFromLogin ? (
+                      <MailCheck className="w-10 h-10" />
+                    ) : (
+                      <CircleAlert className="w-10 h-10" />
+                    )}
                   </div>
                   <h2 className="mt-6 text-3xl font-clash font-semibold text-neutral600 text-center">
-                    This account is not verified.
+                    {hasMailServerError
+                      ? "Mail server is down."
+                      : wasSentFromLogin
+                      ? "Check your email to verify your account."
+                      : "This account is not verified."}
                   </h2>
                   <p className="mt-3 text-neutral500 leading-7 text-center max-w-md mx-auto">
-                    Click the button below to verify your account.
+                    {hasMailServerError
+                      ? "We could not send a verification email right now. Please try again when mail service is available."
+                      : wasSentFromLogin
+                      ? "We sent a fresh verification email after your login attempt. Open the link in that email to activate your account."
+                      : "Click the button below to verify your account."}
                   </p>
 
                   {email && (

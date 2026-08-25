@@ -28,8 +28,10 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const getInitialUserType = (
   typeParam: string | null,
-): "customer" | "franchise" =>
-  typeParam === "franchise" ? "franchise" : "customer";
+): "customer" | "franchise" => {
+  if (typeParam === "franchise") return "franchise";
+  return "customer";
+};
 
 const Signup = () => {
   const skipEmailValidation = isNonProductionEmailValidationEnv();
@@ -214,7 +216,10 @@ const Signup = () => {
     mutate({
       ...data,
       username: createSignupUsername(data.firstName, data.lastName),
-      role: userType === "franchise" ? "FRANCHISE" : "USER",
+      role:
+        userType === "franchise"
+          ? "FRANCHISE"
+          : "USER",
     });
   };
 
@@ -291,20 +296,12 @@ const Signup = () => {
 
               {/* User Type Toggle */}
               <p className="mb-8 text-grey300">Register as a:</p>
-              <div className="relative bg-green4000 rounded-2xl p-1 flex mb-8">
-                {/* sliding pill */}
-                <div
-                  className={`absolute inset-y-1.5 bg-white rounded-xl shadow-sm transition-all duration-500 ease-in-out ${
-                    userType === "customer"
-                      ? "w-[calc(50%-6px)] left-1.5"
-                      : "w-[calc(50%-6px)] left-[50%]"
-                  }`}
-                />
+              <div className="bg-green4000 rounded-2xl p-1 grid grid-cols-2 gap-1 mb-8">
                 <button
                   type="button"
                   onClick={() => setUserType("customer")}
-                  className={`relative z-10 flex-1 py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
-                    userType === "customer" ? "text-blue100" : "text-grey300"
+                  className={`py-3 px-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-300 ${
+                    userType === "customer" ? "bg-white text-blue100 shadow-sm" : "text-grey300"
                   }`}
                 >
                   <User size={16} />
@@ -313,8 +310,8 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setUserType("franchise")}
-                  className={`relative z-10 flex-1 py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-500 ${
-                    userType === "franchise" ? "text-blue100" : "text-grey300"
+                  className={`py-3 px-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors duration-300 ${
+                    userType === "franchise" ? "bg-white text-blue100 shadow-sm" : "text-grey300"
                   }`}
                 >
                   <Store size={16} />

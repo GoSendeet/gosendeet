@@ -305,6 +305,11 @@ const CompanyPreviewCard = ({
               {task.taskType} • {task.destinationAddress}
             </div>
             <div className="flex gap-2 text-xs">
+              {task.confirmationOtp && (
+                <span className="px-2 py-1 rounded-full bg-emerald-100 font-mono font-bold tracking-widest text-emerald-800">
+                  OTP {task.confirmationOtp}
+                </span>
+              )}
               <span className="px-2 py-1 rounded-full bg-neutral200 text-neutral700">
                 {formatStatus(task.status)}
               </span>

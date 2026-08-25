@@ -80,6 +80,7 @@ const PublicDispatchPage = () => {
   const [draftEtaEnd, setDraftEtaEnd] = useState("");
   const [completionNotes, setCompletionNotes] = useState<Record<string, string>>({});
   const [completionMessages, setCompletionMessages] = useState<Record<string, string>>({});
+  const [completionOtpCodes, setCompletionOtpCodes] = useState<Record<string, string>>({});
   const [completionProofs, setCompletionProofs] = useState<Record<string, File[]>>({});
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
   const [showInternalNotes, setShowInternalNotes] = useState(false);
@@ -348,6 +349,7 @@ const PublicDispatchPage = () => {
       completeTask(taskId, {
         message: completionMessages[taskId],
         notes: completionNotes[taskId],
+        otpCode: completionOtpCodes[taskId],
         proofPhotos: completionProofs[taskId],
       }),
     onSuccess: (_, taskId) => {
@@ -359,6 +361,12 @@ const PublicDispatchPage = () => {
         return next;
       });
       setCompletionMessages((prev) => {
+        if (!prev[taskId]) return prev;
+        const next = { ...prev };
+        delete next[taskId];
+        return next;
+      });
+      setCompletionOtpCodes((prev) => {
         if (!prev[taskId]) return prev;
         const next = { ...prev };
         delete next[taskId];
@@ -427,6 +435,14 @@ const PublicDispatchPage = () => {
       (!completionProofs[completingTaskId] || completionProofs[completingTaskId]?.length === 0)
     ) {
       toast.error("Upload at least one proof photo before completing");
+      return;
+    }
+
+    if (
+      (task.taskType === "PICKUP" || task.taskType === "DROPOFF") &&
+      !/^\d{4}$/.test(completionOtpCodes[completingTaskId] ?? "")
+    ) {
+      toast.error("Enter the 4-digit confirmation OTP");
       return;
     }
 
@@ -1148,6 +1164,28 @@ const PublicDispatchPage = () => {
                       </p>
                       <p className="text-xs text-yellow-700 mt-1">
                         Upload at least one photo to complete this task
+                      </p>
+                    </div>
+                  )}
+
+                  {(task.taskType === "PICKUP" || task.taskType === "DROPOFF") && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Confirmation OTP</label>
+                      <Input
+                        inputMode="numeric"
+                        maxLength={4}
+                        value={completionOtpCodes[task.id] ?? ""}
+                        onChange={(e) =>
+                          setCompletionOtpCodes((prev) => ({
+                            ...prev,
+                            [task.id]: e.target.value.replace(/\D/g, "").slice(0, 4),
+                          }))
+                        }
+                        placeholder="Enter 4-digit code"
+                        className="tracking-widest font-semibold"
+                      />
+                      <p className="text-xs text-neutral-500">
+                        Ask the sender for pickup or the receiver for drop-off.
                       </p>
                     </div>
                   )}

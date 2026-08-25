@@ -88,16 +88,19 @@ export const startTask = async (
 
 export const completeTask = async (
   taskId: string,
-  payload: { message?: string; notes?: string; proofPhotos?: File[] }
+  payload: { message?: string; notes?: string; otpCode?: string; proofPhotos?: File[] }
 ): Promise<DispatchActionResponse> => {
   const form = new FormData();
 
-  const requestData: { message?: string; notes?: string } = {};
+  const requestData: { message?: string; notes?: string; otpCode?: string } = {};
   if (payload.message?.trim()) {
     requestData.message = payload.message.trim();
   }
   if (payload.notes?.trim()) {
     requestData.notes = payload.notes.trim();
+  }
+  if (payload.otpCode?.trim()) {
+    requestData.otpCode = payload.otpCode.trim();
   }
 
   form.append(

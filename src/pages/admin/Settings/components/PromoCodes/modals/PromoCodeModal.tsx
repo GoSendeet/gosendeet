@@ -23,7 +23,7 @@ const schema = z.object({
   discount: z
     .number({ required_error: "Discount is required" })
     .min(1, { message: "Discount must be greater than 0" }),
-  discountType: z.enum(["PERCENTAGE", "FIXED_AMOUNT"], {
+  discountType: z.enum(["PERCENTAGE", "FIXED_AMOUNT", "FIXED_RATE"], {
     required_error: "Discount type is required",
   }),
   maxUsage: z
@@ -145,10 +145,11 @@ export function PromoCodeModal({
                 options={[
                   { label: "Percentage (%)", value: "PERCENTAGE" },
                   { label: "Fixed Amount (₦)", value: "FIXED_AMOUNT" },
+                  { label: "Fixed Rate (₦)", value: "FIXED_RATE" },
                 ]}
                 error={errors.discountType?.message}
                 onValueChange={(val) =>
-                  setValue("discountType", val as "PERCENTAGE" | "FIXED_AMOUNT", {
+                  setValue("discountType", val as "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED_RATE", {
                     shouldValidate: true,
                   })
                 }
@@ -158,14 +159,20 @@ export function PromoCodeModal({
             <div className="flex md:flex-row flex-col gap-4 items-center">
               <CustomInput
                 inputType="number"
-                label={discountType === "PERCENTAGE" ? "Discount (%)" : "Discount Amount (₦)"}
+                label={
+                  discountType === "PERCENTAGE"
+                    ? "Discount (%)"
+                    : discountType === "FIXED_RATE"
+                    ? "Fixed Rate — Customer Pays (₦)"
+                    : "Discount Amount (₦)"
+                }
                 wrapperClassName="w-full"
                 registration={register("discount", {
                   setValueAs: (v) => (v === "" ? undefined : Number(v)),
                 })}
                 error={errors.discount?.message}
                 inputProps={{
-                  placeholder: discountType === "PERCENTAGE" ? "e.g. 10" : "e.g. 500",
+                  placeholder: discountType === "PERCENTAGE" ? "e.g. 10" : discountType === "FIXED_RATE" ? "e.g. 5" : "e.g. 500",
                   onKeyDown: allowOnlyNumbers,
                 }}
               />

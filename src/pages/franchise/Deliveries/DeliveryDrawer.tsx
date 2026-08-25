@@ -17,6 +17,11 @@ import {
   TaskType,
   TaskStatus,
 } from "@/schema/franchise/delivery/type";
+import {
+  OneTimePasswordField,
+  OneTimePasswordFieldInput,
+} from "@radix-ui/react-one-time-password-field";
+
 
 type DeliveryDrawerProps = {
   delivery: DeliveryType | null;
@@ -25,7 +30,7 @@ type DeliveryDrawerProps = {
   onAcceptTask?: (task: DeliveryTask) => void;
   onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
-  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[], otpCode: string) => void;
   taskActionPendingId?: string | null;
 };
 
@@ -171,49 +176,79 @@ const EarningsCard = ({ delivery }: { delivery: DeliveryType }) => (
   </div>
 );
 
-const PackageDetails = ({ delivery }: { delivery: DeliveryType }) => (
-  <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-4">
-    <div className="flex items-center gap-2">
-      <Package size={15} className="text-emerald-400" />
-      <h3 className="text-sm font-bold text-gray-800">Package Details</h3>
-    </div>
+const specialHandlingLabels = (d: DeliveryType): string[] => {
+  const flags: string[] = [];
+  if (d.isFragile) flags.push("Fragile");
+  if (d.isPerishable) flags.push("Perishable");
+  if (d.isExclusive) flags.push("High Value");
+  if (d.isHazardous) flags.push("Hazardous");
+  return flags;
+};
 
-    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-          Type
-        </p>
-        <p className="text-sm font-semibold text-gray-800">
-          {delivery.package}
-        </p>
+const PackageDetails = ({ delivery }: { delivery: DeliveryType }) => {
+  const handlingFlags = specialHandlingLabels(delivery);
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <Package size={15} className="text-emerald-400" />
+        <h3 className="text-sm font-bold text-gray-800">Package Details</h3>
       </div>
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-          Weight
-        </p>
-        <p className="text-sm font-semibold text-gray-800">{delivery.weight}</p>
-      </div>
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
-          Dimensions
-        </p>
-        <p className="text-sm font-semibold text-gray-800">
-          {delivery.package === "Document" ? "A4 Envelope" : "Standard Box"}
-        </p>
-      </div>
-    </div>
 
-    {/* Notes from first task */}
-    {delivery.tasks?.[0]?.notes && (
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-          Notes
-        </p>
-        <p className="text-sm text-gray-600">{delivery.tasks[0].notes}</p>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            Type
+          </p>
+          <p className="text-sm font-semibold text-gray-800">
+            {delivery.package}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+            Weight
+          </p>
+          <p className="text-sm font-semibold text-gray-800">{delivery.weight}</p>
+        </div>
+        {delivery.itemValue != null && delivery.itemValue > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              Item Value
+            </p>
+            <p className="text-sm font-semibold text-gray-800">
+              ₦{delivery.itemValue.toLocaleString()}
+            </p>
+          </div>
+        )}
+        {handlingFlags.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">
+              Handling
+            </p>
+            <div className="flex flex-wrap gap-1 mt-0.5">
+              {handlingFlags.map((flag) => (
+                <span
+                  key={flag}
+                  className="inline-block rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-700"
+                >
+                  {flag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    )}
-  </div>
-);
+
+      {delivery.deliveryInstructions && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+            Delivery Instructions
+          </p>
+          <p className="text-sm text-gray-600">{delivery.deliveryInstructions}</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const CustomerSection = ({ delivery }: { delivery: DeliveryType }) => (
   <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-1">
@@ -258,18 +293,21 @@ const TaskCard = ({
   onAcceptTask?: (task: DeliveryTask) => void;
   onDeclineTask?: (task: DeliveryTask) => void;
   onStartTask?: (task: DeliveryTask) => void;
-  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[]) => void;
+  onCompleteTask?: (task: DeliveryTask, proofPhotos: File[], otpCode: string) => void;
   pending?: boolean;
   lockedReason?: string | null;
 }) => {
   const [proofPhotos, setProofPhotos] = useState<File[]>([]);
+  const [otpCode, setOtpCode] = useState("");
   const typeStyle = taskTypeStyles[task.taskType];
   const status = taskStatusConfig[task.status];
-  const afterDt = formatDateTime(task.completeAfter);
-  const beforeDt = formatDateTime(task.completeBefore);
-  const summary = buildWindowSummary(task.completeAfter, task.completeBefore);
+  const hasWindow = Boolean(task.completeAfter || task.completeBefore);
+  const afterDt = formatDateTime(task.completeAfter ?? "");
+  const beforeDt = formatDateTime(task.completeBefore ?? "");
+  const summary = hasWindow ? buildWindowSummary(task.completeAfter ?? "", task.completeBefore ?? "") : null;
   const needsPhoto = task.completionRequirement === "PHOTO";
   const needsSig = task.completionRequirement === "SIGNATURE";
+  const needsOtp = task.taskType === "PICKUP" || task.taskType === "DROPOFF";
   const isLocked = Boolean(lockedReason);
 
   return (
@@ -327,28 +365,31 @@ const TaskCard = ({
       )}
 
       {/* Dispatch window */}
-      <div className="flex flex-col gap-3">
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-          Dispatch Window
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-[11px] text-gray-400 mb-0.5">Earliest Start</p>
-            <p className="text-sm font-bold text-gray-800">{afterDt.date}</p>
-            <p className="text-xs text-gray-500">{afterDt.time}</p>
+      {hasWindow && (
+        <div className="flex flex-col gap-3">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+            Dispatch Window
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[11px] text-gray-400 mb-0.5">Earliest Start</p>
+              <p className="text-sm font-bold text-gray-800">{afterDt.date}</p>
+              <p className="text-xs text-gray-500">{afterDt.time}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-gray-400 mb-0.5">Must Complete By</p>
+              <p className="text-sm font-bold text-gray-800">{beforeDt.date}</p>
+              <p className="text-xs text-gray-500">{beforeDt.time}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[11px] text-gray-400 mb-0.5">Must Complete By</p>
-            <p className="text-sm font-bold text-gray-800">{beforeDt.date}</p>
-            <p className="text-xs text-gray-500">{beforeDt.time}</p>
-          </div>
-        </div>
 
-        {/* Summary pill */}
-        <div className="bg-emerald-50 border border-violet-100 rounded-xl px-4 py-2.5">
-          <p className="text-xs text-emerald-700 font-medium">{summary}</p>
+          {summary && (
+            <div className="bg-emerald-50 border border-violet-100 rounded-xl px-4 py-2.5">
+              <p className="text-xs text-emerald-700 font-medium">{summary}</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {task.status === "PENDING_DISPATCH" && (
         <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
@@ -409,10 +450,36 @@ const TaskCard = ({
               />
             </label>
           )}
+          {needsOtp && (
+            <label className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3">
+              <span className="text-xs font-semibold text-gray-500">
+                Confirmation OTP
+              </span>
+              <OneTimePasswordField
+                value={otpCode}
+                onValueChange={(value) => setOtpCode(value.slice(0, 4))}
+                validationType="numeric"
+                autoComplete="one-time-code"
+                className="flex items-center gap-2"
+                aria-label="Confirmation OTP"
+              >
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <OneTimePasswordFieldInput
+                    key={index}
+                    index={index}
+                    className="h-11 w-11 rounded-lg border border-gray-200 bg-white text-center text-base font-bold text-gray-900 outline-none transition-colors focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 disabled:opacity-60"
+                  />
+                ))}
+              </OneTimePasswordField>
+              <span className="text-[11px] text-gray-400">
+                Ask the sender for pickup or the receiver for drop-off.
+              </span>
+            </label>
+          )}
           <button
             type="button"
-            disabled={pending || (needsPhoto && proofPhotos.length === 0)}
-            onClick={() => onCompleteTask?.(task, proofPhotos)}
+            disabled={pending || (needsPhoto && proofPhotos.length === 0) || (needsOtp && otpCode.length !== 4)}
+            onClick={() => onCompleteTask?.(task, proofPhotos, otpCode)}
             className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors disabled:opacity-60"
           >
             {pending ? "Completing..." : `Complete ${typeStyle.label.toLowerCase()}`}

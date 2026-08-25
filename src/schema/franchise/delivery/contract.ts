@@ -37,6 +37,16 @@ export type FranchiseDeliverySource = {
   customerPhone?: string | null;
   senderName?: string | null;
   senderPhone?: string | null;
+  estimatedDeliveryDate?: string | null;
+  estimatedDeliveryTime?: string | null;
+  deliveryInstructions?: string | null;
+  delivery_instructions?: string | null;
+  itemValue?: number | null;
+  item_value?: number | null;
+  isFragile?: boolean;
+  isPerishable?: boolean;
+  isExclusive?: boolean;
+  isHazardous?: boolean;
   tasks?: TaskDto[];
 };
 
@@ -135,6 +145,7 @@ export const mapTaskDtoToDeliveryTask = (task: TaskDto): DeliveryTask => ({
   createdAt: task.createdAt ?? "",
   updatedAt: task.updatedAt ?? "",
   completionProofs: normalizeProofs(task),
+  confirmationOtp: task.confirmationOtp ?? null,
   previewToken: task.previewToken ?? "",
 });
 
@@ -226,6 +237,14 @@ export const mapFranchiseDelivery = (
     customerPhone: maskFranchiseCustomerPhone(
       source.customerPhone ?? source.senderPhone,
     ),
+    estimatedDeliveryDate: source.estimatedDeliveryDate ?? null,
+    estimatedDeliveryTime: source.estimatedDeliveryTime ?? null,
+    deliveryInstructions: source.deliveryInstructions ?? source.delivery_instructions ?? null,
+    itemValue: source.itemValue ?? source.item_value ?? null,
+    isFragile: source.isFragile ?? false,
+    isPerishable: source.isPerishable ?? false,
+    isExclusive: source.isExclusive ?? false,
+    isHazardous: source.isHazardous ?? false,
     tasks,
   };
 };

@@ -24,6 +24,18 @@ import { track, EVENT } from "@/lib/analytics";
 
 const APP_BASE_URL = window.location.origin.replace(/\/$/, "");
 const CHECKOUT_BOOKING_STORAGE_KEY = "checkoutBookingData";
+
+const pickupTimeSlotToIso = (slot: string): string | undefined => {
+  if (!slot) return undefined;
+  const match = slot.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) return undefined;
+  let hours = parseInt(match[1], 10);
+  const minutes = match[2];
+  const period = match[3].toUpperCase();
+  if (period === "PM" && hours !== 12) hours += 12;
+  if (period === "AM" && hours === 12) hours = 0;
+  return `${String(hours).padStart(2, "0")}:${minutes}`;
+};
 const bookingSteps = [
   { label: "Route & Package" },
   { label: "Sender & Receiver" },
@@ -117,13 +129,21 @@ const Checkout = () => {
       }
       const discountType = promo.discountType ?? "FIXED_AMOUNT";
       const rawDiscount = Number(promo.discount ?? 0);
-      const discountAmount =
-        discountType === "PERCENTAGE"
-          ? Math.min((subtotal * rawDiscount) / 100, subtotal)
-          : Number(promo.discountAmount ?? rawDiscount);
+      let discountAmount: number;
+      if (discountType === "PERCENTAGE") {
+        discountAmount = Math.min((subtotal * rawDiscount) / 100, subtotal);
+      } else if (discountType === "FIXED_RATE") {
+        discountAmount = Math.max(0, subtotal - rawDiscount);
+      } else {
+        discountAmount = Number(promo.discountAmount ?? rawDiscount);
+      }
 
       setAppliedPromo({ code: promo.code, discountAmount, discountType });
-      toast.success(`Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`);
+      const toastMessage =
+        discountType === "FIXED_RATE"
+          ? `Fixed rate applied! You pay ₦${CurrencyFormatter(rawDiscount)} for this delivery`
+          : `Promo code applied! You saved ₦${CurrencyFormatter(discountAmount)}`;
+      toast.success(toastMessage);
       setPromoInput("");
     },
     onError: (error: any) => {
@@ -176,8 +196,18 @@ const Checkout = () => {
       ...paymentBookingData
     } = bookingData;
 
+    const pickupTime = pickupTimeSlotToIso(pickupTimeSlot);
+
     const payload = {
       ...paymentBookingData,
+      ...(pickupTime ? { pickupTime } : {}),
+      ...(deliveryInstruction ? { deliveryInstructions: deliveryInstruction } : {}),
+      packageDescription: {
+        isFragile: specialHandling === "Fragile",
+        isPerishable: specialHandling === "Perishable",
+        isExclusive: specialHandling === "High value",
+        isHazardous: false,
+      },
       ...(appliedPromo ? { promoCode: appliedPromo.code } : {}),
     };
 

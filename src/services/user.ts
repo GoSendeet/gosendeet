@@ -113,6 +113,15 @@ export const verifyBookingPayment = async (reference: string) => {
   }
 };
 
+export const verifyWhatsappBookingPayment = async (reference: string) => {
+  try {
+    const res = await api.get(`/booking/payments/callback/${reference}`);
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+}
+
 export const validatePromoCode = async (code: string) => {
   try {
     const res = await authApi.post(`/promo-codes/validate`, { code });
