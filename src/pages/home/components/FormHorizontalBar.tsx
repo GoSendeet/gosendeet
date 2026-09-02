@@ -384,7 +384,7 @@ const FormHorizontalBar = ({
   }
 
   return (
-    <div className="relative w-full mx-auto max-w-[354px] lg:max-w-[1120px]">
+    <div className={cn("relative w-full mx-auto", !isDashboard && "max-w-[354px] lg:max-w-[1120px]")}>
       <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
       <div
         aria-hidden="true"

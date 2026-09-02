@@ -51,7 +51,7 @@ export const ModeSwitcher = ({
     return (
       <div className={containerClasses}>
         <div
-          className="relative grid grid-cols-3 items-center w-full max-w-[400px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
+          className="relative grid grid-cols-3 items-center w-full min-w-[300px] max-w-[420px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
           style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}
         >
           {animate ? (
