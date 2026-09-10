@@ -9,7 +9,7 @@ const Terms = () => {
   const sections = [
     {
       title: "1. Introduction and Acceptance of Terms",
-      content: `Welcome to GoSendEet (the "Platform" or "Website" at gosendeet.vercel.app), operated by [GoSendEet] Limited**, "we", "us", "our", or "GoSendEet").
+      content: `Welcome to GoSendEet (the "Platform" or "Website" at gosendeet.com), operated by GOSENDEET LIMITED ("we", "us", "our", or "GoSendEet").
 
 These Terms of Service ("Terms") govern your access to and use of our website, mobile applications (if any), and all associated services (collectively, the "Services"). The Services include parcel shipping comparison tools, direct booking options, rate comparisons from multiple carriers, scheduling of pickups, label generation, payment processing, and real-time tracking.
 
