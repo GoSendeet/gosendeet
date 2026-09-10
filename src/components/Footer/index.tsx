@@ -135,7 +135,8 @@ const Footer = () => {
           {/* Copyright */}
           <div className="pt-8 border-t border-gray-100">
             <p className="text-grey300 text-sm">
-              © {currentYear} Gosendeet Logistics
+              © {currentYear} GOSENDEET LIMITED. Trading as Gosendeet
+              Logistics.
             </p>
           </div>
         </div>
