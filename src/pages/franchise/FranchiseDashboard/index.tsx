@@ -8,7 +8,11 @@ import {
   useUpdateFranchiseAvailability,
 } from "@/queries/franchise/useFranchiseDashboard";
 import { useGetPendingRoutingOffers } from "@/queries/franchise/useFranchiseRoutingOffers";
+import { sendFranchiseHeartbeat } from "@/services/franchise";
 import { toast } from "sonner";
+import { useEffect } from "react";
+
+const HEARTBEAT_INTERVAL_MS = 60_000;
 
 const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries: (statusTab: string) => void }) => {
   const {
@@ -28,6 +32,26 @@ const FranchiseDashboard = ({ onNavigateToDeliveries }: { onNavigateToDeliveries
     day: "numeric",
     year: "numeric",
   }).format(new Date());
+
+  useEffect(() => {
+    if (!isOnline) return;
+
+    sendFranchiseHeartbeat();
+
+    const tick = () => {
+      if (document.visibilityState === "visible") {
+        sendFranchiseHeartbeat();
+      }
+    };
+
+    const id = setInterval(tick, HEARTBEAT_INTERVAL_MS);
+    document.addEventListener("visibilitychange", tick);
+
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [isOnline]);
 
   const toggleAvailability = () => {
     availabilityMutation.mutate(!isOnline, {
