@@ -8,6 +8,8 @@ import {
   Phone,
   FileText,
   LockKeyhole,
+  UploadCloud,
+  ImagePlus,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatDateTime } from "@/utils/date";
@@ -435,10 +437,11 @@ const TaskCard = ({
       {actionsEnabled && task.status === "STARTED" && !isLocked && (
         <div className="flex flex-col gap-3">
           {needsPhoto && (
-            <label className="flex flex-col gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3">
-              <span className="text-xs font-semibold text-gray-500">
-                Upload proof photo
-              </span>
+            <label className={`group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-5 cursor-pointer transition-colors ${
+              proofPhotos.length > 0
+                ? "border-emerald-400 bg-emerald-50"
+                : "border-gray-300 bg-gray-50 hover:border-emerald-400 hover:bg-emerald-50"
+            }`}>
               <input
                 type="file"
                 accept="image/*"
@@ -446,8 +449,25 @@ const TaskCard = ({
                 onChange={(event) =>
                   setProofPhotos(Array.from(event.target.files ?? []))
                 }
-                className="text-xs text-gray-500"
+                className="sr-only"
               />
+              {proofPhotos.length > 0 ? (
+                <>
+                  <ImagePlus size={24} className="text-emerald-500" />
+                  <span className="text-xs font-semibold text-emerald-600">
+                    {proofPhotos.length} photo{proofPhotos.length > 1 ? "s" : ""} selected
+                  </span>
+                  <span className="text-[11px] text-emerald-500">Tap to change</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={24} className="text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                  <span className="text-xs font-semibold text-gray-500 group-hover:text-emerald-600 transition-colors">
+                    Upload proof photo
+                  </span>
+                  <span className="text-[11px] text-gray-400">Tap to select image(s)</span>
+                </>
+              )}
             </label>
           )}
           {needsOtp && (
