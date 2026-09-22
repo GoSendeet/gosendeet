@@ -887,7 +887,7 @@ const Deliveries = ({
       if (!prev) return prev;
       return {
         ...prev,
-        tasks: prev.tasks.map((t) => (t.id === taskId ? { ...t, status } : t)),
+        tasks: (prev.tasks ?? []).map((t) => (t.id === taskId ? { ...t, status } : t)),
       };
     });
   };
