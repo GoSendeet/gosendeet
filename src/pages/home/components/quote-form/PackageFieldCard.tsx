@@ -46,7 +46,7 @@ export const PackageFieldCard = forwardRef<
             Package
           </p>
 
-          <span className="h-2 w-2 rounded-full bg-brand" />
+          <FaAngleDown size={18} className="shrink-0 text-[#CAD5E2]" />
         </label>
         <div className="w-full flex items-center gap-2">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
@@ -67,10 +67,9 @@ export const PackageFieldCard = forwardRef<
               </span>
             ) : (
               <span className="min-w-0 truncate font-arial text-sm text-[#9ca3af]">
-                Select package
+                Select package type
               </span>
             )}
-            <FaAngleDown size={18} className="shrink-0 text-[#CAD5E2]" />
           </span>
         </div>
 

@@ -373,6 +373,14 @@ export const updateFranchiseAvailability = async (online: boolean) => {
   }
 };
 
+export const sendFranchiseHeartbeat = async (): Promise<void> => {
+  try {
+    await api.post("/franchise/heartbeat");
+  } catch {
+    // heartbeat failures are silent — don't surface to the user
+  }
+};
+
 export const getFranchiseEarningsSummary =
   async (): Promise<FranchiseEarningsSummary> => {
     try {

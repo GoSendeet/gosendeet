@@ -857,11 +857,13 @@ const Deliveries = ({
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  const selectedDeliveryId = selectedDelivery?.id;
+
   useEffect(() => {
-    if (!selectedDelivery) return;
-    const refreshed = apiDeliveries.find((delivery) => delivery.id === selectedDelivery.id);
+    if (!selectedDeliveryId) return;
+    const refreshed = apiDeliveries.find((delivery) => delivery.id === selectedDeliveryId);
     if (refreshed) setSelectedDelivery(refreshed);
-  }, [apiDeliveries, selectedDelivery]);
+  }, [apiDeliveries, selectedDeliveryId]);
 
   const handleStatus = (option: string) => {
     setStatusFilter(option);
@@ -880,19 +882,35 @@ const Deliveries = ({
     });
   }, [activeTab, statusFilter, apiDeliveries]);
 
+  const optimisticallyUpdateTask = (taskId: string, status: DeliveryTask["status"]) => {
+    setSelectedDelivery((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tasks: (prev.tasks ?? []).map((t) => (t.id === taskId ? { ...t, status } : t)),
+      };
+    });
+  };
+
   const handleAcceptTask = (task: DeliveryTask) => {
-    acceptTask.mutate(task.id);
+    acceptTask.mutate(task.id, {
+      onSuccess: () => optimisticallyUpdateTask(task.id, "DISPATCHED"),
+    });
   };
 
   const handleDeclineTask = (task: DeliveryTask) => {
     const reason = window.prompt("Reason for declining this task?");
     if (!reason?.trim()) return;
 
-    declineTask.mutate({ taskId: task.id, reason: reason.trim() });
+    declineTask.mutate({ taskId: task.id, reason: reason.trim() }, {
+      onSuccess: () => optimisticallyUpdateTask(task.id, "CANCELLED"),
+    });
   };
 
   const handleStartTask = (task: DeliveryTask) => {
-    startTask.mutate(task.id);
+    startTask.mutate(task.id, {
+      onSuccess: () => optimisticallyUpdateTask(task.id, "STARTED"),
+    });
   };
 
   const handleCompleteTask = (task: DeliveryTask, proofPhotos: File[], otpCode: string) => {
@@ -901,6 +919,8 @@ const Deliveries = ({
       proofPhotos,
       otpCode,
       message: `${task.taskType.toLowerCase()} completed from franchise dashboard`,
+    }, {
+      onSuccess: () => optimisticallyUpdateTask(task.id, "COMPLETED"),
     });
   };
 
