@@ -85,7 +85,7 @@ const Overview = ({ data: _data }: { data: any }) => {
   const headerCopy = MODE_HEADER_COPY[formMode];
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       <div className="flex items-center justify-between lg:-mt-6 lg:mb-10 mb-16 md:px-4 gap-3">
         <div className="hidden lg:block items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">

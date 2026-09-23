@@ -18,7 +18,7 @@ const DashboardLayout = () => {
       <header className="fixed top-0 left-0 w-full z-50">
         <DashboardNavbar activeTab={activeTab} onTabChange={handleTabChange} />
       </header>
-      <main className="flex-grow bg-neutral100 pt-18 lg:pt-20">
+      <main className="flex-grow bg-neutral100 pt-18 lg:pt-20 overflow-x-hidden">
         <Outlet context={{ activeTab, onTabChange: handleTabChange }} />
       </main>
       <footer>

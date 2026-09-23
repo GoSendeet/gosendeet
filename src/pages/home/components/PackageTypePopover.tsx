@@ -132,19 +132,40 @@ export function PackageTypePopover({
   const [manualWeight, setManualWeight] = useState("");
   const [showManualWeight, setShowManualWeight] = useState(false);
 
-  // Restore previous selection only if one exists
+  const DEFAULT_WEIGHT = "1";
+
+  // Restore previous selection; if none exists, default to Small + 0-1kg
   useEffect(() => {
     if (options.length === 0) return;
 
     if (selectedPackageId) {
       const match = options.find((o) => String(o.packageData.id) === selectedPackageId);
       if (match) setSelectedKey(match.key);
+      setSelectedWeight(currentWeight || DEFAULT_WEIGHT);
+      setManualWeight(currentWeight || DEFAULT_WEIGHT);
+      setShowManualWeight(false);
+      return;
     }
 
-    setSelectedWeight(currentWeight || "");
-    setManualWeight(currentWeight || "");
-    setShowManualWeight(false);
-  }, [currentWeight, options, selectedPackageId]);
+    // No prior selection — apply Small + 0-1kg as the default
+    const smallOption =
+      options.find((o) => normalizeName(o.label).includes("small")) ?? options[0];
+    if (smallOption) {
+      setSelectedKey(smallOption.key);
+      setSelectedWeight(DEFAULT_WEIGHT);
+      setManualWeight(DEFAULT_WEIGHT);
+      setShowManualWeight(false);
+      onConfirm(
+        String(smallOption.packageData.id),
+        smallOption.label,
+        DEFAULT_WEIGHT,
+        formatDimensions(smallOption.packageData),
+        currentItemPrice,
+        smallOption.packageData,
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options]);
 
   const applySelection = (pkgKey: string, weight: string) => {
     const option = options.find((o) => o.key === pkgKey);
