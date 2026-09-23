@@ -378,7 +378,7 @@ export function AddressPopover({
       sideOffset={8}
       avoidCollisions={false}
       onOpenAutoFocus={(event) => event.preventDefault()}
-      className="w-[min(420px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
+      className="w-[min(300px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
     >
       <div className="p-4">
         {!showManual && (

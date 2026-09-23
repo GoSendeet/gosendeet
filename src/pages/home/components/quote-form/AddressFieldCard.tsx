@@ -70,7 +70,7 @@ export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardPro
               {label}
             </p>
           )}
-          <span className="h-2 w-2 rounded-full bg-brand" />
+          <FiSearch className="h-3.5 w-3.5 shrink-0 text-brand" />
         </label>
 
         <div className="w-full flex items-center gap-2">
@@ -101,7 +101,6 @@ export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardPro
               />
             )}
           </div>
-          <FiSearch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
         </div>
 
         {error && (
