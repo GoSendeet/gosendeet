@@ -376,9 +376,10 @@ export function AddressPopover({
       side="bottom"
       align="center"
       sideOffset={8}
+      //collisionPadding={16}. //avoid colision when devise screen is small
       avoidCollisions={false}
       onOpenAutoFocus={(event) => event.preventDefault()}
-      className="w-[min(300px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl"
+      className="w-[min(300px,calc(100vw-32px))] rounded-2xl border mr-10 mt-1.5 border-gray-200 bg-white p-0 shadow-2xl"
     >
       <div className="p-4">
         {!showManual && (
@@ -408,43 +409,34 @@ export function AddressPopover({
               </p>
             )} */}
 
-            <div
-              className={cn(
-                "grid transition-[grid-template-rows,opacity,transform] duration-300 ease-out",
-                !hasNoSuggestions
-                  ? "grid-rows-[1fr] opacity-100 translate-y-0"
-                  : "grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none",
-              )}
-            >
-              <div className="overflow-hidden">
-                <div className="space-y-2">
-                  <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
-                    No matching addresses found.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowManual(true);
-                      fillManualAddressFromQuery();
-                    }}
-                    className="flex w-full items-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-left text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
-                  >
-                    <FiEdit3 className="h-4 w-4" />
-                    Enter address manually
-                  </button>
-                </div>
-              </div>
-            </div>
+            {!hasNoSuggestions && (
+              <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
+                No matching addresses found.
+              </p>
+            )}
 
-            <button
-              type="button"
-              onClick={handleUseCurrentLocation}
-              disabled={isLocating}
-              className="flex w-full items-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-left text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <FiNavigation className="h-4 w-4" />
-              {isLocating ? "Finding current location..." : "Use current location"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowManual(true);
+                  fillManualAddressFromQuery();
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-center text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
+              >
+                <FiEdit3 className="h-4 w-4 shrink-0" />
+                Enter manually
+              </button>
+              <button
+                type="button"
+                onClick={handleUseCurrentLocation}
+                disabled={isLocating}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-center text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <FiNavigation className="h-4 w-4 shrink-0" />
+                {isLocating ? "Locating..." : "Use location"}
+              </button>
+            </div>
 
           </div>
         )}

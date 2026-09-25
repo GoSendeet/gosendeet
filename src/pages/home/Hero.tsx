@@ -6,7 +6,7 @@ import { FiBox, FiPackage } from "react-icons/fi";
 import { SiFedex, SiDhl, SiUps } from "react-icons/si";
 
 const HeroOptionC = () => {
-  const [formMode, setFormMode] = useState<FormMode>("gosendeet");
+  const [formMode, setFormMode] = useState<FormMode>("compare");
 
   const trustSignals = [
     { icon: "✓", text: "Best Pricing", color: "from-emerald-400 to-emerald-500", clickable: false },
@@ -87,7 +87,7 @@ const HeroOptionC = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <div className="flex justify-center">
-            <ModeSwitcher mode={formMode} onModeChange={setFormMode} />
+            <ModeSwitcher mode={formMode} onModeChange={setFormMode} variant="pill" animate />
           </div>
         </motion.div>
 

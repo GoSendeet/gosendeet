@@ -31,7 +31,7 @@ const MODE_HEADER_COPY: Record<FormMode, { title: string; subtitle: string }> = 
 const Overview = ({ data: _data }: { data: any }) => {
   const [pendingPreSigninQuote] = useState(() => peekPreSigninQuote());
 
-  const [formMode, setFormMode] = useState<FormMode>("gosendeet");
+  const [formMode, setFormMode] = useState<FormMode>("compare");
   const [showQuotePanel, setShowQuotePanel] = useState(false);
   const [quotesInputData, setQuotesInputData] = useState<any>(null);
   const [quoteResults, setQuoteResults] = useState<any>(undefined);
@@ -85,8 +85,8 @@ const Overview = ({ data: _data }: { data: any }) => {
   const headerCopy = MODE_HEADER_COPY[formMode];
 
   return (
-    <div className="overflow-x-hidden">
-      <div className="flex items-center justify-between lg:-mt-6 lg:mb-10 mb-16 md:px-4 gap-3">
+    <div className="overflow-x-clip">
+      <div className="relative z-20 flex items-center justify-between lg:-mt-6 lg:mb-10 mb-16 md:px-4 gap-3">
         <div className="hidden lg:block items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className="font-clash text-brand uppercase tracking-widest font-semibold">
@@ -130,7 +130,7 @@ const Overview = ({ data: _data }: { data: any }) => {
                   mode={formMode}
                   onModeChange={handleModeChange}
                   variant="pill"
-                  animate={false}
+                  animate
                 />
               </div>
               <button

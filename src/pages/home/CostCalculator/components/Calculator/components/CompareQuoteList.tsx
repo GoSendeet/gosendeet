@@ -31,18 +31,25 @@ interface CompareQuoteListProps {
 const DashboardCompareQuoteCard = ({
   item,
   isRecommended,
+  isGosendeet,
   onSelect,
 }: {
   item: any;
   isRecommended: boolean;
+  isGosendeet: boolean;
   onSelect: () => void;
 }) => (
   <div
     className={cn(
-      "shrink-0 rounded-[20px] gap-4 justify-center border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
-      isRecommended ? "border-[#CBD5E1] ring-1 ring-[#E2E8F0]" : "border-[#E2E8F0]",
+      "relative overflow-hidden shrink-0 rounded-[20px] gap-4 justify-center border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      isGosendeet
+        ? "border-brand ring-2 ring-brand/20"
+        : isRecommended
+          ? "border-[#CBD5E1] ring-1 ring-[#E2E8F0]"
+          : "border-[#E2E8F0]",
     )}
   >
+    
      <div>
       <div className="mb-5 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
@@ -143,16 +150,21 @@ const DashboardCompareQuoteCard = ({
 const PublicCompareQuoteCard = ({
   item,
   isRecommended,
+  isGosendeet,
   onSelect,
 }: {
   item: any;
   isRecommended: boolean;
+  isGosendeet: boolean;
   onSelect: () => void;
 }) => (
   <div
-    className=" bg-white rounded-xl overflow-hidden border-2 border-gray-300 shadow-md
-      transition-all duration-300 shrink-0 hover:shadow-lg hover:-translate-y-1 hover:border-green800"
+    className={cn(
+      "relative bg-white rounded-xl overflow-hidden border-2 shadow-md transition-all duration-300 shrink-0 hover:shadow-lg hover:-translate-y-1",
+      isGosendeet ? "border-brand hover:border-brand" : "border-gray-300 hover:border-green800",
+    )}
   >
+   
     <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
       <div className="xl:w-1/4">
         <div className="flex-1 flex items-center gap-1">
@@ -318,26 +330,41 @@ const CompareQuoteList = ({
           isEmbedded ? "max-h-[72vh] pt-2" : "max-h-[70vh] pt-8",
         )}
       >
-        {filteredAndSortedData.map((item, globalIndex) => {
-          const isRecommended = globalIndex === 0;
-          const cardProps = {
-            item,
-            isRecommended,
-            onSelect: () => handleClick(item),
-          };
-
-          return isEmbedded ? (
-            <DashboardCompareQuoteCard
-              key={item?.id ?? globalIndex}
-              {...cardProps}
-            />
-          ) : (
-            <PublicCompareQuoteCard
-              key={item?.id ?? globalIndex}
-              {...cardProps}
-            />
+        {(() => {
+          const gosendeetIdx = filteredAndSortedData.findIndex((item) =>
+            item?.courier?.name?.toLowerCase().includes("gosendeet"),
           );
-        })}
+          const pinned =
+            gosendeetIdx > 0
+              ? [
+                  filteredAndSortedData[gosendeetIdx],
+                  ...filteredAndSortedData.filter((_, i) => i !== gosendeetIdx),
+                ]
+              : filteredAndSortedData;
+
+          return pinned.map((item, globalIndex) => {
+            const isGosendeet = item?.courier?.name?.toLowerCase().includes("gosendeet");
+            const isRecommended = globalIndex === 0;
+            const cardProps = {
+              item,
+              isRecommended,
+              isGosendeet,
+              onSelect: () => handleClick(item),
+            };
+
+            return isEmbedded ? (
+              <DashboardCompareQuoteCard
+                key={item?.id ?? globalIndex}
+                {...cardProps}
+              />
+            ) : (
+              <PublicCompareQuoteCard
+                key={item?.id ?? globalIndex}
+                {...cardProps}
+              />
+            );
+          });
+        })()}
 
         {hasNextPage && (
           <button
