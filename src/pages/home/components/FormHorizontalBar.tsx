@@ -36,7 +36,7 @@ const FormHorizontalBar = ({
   variant = "bold",
   bookingRequest,
   setData,
-  activeMode = "gosendeet",
+  activeMode = "compare",
   autoFocusPickup = false,
   onQuoteResult,
   forcedIsDashboard,
@@ -402,7 +402,7 @@ const FormHorizontalBar = ({
                 onModeChange?.(newMode);
               }}
               variant="pill"
-              animate={false}
+              animate
             />
           </div>
         )}
@@ -418,8 +418,7 @@ const FormHorizontalBar = ({
             onSubmit={handleTrackingSubmit}
           />
         )}
-        {mode === "gosendeet" && renderQuoteForm(true)}
-        {mode === "compare" && renderQuoteForm(false)}
+        {(mode === "gosendeet" || mode === "compare") && renderQuoteForm(false)}
       </div>
     </div>
   );

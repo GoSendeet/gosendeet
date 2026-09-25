@@ -2,10 +2,8 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useEffect, useMemo, useState, useRef } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
-import DirectQuoteCardSkeleton from "./DirectQuoteCardSkeleton";
 import CompareQuoteList from "./components/CompareQuoteList";
 import CompareResultsHeader from "./components/CompareResultsHeader";
-import DirectQuotePanel from "./components/DirectQuotePanel";
 import QuoteFilters from "./components/QuoteFilters";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
 
@@ -53,7 +51,7 @@ const Calculator = ({
   } = location.state || {};
   const results = externalResults ?? stateResults;
   const [mode, setMode] = useState<FormMode>(
-    externalMode ?? location?.state?.mode ?? "gosendeet",
+    externalMode ?? location?.state?.mode ?? "compare",
   );
   const [embeddedInputData, setEmbeddedInputData] = useState<any>(
     externalInputData || null,
@@ -168,15 +166,14 @@ const Calculator = ({
     quotePayload,
     setData,
   });
-  const [selectedDirectQuoteIndex, setSelectedDirectQuoteIndex] = useState(0);
-
   const listRef = useRef<HTMLDivElement | null>(null);
   const resultsSectionRef = useRef<HTMLDivElement | null>(null);
-  const quoteDetailsRef = useRef<HTMLDivElement | null>(null);
   const hasAutoScrolledToResultsRef = useRef(false);
   // Becomes true once any quotes have loaded — gates the gosendeet auto-fetch on public page
   const hasEverFetchedRef = useRef(false);
   const hasTrackedResultViewRef = useRef(false);
+  // True only when user explicitly submitted the form (navigated here with results in state, or submitted on-page)
+  const hasUserInitiatedFetchRef = useRef(Boolean(stateResults));
 
   useEffect(() => {
     if (!hasQuotes) return;
@@ -195,6 +192,7 @@ const Calculator = ({
     if (shareId && sharedQuote) {
       setData(sharedQuote);
     } else if (results) {
+      hasUserInitiatedFetchRef.current = true;
       setData(results);
     }
   }, [results, sharedQuote, shareId]);
@@ -203,9 +201,6 @@ const Calculator = ({
     if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
     if (mode === "tracking" || isFetchingQuotes || isLoadingMore) return;
     if (!window.matchMedia("(max-width: 767px)").matches) return;
-
-    const shouldWaitForQuoteDetails = mode === "gosendeet";
-    if (shouldWaitForQuoteDetails && !hasQuotes) return;
 
     const hasFetchedResponse =
       hasQuotes ||
@@ -217,10 +212,7 @@ const Calculator = ({
     const maxAttempts = 12;
 
     const scrollToTarget = () => {
-      const target =
-        mode === "gosendeet"
-          ? quoteDetailsRef.current
-          : resultsSectionRef.current;
+      const target = resultsSectionRef.current;
 
       if (!target) {
         if (attempts < maxAttempts) {
@@ -260,6 +252,8 @@ const Calculator = ({
     if (quotePayload.length === 0) return;
     // Skip auto-fetch when compare results are explicitly provided externally
     if (externalResults !== undefined) return;
+    // Don't auto-fetch on page load if the user hasn't submitted the form yet
+    if (!hasUserInitiatedFetchRef.current) return;
     resetQuotePagination();
     listRef.current?.scrollTo({ top: 0 });
     fetchQuotesPage(1, true);
@@ -273,17 +267,6 @@ const Calculator = ({
     resetQuotePagination,
     fetchQuotesPage,
   ]);
-
-  // Auto-fetch gosendeet quotes when no external results (e.g. switching back from compare)
-  // On embedded (dashboard): always allowed when externalResults is cleared by mode switch
-  // On public page: only after the user has gotten quotes before (hasEverFetchedRef guard)
-  useEffect(() => {
-    if (mode !== "gosendeet" || isSharedView) return;
-    if (!isEmbedded && !hasEverFetchedRef.current) return;
-    if (quotePayload.length === 0) return;
-    if (externalResults !== undefined) return;
-    fetchQuotesPage(1, true);
-  }, [mode, isEmbedded, isSharedView, quotePayload, externalResults, fetchQuotesPage]);
 
   const handleClick = (selectedQuote: any) => {
     if (!userId) {
@@ -342,6 +325,7 @@ const Calculator = ({
               {...(isEmbedded && {
                 forcedIsDashboard: false,
                 onQuoteResult: (result: any, newInputData: any, newMode: FormMode) => {
+                  hasUserInitiatedFetchRef.current = true;
                   setData(result);
                   setEmbeddedInputData(newInputData);
                   setMode(newMode);
@@ -427,22 +411,6 @@ const Calculator = ({
         </>
       )}
 
-      {mode === "gosendeet" && isFetchingQuotes && <DirectQuoteCardSkeleton />}
-
-      {mode === "gosendeet" && hasQuotes && !isFetchingQuotes && (
-        <DirectQuotePanel
-          bookingRequest={bookingRequest}
-          copyUrl={copyUrl}
-          handleClick={handleClick}
-          handleShare={handleShare}
-          quoteContent={quoteContent}
-          quoteDetailsRef={quoteDetailsRef}
-          selectedDirectQuoteIndex={selectedDirectQuoteIndex}
-          setSelectedDirectQuoteIndex={setSelectedDirectQuoteIndex}
-          shareLoading={shareLoading}
-          shareUrl={shareUrl}
-        />
-      )}
       </div>
     </div>
   );

@@ -9,7 +9,7 @@ import heroDeliveryIllustration from "../../../hero-image-with-logo.png";
 import { PiQuotesFill } from "react-icons/pi";
 
 const Header = () => {
-  const [formMode, setFormMode] = useState<FormMode>("gosendeet");
+  const [formMode, setFormMode] = useState<FormMode>("compare");
   const logos = [
     { src: dhl, alt: "DHL" },
     { src: fedex, alt: "FedEx" },
@@ -63,7 +63,7 @@ const Header = () => {
             mode={formMode}
             onModeChange={setFormMode}
             variant="pill"
-            animate={false}
+            animate
           />
           <div className="w-96.75 lg:w-[1120px] px-2 py-3">
             <FormHorizontalBar
