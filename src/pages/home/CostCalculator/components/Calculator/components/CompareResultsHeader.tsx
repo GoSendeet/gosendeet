@@ -185,7 +185,7 @@ const CompareResultsHeader = ({
           {/* <span className="ml-2">{shareUrl ? "Copy Link" : "Share Quote"}</span>
         </Button> */}
       </div>
-      <div className="flex flex-col space-y-4 lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
+      <div className="flex flex-col px-6 space-y-4  lg:space-y-0 lg:flex-row items-start lg:items-center justify-between mb-1">
         <div>
           {(bookingRequest?.pickupLocation || bookingRequest?.dropOffLocation) && (
             <div className="flex items-center gap-4 mb-1 ">

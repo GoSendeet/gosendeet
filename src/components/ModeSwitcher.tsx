@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Rocket } from "lucide-react";
 import { IconType } from "react-icons";
 import { GoArrowSwitch } from "react-icons/go";
 import { SlLocationPin } from "react-icons/sl";
@@ -23,7 +22,6 @@ interface ModeSwitcherProps {
 }
 
 const DEFAULT_TABS: ModeTab[] = [
-  { key: "gosendeet", label: "Direct", icon: Rocket },
   { key: "compare", label: "Compare", icon: GoArrowSwitch },
   { key: "tracking", label: "Tracking", icon: SlLocationPin },
 ];
@@ -51,32 +49,16 @@ export const ModeSwitcher = ({
     return (
       <div className={containerClasses}>
         <div
-          className="relative grid grid-cols-3 items-center w-full min-w-[300px] max-w-[420px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
+          className="relative grid grid-cols-2 items-center w-full min-w-[280px] max-w-[300px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
           style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}
         >
-          {animate ? (
-            <motion.span
-              className="absolute left-1 top-1 bottom-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]"
-              style={{ width: "calc((100% - 0.5rem) / 3)" }}
-              animate={{ x: `${activeIndex * 100}%` }}
-              transition={{ type: "spring", stiffness: 420, damping: 36 }}
-            />
-          ) : (
-            <span
-              className="absolute top-1 bottom-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]"
-              style={{
-                left: `calc(0.25rem + ${activeIndex} * ((100% - 0.5rem) / 3))`,
-                width: "calc((100% - 0.5rem) / 3)",
-              }}
-            />
-          )}
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const Icon = tab.icon;
-            const isActive = mode === tab.key;
+            const isActive = index === activeIndex;
 
             const Wrapper = animate ? motion.button : "button";
             const wrapperProps = animate
-              ? { whileHover: { scale: 1.05 }, whileTap: { scale: 0.95 } }
+              ? { whileHover: { scale: 1.02 }, whileTap: { scale: 0.97 } }
               : {};
 
             return (
@@ -85,13 +67,23 @@ export const ModeSwitcher = ({
                 type="button"
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
-                  "relative z-10 justify-center px-3 py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-colors",
+                  "relative justify-center px-3 py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-colors",
                   isActive ? "text-white" : "text-[#62748E] hover:text-gray-800"
                 )}
                 {...wrapperProps}
               >
+                {isActive && animate && (
+                  <motion.span
+                    layoutId="pill-indicator"
+                    className="absolute -inset-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]"
+                    transition={{ type: "tween", duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+                  />
+                )}
+                {isActive && !animate && (
+                  <span className="absolute -inset-1 rounded-full bg-green900 shadow-[0px_10px_15px_-3px_#00996640]" />
+                )}
                 <Icon className="relative z-10 w-4 h-4" />
-                {showLabels && <span className="relative z-10">{tab.label}</span>}
+                {showLabels && <span className="relative z-10 text-[12.5px]">{tab.label}</span>}
               </Wrapper>
             );
           })}
@@ -104,9 +96,9 @@ export const ModeSwitcher = ({
     return (
       <div className={containerClasses}>
         <div className="flex border-b border-gray-200">
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const Icon = tab.icon;
-            const isActive = mode === tab.key;
+            const isActive = index === activeIndex;
 
             const Wrapper = animate ? motion.button : "button";
             const wrapperProps = animate
@@ -144,18 +136,18 @@ export const ModeSwitcher = ({
   // Default: card variant
   return (
     <div className={containerClasses}>
-      <div className="relative grid grid-cols-3 bg-white rounded-t-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="relative grid grid-cols-2 bg-white rounded-t-2xl shadow-lg border border-gray-200 overflow-hidden">
         {animate ? (
           <>
             <motion.span
               className="absolute inset-y-0 left-0 bg-amber-50"
-              style={{ width: "33.333333%" }}
+              style={{ width: "50%" }}
               animate={{ x: `${activeIndex * 100}%` }}
               transition={{ type: "spring", stiffness: 420, damping: 36 }}
             />
             <motion.span
               className="absolute bottom-0 left-0 h-1 bg-amber-500"
-              style={{ width: "33.333333%" }}
+              style={{ width: "50%" }}
               animate={{ x: `${activeIndex * 100}%` }}
               transition={{ type: "spring", stiffness: 420, damping: 36 }}
             />
@@ -164,17 +156,17 @@ export const ModeSwitcher = ({
           <>
             <span
               className="absolute inset-y-0 bg-amber-50"
-              style={{ left: `${activeIndex * 33.333333}%`, width: "33.333333%" }}
+              style={{ left: `${activeIndex * 50}%`, width: "50%" }}
             />
             <span
               className="absolute bottom-0 h-1 bg-amber-500"
-              style={{ left: `${activeIndex * 33.333333}%`, width: "33.333333%" }}
+              style={{ left: `${activeIndex * 50}%`, width: "50%" }}
             />
           </>
         )}
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
-          const isActive = mode === tab.key;
+          const isActive = index === activeIndex;
           const isLast = index === tabs.length - 1;
 
           const Wrapper = animate ? motion.button : "button";
