@@ -1,3 +1,18 @@
+/* Prevent iOS Safari from auto-zooming on input focus (triggered when font-size < 16px) */
+@supports (-webkit-touch-callout: none) {
+  input,
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
