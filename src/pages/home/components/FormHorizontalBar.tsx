@@ -263,17 +263,17 @@ const FormHorizontalBar = ({
     const pickupClassName = cn(
       direct ? "direct-send" : "compare-pickup-from",
       isDashboard && "mt-4 w-full!",
-      activeCard === "pickup" && "outline outline-2 outline-[#fbbf24]",
+      activeCard === "pickup" && "outline outline-2 outline-[#77a383]",
     );
     const destinationClassName = cn(
       direct ? "direct-send" : "compare-pickup-destination",
       isDashboard && (direct ? "w-full!" : "!w-full"),
-      activeCard === "destination" && "outline outline-2 outline-[#fbbf24]",
+      activeCard === "destination" && "outline outline-2 outline-[#77a383]",
     );
     const packageClassName = cn(
       "direct-send-package",
       isDashboard && (direct ? "w-full!" : "!w-full"),
-      activeCard === "package" && "outline outline-2 outline-[#fbbf24]",
+      activeCard === "package" && "outline outline-2 outline-[#77a383]",
     );
 
     return (
