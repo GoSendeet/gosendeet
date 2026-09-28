@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
@@ -28,20 +28,32 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const [navOpen, setNavOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const handleNavToggle = () => {
     setNavOpen(!navOpen);
   };
 
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role") || "";
 
-
   return (
-    <nav className="bg-white backdrop-blur-md">
-      <div className="flex justify-between items-center py-5 lg:py-5 xl:px-30 md:px-20 px-3 border-b border-b-neutral300">
+    <nav
+      className={`transition-all duration-300 bg-white ${
+        scrolled
+          ? "shadow-sm border-b border-neutral300"
+          : "border-b border-b-neutral300"
+      }`}
+    >
+      <div className="flex justify-between items-center py-5 lg:py-5 xl:px-30 md:px-20 px-3">
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
@@ -86,14 +98,11 @@ const Navbar = () => {
           {MENU.map((link, index) => {
             const isActive = link.route === location.pathname;
             return (
-              <li
-                key={index}
-                className=" text-center rounded-3xl cursor-pointer"
-              >
+              <li key={index} className="text-center cursor-pointer">
                 <Link
                   to={link.route}
-                  className={`block py-2 text-neutral600 hover:border-b-2   ${
-                    isActive ? "border-b-2 " : ""
+                  className={`relative block py-2 text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
+                    isActive ? "text-blue100 after:w-full" : "after:w-0 hover:after:w-full"
                   }`}
                 >
                   {link.title}
@@ -101,14 +110,14 @@ const Navbar = () => {
               </li>
             );
           })}
-          <li className="relative group text-center rounded-3xl cursor-pointer">
+          <li className="relative group text-center cursor-pointer">
             <button
               type="button"
-              className={`flex items-center gap-1 py-2 text-neutral600 hover:border-b-2 ${
+              className={`relative flex items-center gap-1 py-2 text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
                 location.pathname.startsWith("/developer") ||
                 location.pathname === "/status"
-                  ? "border-b-2"
-                  : ""
+                  ? "text-blue100 after:w-full"
+                  : "after:w-0 hover:after:w-full"
               }`}
             >
               Developer
@@ -170,32 +179,51 @@ const Navbar = () => {
           </>
         )}
 
+        {/* Mobile backdrop */}
+        <div
+          className={`lg:hidden fixed inset-0 z-10 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
+            navOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+          onClick={() => setNavOpen(false)}
+          aria-hidden="true"
+        />
+
         {/* Links (mobile view) */}
         <div
-          className={`lg:hidden absolute top-0 left-0 w-full md:min-h-[70vh] h-[90vh] z-20 bg-white py-6 md:px-20 px-10 transition-transform duration-300 ${
-            navOpen ? "transform translate-x-0" : "transform -translate-x-full"
+          className={`lg:hidden fixed top-0 left-0 w-[85%] max-w-sm h-full z-20 bg-white py-6 md:px-20 px-8 flex flex-col transition-transform duration-300 ease-in-out shadow-2xl ${
+            navOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex justify-between">
-            <p>MENU</p>
-
-            <button onClick={handleNavToggle}>
-              <GoX size={26} />
+          <div className="flex justify-between items-center mb-2">
+            <Link to="/" onClick={() => setNavOpen(false)}>
+              <img src={logo} alt="logo" className="h-7 w-auto" />
+            </Link>
+            <button
+              onClick={handleNavToggle}
+              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <GoX size={22} />
             </button>
           </div>
 
-          <ul className="flex flex-col my-[3rem]">
+          <ul className="flex flex-col mt-8 flex-1">
             {MENU.map((link, index) => {
               const isActive = link.route === location.pathname;
               return (
                 <Link
                   to={link.route}
-                  className="hover:text-gray-300 my-3 w-[80%]"
+                  className={`my-1 w-full transition-all duration-200 ${
+                    navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                  }`}
+                  style={{ transitionDelay: navOpen ? `${index * 50}ms` : "0ms" }}
                   key={index}
+                  onClick={() => setNavOpen(false)}
                 >
                   <li
-                    className={` w-full  hover:bg-white cursor-pointer ${
-                      isActive ? " text-green500 " : ""
+                    className={`px-3 py-3 rounded-xl font-medium cursor-pointer transition-colors duration-150 ${
+                      isActive
+                        ? "text-green500 bg-green-50"
+                        : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
                     }`}
                   >
                     {link.title}
@@ -203,40 +231,53 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            <li className="mt-6 mb-2 text-xs font-bold uppercase text-neutral500">
+            <li
+              className={`mt-5 mb-2 px-3 text-xs font-bold uppercase text-neutral500 tracking-wider transition-all duration-200 ${
+                navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+              }`}
+              style={{ transitionDelay: navOpen ? `${MENU.length * 50}ms` : "0ms" }}
+            >
               Developer
             </li>
-            {developerLinks.map((link) => {
+            {developerLinks.map((link, i) => {
               const isActive = link.route === location.pathname;
               return (
                 <Link
                   to={link.route}
-                  className={`my-2 w-[80%] ${
-                    isActive ? "text-green500" : "text-neutral700"
+                  className={`my-1 w-full transition-all duration-200 ${
+                    navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                   }`}
+                  style={{ transitionDelay: navOpen ? `${(MENU.length + 1 + i) * 50}ms` : "0ms" }}
                   key={link.route}
                   onClick={() => setNavOpen(false)}
                 >
-                  {link.title}
+                  <span
+                    className={`block px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
+                      isActive
+                        ? "text-green500 bg-green-50"
+                        : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
+                    }`}
+                  >
+                    {link.title}
+                  </span>
                 </Link>
               );
             })}
           </ul>
 
           {!isAuthenticated && (
-            <>
-              <Link to="/signin">
-                <button className="border-2 w-full font-semibold px-4 py-4 text-white bg-black rounded mb-4">
+            <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+              <Link to="/signin" onClick={() => setNavOpen(false)}>
+                <button className="w-full font-semibold px-4 py-3.5 text-white bg-green100 rounded-xl hover:bg-green-800 transition-colors duration-200">
                   Sign In
                 </button>
               </Link>
-
-              <Link to="/signup">
-                <button className="border-2 w-full font-semibold px-4 py-4 text-black bg-white rounded">
+              <Link to="/signup" onClick={() => setNavOpen(false)}>
+                <button className="w-full font-semibold px-4 py-3.5 text-blue100 bg-white border-2 border-gray-200 rounded-xl hover:border-green100 transition-colors duration-200">
                   Sign Up
                 </button>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>

@@ -8,7 +8,7 @@ const Compare = () => {
         <div className="lg:w-1/2 w-full flex flex-col items-center justify-center gap-8">
           <img
             src={compareImg}
-            alt="compare"
+            alt="GoSendeet Compare — side-by-side delivery quotes"
             className="lg:w-[400px] xl:w-full"
           />
         </div>
@@ -16,13 +16,13 @@ const Compare = () => {
         <div className="lg:w-1/2 w-full flex flex-col items-center">
           <div className="flex flex-col gap-8 mx-auto xl:w-[450px]">
             <p className="font-extrabold lg:text-6xl md:text-4xl text-3xl">
-              <span className="text-blue100">Gosendeet</span>
+              <span className="text-blue100">GoSendeet</span>
               <br />
               <span className="text-blue100">Compare</span>
             </p>
             <p className="text-grey200 text-xl">
               Stop overpaying for deliveries. Compare multiple carriers in one
-              view and pick the service that fits your budget and timeline.{" "}
+              view and pick the service that fits your budget and timeline.
             </p>
 
             <ul className="space-y-4">
@@ -32,11 +32,11 @@ const Compare = () => {
                 </span>
                 <div>
                   <p className="text-blue100 font-bold text-md">
-                    Best Rate Guarantee
+                    Competitive Pricing
                   </p>
                   <span className="text-grey200 text-sm">
-                    Save up to 40% on delivery costs by comparing real-time
-                    quotes from local and international carriers.
+                    See real-time quotes from DHL, Fez, FedEx, GIG, UPS and more
+                    side by side, for best and affordable deals.
                   </span>
                 </div>
               </li>
@@ -46,11 +46,11 @@ const Compare = () => {
                 </span>
                 <div>
                   <p className="text-blue100 font-bold text-md">
-                    Instant Selection
+                    Instant Quotes
                   </p>
                   <span className="text-grey200 text-sm">
-                    Filter by speed, price, or rating. Book your preferred
-                    carrier in under 60 seconds with one-tap payment.
+                    No account needed to compare. Enter your parcel details and
+                    get quotes in seconds.
                   </span>
                 </div>
               </li>
@@ -60,11 +60,11 @@ const Compare = () => {
                 </span>
                 <div>
                   <p className="text-blue100 font-bold text-md">
-                    Verified Reliability
+                    Verified Carriers Only
                   </p>
                   <span className="text-grey200 text-sm">
-                    Every carrier on our platform is vetted for security and
-                    performance. Read real reviews from actual customers.
+                    Every courier on our platform is vetted for reliability and
+                    performance across Lagos and Ibadan.
                   </span>
                 </div>
               </li>

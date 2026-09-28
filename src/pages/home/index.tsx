@@ -1,17 +1,15 @@
 import Layout from "@/layouts/HomePageLayout";
-// import Hero from "./Hero";
-// import ProcessFlow from "./ProcessFlow";
-// import ServicesMinimal from "./ServicesMinimal";
-// import Benefits from "./Benefits";
-// import TestimonialsV3 from "./TestimonialsV3";
-// import FAQMinimal from "./FAQMinimal";
 import "./styles.css";
 import Header from "./Header";
+import DirectDiscount from "./DirectDiscount";
+import ComparePrices from "./ComparePrices";
+import WhatIsGosendeet from "./WhatIsGosendeet";
+import WhereWeDeliver from "./WhereWeDeliver";
 import Services from "./Services";
 import Compare from "./Compare";
-import Logistics from "./Logistics";
-import Visibility from "./Visibility";
 import ScrollReveal from "./components/ScrollReveal";
+import Visibility from "./Visibility";
+import CTA from "./CTA";
 
 const Home = () => {
   return (
@@ -21,18 +19,31 @@ const Home = () => {
           <Header />
         </ScrollReveal>
         <ScrollReveal>
+          <DirectDiscount />
+        </ScrollReveal>
+        <ScrollReveal>
+          <WhatIsGosendeet />
+        </ScrollReveal>
+        <ScrollReveal>
+          <Visibility />
+        </ScrollReveal>
+        <ScrollReveal>
+          <WhereWeDeliver />
+        </ScrollReveal>
+        <ScrollReveal>
+          <ComparePrices />
+        </ScrollReveal>
+        <ScrollReveal>
           <Services />
         </ScrollReveal>
         <ScrollReveal>
           <Compare />
         </ScrollReveal>
-        <ScrollReveal>
-          <Logistics />
-        </ScrollReveal>
-        <ScrollReveal>
-          <Visibility />
-        </ScrollReveal>
-        {/* <ProcessFlow />
+         <ScrollReveal>
+          <CTA />
+         </ScrollReveal>
+        {/* <Compare />
+        <Logistics />
         <ServicesMinimal />
         <Benefits />
         <TestimonialsV3 />
