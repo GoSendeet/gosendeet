@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Block private/authenticated routes from crawlers
+Disallow: /dashboard/
+Disallow: /admin-dashboard/
+Disallow: /franchise/
+Disallow: /developer-dashboard/
+Disallow: /signin
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /verify-account
+Disallow: /reset-password
+Disallow: /oauth2/
+Disallow: /booking/
+Disallow: /domain/auth
+
+Sitemap: https://gosendeet.com/sitemap.xml
