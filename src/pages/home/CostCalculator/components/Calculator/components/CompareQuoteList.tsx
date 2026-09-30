@@ -11,6 +11,7 @@ import {
   ChevronDown,
   Home,
   ShieldCheck,
+  Star,
   Store,
 } from "lucide-react";
 import { PAGE_SIZE, parsePrice } from "../quoteUtils";
@@ -49,8 +50,21 @@ const DashboardCompareQuoteCard = ({
           : "border-[#E2E8F0]",
     )}
   >
-    
-     <div>
+    {isGosendeet && (
+      <div className="absolute top-0 right-0 bg-green100 text-white rounded-bl-xl rounded-tr-[18px] px-2 py-1.5 flex flex-col items-center gap-0.5">
+        <div className="flex items-center gap-0.5">
+          <Star className="w-2.5 h-2.5 fill-white stroke-none shrink-0" />
+          <span className="text-[10px] font-bold uppercase tracking-wide">DIRECT</span>
+        </div>
+        {item?.discount > 0 && (
+          <span className="text-[9px] font-semibold opacity-90 whitespace-nowrap">
+            {item.discount}% Savings
+          </span>
+        )}
+      </div>
+    )}
+
+    <div>
       <div className="mb-5 flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           
@@ -164,7 +178,20 @@ const PublicCompareQuoteCard = ({
       isGosendeet ? "border-brand hover:border-brand" : "border-gray-300 hover:border-green800",
     )}
   >
-   
+    {isGosendeet && (
+      <div className="absolute top-0 right-0 bg-green100 text-white rounded-bl-xl rounded-tr-xl px-2 py-1.5 flex flex-col items-center gap-0.5">
+        <div className="flex items-center gap-0.5">
+          <Star className="w-2.5 h-2.5 fill-white stroke-none shrink-0" />
+          <span className="text-[10px] font-bold uppercase tracking-wide">DIRECT</span>
+        </div>
+        {item?.discount > 0 && (
+          <span className="text-[9px] font-semibold opacity-90 whitespace-nowrap">
+            {item.discount}% Savings
+          </span>
+        )}
+      </div>
+    )}
+
     <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
       <div className="xl:w-1/4">
         <div className="flex-1 flex items-center gap-1">
@@ -244,7 +271,7 @@ const PublicCompareQuoteCard = ({
               {item.discount}% off
             </span>
           )}
-          <p className="text-2xl font-arial tracking-tighter md:text-3xl font-bold text-green100">
+          <p className="text-2xl mt-2 font-arial tracking-tighter md:text-3xl font-bold text-green100">
             ₦{parsePrice(item.price).toLocaleString()}
           </p>
         </div>

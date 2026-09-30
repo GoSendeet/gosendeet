@@ -15,14 +15,13 @@ const Services = () => {
         {/* Main Heading */}
         <h2 className="text-center text-3xl font-arial md:text-4xl lg:text-6xl tracking-[-1.5px] font-[900] text-blue100 mb-6 md:mb-8 leading-tight">
           One Platform. <br />
-          Two Powerful Ways to Ship.
+          Two Ways to Ship.
         </h2>
 
         {/* Description */}
         <p className="text-center text-grey300 text-base md:text-lg max-w-2xl mx-auto">
-          We've engineered distinct solutions for every type of sender. Whether
-          you need white-glove security or market-beating prices, we have you
-          covered.
+          Whether you need a premium insured pickup with our franchise partners
+          or want to compare rates from Nigeria's top couriers, we have you covered.
         </p>
       </div>
       <div className="relative min-h-[100vh] w-full bg-service bg-green1000 md:px-20 px-6 md:py-20 py-10 font-arial">
@@ -39,14 +38,14 @@ const Services = () => {
                 </p>
               </div>
               <p className="font-extrabold lg:text-6xl md:text-4xl text-3xl">
-                <span className="text-white">Gosendeet</span>
+                <span className="text-white">GoSendeet</span>
                 <br />
                 <span className="text-green2000">Direct</span>
               </p>
-              <p className="text-green-100 xl:w-4/5 ">
-                The gold standard for high-value logistics. Operated exclusively
-                by our verified franchise partners for guaranteed speed and
-                safety.
+              <p className="text-green-100 xl:w-4/5">
+                The premium option for high-value deliveries. Handled exclusively
+                by our verified franchise partners for guaranteed speed and safety
+                across Lagos and Ibadan.
               </p>
 
               <ul className="space-y-4 mb-8">
@@ -60,7 +59,7 @@ const Services = () => {
                   <span className="text-green500">
                     <CircleCheckBig />
                   </span>
-                  Uniformed & Trained Pros
+                  Trained & Vetted Partners
                 </li>
                 <li className="flex items-center gap-3 text-white text-md">
                   <span className="text-green500">
