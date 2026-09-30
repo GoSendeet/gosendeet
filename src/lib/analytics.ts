@@ -1,7 +1,10 @@
 import posthog from "posthog-js";
 
+declare function gtag(...args: unknown[]): void;
+
 const KEY = import.meta.env.VITE_POSTHOG_KEY;
 const HOST = import.meta.env.VITE_POSTHOG_HOST ?? "https://app.posthog.com";
+const GA4_ID = "G-LJD6F6XCS2";
 
 export function initAnalytics() {
   if (!KEY) return;
@@ -25,11 +28,32 @@ export function resetUser() {
   posthog.reset();
 }
 
+// ─── GA4 event name map ───────────────────────────────────────────────────────
+// Maps internal event names to GA4 recommended event names where applicable.
+
+const GA4_EVENT_MAP: Record<string, string> = {
+  page_viewed:                  "page_view",
+  quote_started:                "generate_lead",
+  quote_result_viewed:          "view_item_list",
+  courier_selected:             "select_item",
+  checkout_initiated:           "begin_checkout",
+  payment_started:              "add_payment_info",
+  booking_confirmed:            "purchase",
+  signup_completed:             "sign_up",
+  login_completed:              "login",
+};
+
+function fireGA4(event: string, properties?: Record<string, unknown>) {
+  if (typeof gtag === "undefined") return;
+  const ga4Event = GA4_EVENT_MAP[event] ?? event;
+  gtag("event", ga4Event, { ...properties, send_to: GA4_ID });
+}
+
 // ─── Event helpers ────────────────────────────────────────────────────────────
 
 export function track(event: string, properties?: Record<string, unknown>) {
-  if (!KEY) return;
-  posthog.capture(event, properties);
+  if (KEY) posthog.capture(event, properties);
+  fireGA4(event, properties);
 }
 
 // ─── Typed event constants ────────────────────────────────────────────────────
