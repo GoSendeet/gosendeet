@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
+import { HelmetProvider } from "react-helmet-async";
 import { initAnalytics } from "./lib/analytics.ts";
 import { syncSessionFromStorage } from "./lib/authSession.ts";
 import { ensureCurrentUserTimezoneStored } from "./lib/timezone.ts";
@@ -27,7 +28,9 @@ const renderApp = () =>
             </div>
           }
         >
-          <App />
+          <HelmetProvider>
+            <App />
+          </HelmetProvider>
         </LoadScriptNext>
         <Toaster position="top-right" richColors />
       </QueryClientProvider>

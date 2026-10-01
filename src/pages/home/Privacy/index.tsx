@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "@/layouts/HomePageLayout";
+import PageMeta from "@/components/PageMeta";
 import { Plus, Minus } from "lucide-react";
 
 const Privacy = () => {
@@ -151,6 +152,11 @@ This policy ensures transparency — contact us at support@gosendeet.com for cla
 
   return (
     <Layout>
+      <PageMeta
+        title="Privacy Policy | GoSendeet"
+        description="Read GoSendeet's privacy policy to understand how we collect, use, and protect your personal information."
+        path="/privacy"
+      />
       {/* Banner Section */}
       <div className="bg-privacy relative overflow-hidden rounded-3xl md:mx-20 mx-6 my-8">
         {/* <div className="absolute inset-0 bg-gradient-to-r from-green1000/95 via-green1000/90 to-transparent"></div> */}

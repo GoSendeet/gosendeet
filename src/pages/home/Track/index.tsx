@@ -1,4 +1,5 @@
 import Layout from "@/layouts/HomePageLayout";
+import PageMeta from "@/components/PageMeta";
 import { LuInfo } from "react-icons/lu";
 import { useState } from "react";
 import TrackBooking from "@/components/TrackBooking";
@@ -8,6 +9,11 @@ const Track = () => {
   
   return (
     <Layout>
+      <PageMeta
+        title="Track Your Delivery | Real-Time Shipment Status – GoSendeet"
+        description="Track your GoSendeet shipment in real time. Enter your tracking number to see live delivery status across Lagos, Ibadan and Nigeria."
+        path="/track"
+      />
       <div className="md:px-20 px-6 md:py-16 py-8">
         <div className="xl:w-1/2 md:w-[80%] mx-auto bg-neutral900 py-20 md:px-10 px-4 rounded-3xl">
           <h1 className="lg:text-[40px] text-[36px] font-semibold tracking-tight font-inter md:text-left text-center mb-1">
