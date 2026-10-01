@@ -1,6 +1,7 @@
 import Layout from "@/layouts/HomePageLayout";
 import "./styles.css";
 import Header from "./Header";
+import PageMeta from "@/components/PageMeta";
 import DirectDiscount from "./DirectDiscount";
 import ComparePrices from "./ComparePrices";
 import WhatIsGosendeet from "./WhatIsGosendeet";
@@ -14,6 +15,11 @@ import CTA from "./CTA";
 const Home = () => {
   return (
     <div className="v3-minimal-theme">
+      <PageMeta
+        title="GoSendeet | Courier & Delivery Service in Nigeria"
+        description="Compare courier prices from DHL, FedEx, Fez, GIG & UPS or book a verified direct pickup across Lagos and Ibadan. Instant quotes, real-time tracking, fully insured deliveries."
+        path="/"
+      />
       <Layout>
         <ScrollReveal>
           <Header />

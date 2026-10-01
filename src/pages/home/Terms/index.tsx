@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "@/layouts/HomePageLayout";
+import PageMeta from "@/components/PageMeta";
 import { Plus, Minus } from "lucide-react";
 
 const Terms = () => {
@@ -105,6 +106,11 @@ Contact: For questions, email support@gosendeet.com`,
 
   return (
     <Layout>
+      <PageMeta
+        title="Terms & Conditions | GoSendeet"
+        description="Review the terms and conditions for using GoSendeet's courier comparison and delivery booking platform."
+        path="/terms"
+      />
       {/* Banner Section */}
       <div className="bg-terms relative overflow-hidden rounded-3xl md:mx-20 mx-6 my-8">
         {/* <div className="absolute inset-0 bg-gradient-to-r from-green1000/95 via-green1000/90 to-transparent"></div> */}
