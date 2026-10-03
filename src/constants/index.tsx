@@ -1,5 +1,4 @@
 export const MENU = [
-  { title: "Blog", route: "/blog" },
   {
     title: "Get a quote",
     route: "/cost-calculator",
@@ -11,7 +10,8 @@ export const MENU = [
   {
     title: "About Us",
     route: "/about",
-  }
+  },
+  { title: "Blog", route: "/blog" }
 ];
 
 export type BankAccountType = {

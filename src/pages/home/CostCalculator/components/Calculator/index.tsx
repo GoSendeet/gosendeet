@@ -6,6 +6,8 @@ import CompareQuoteList from "./components/CompareQuoteList";
 import CompareResultsHeader from "./components/CompareResultsHeader";
 import QuoteFilters from "./components/QuoteFilters";
 import ModeSwitcher, { FormMode } from "@/components/ModeSwitcher";
+import DeliveryFormModeSwitcher from "@/pages/home/components/DeliveryFormModeSwitcher";
+import { readSavedBookingQuote } from "@/pages/home/components/quote-form/quoteFormData";
 
 import { cn } from "@/lib/utils";
 import { useGetSharedQuotes } from "@/queries/user/useGetUserBookings";
@@ -57,26 +59,28 @@ const Calculator = ({
     externalInputData || null,
   );
 
-  const storedInputData = useMemo(() => {
-    try {
-      const stored = sessionStorage.getItem("bookingInputData");
-      return stored ? JSON.parse(stored) : null;
-    } catch (err) {
-      console.error("Error parsing bookingInputData from sessionStorage:", err);
-      return null;
-    }
-  }, []);
+  const storedInputData = useMemo(readSavedBookingQuote, []);
 
+  const routePreset = location.state?.routePreset;
+  const presetInputData = useMemo(() => routePreset ? {
+    ...storedInputData,
+    pickupLocation: "",
+    dropOffLocation: "",
+  } : null, [routePreset, storedInputData]);
   const sharedQuoteRequest = sharedQuote?.quoteRequests[0];
 
   const inputData =
-    sharedQuoteRequest || embeddedInputData || stateInputData || storedInputData || {};
+    sharedQuoteRequest || embeddedInputData || stateInputData || presetInputData || storedInputData || {};
   const hasRouteQuery = Boolean(
     inputData?.pickupLocation && inputData?.dropOffLocation,
   );
 
   const bookingRequest = inputData;
   const [data, setData] = useState(results || {});
+  const handleModeChange = (newMode: FormMode) => {
+    if (newMode !== mode) setData({});
+    setMode(newMode);
+  };
 
   useEffect(() => {
     if (externalResults !== undefined) {
@@ -302,25 +306,28 @@ const Calculator = ({
   return (
     <div className={cn("md:px-6 bg-[#F8FAFC]", hideForm ? "pt-0 pb-8" : "py-12")}>
       {!hideForm && (
-        <>
+        <div className={!isEmbedded ? "quote-form-section w-full mb-20" : undefined}>
+          <div className={!isEmbedded ? "landing-booking-panel" : undefined}>
           {/* Mode Switcher Tabs - Top of Calculator */}
-          <div className="w-full mb-6 flex justify-center">
-            <ModeSwitcher
+          <div className={isEmbedded ? "w-full mb-6 flex justify-center" : undefined}>
+            {isEmbedded ? <ModeSwitcher
               mode={mode}
-              onModeChange={(newMode) => {
-                if (newMode !== mode) setData({});
-                setMode(newMode);
-              }}
+              onModeChange={handleModeChange}
               variant="pill"
               animate
-            />
+            /> : <DeliveryFormModeSwitcher
+              mode={mode}
+              onModeChange={handleModeChange}
+            />}
           </div>
 
-          <div className="w-full mb-20">
+          <div className={isEmbedded ? "w-full mb-20" : undefined}>
             <FormHorizontalBar
               variant="minimal"
+              appearance={isEmbedded ? "default" : "landing"}
               activeMode={mode}
               bookingRequest={bookingRequest}
+              addressSearchPreset={isEmbedded ? undefined : routePreset}
               setData={setData}
               {...(isEmbedded && {
                 forcedIsDashboard: false,
@@ -333,7 +340,8 @@ const Calculator = ({
               })}
             />
           </div>
-        </>
+          </div>
+        </div>
       )}
 
       {/* Results Section Header */}

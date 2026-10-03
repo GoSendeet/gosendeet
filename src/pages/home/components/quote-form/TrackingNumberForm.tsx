@@ -11,6 +11,7 @@ interface TrackingNumberFormProps {
   inputClassName: string;
   onTrackingNumberChange: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
+  appearance?: "default" | "landing";
 }
 
 export const TrackingNumberForm = ({
@@ -21,17 +22,19 @@ export const TrackingNumberForm = ({
   inputClassName,
   onTrackingNumberChange,
   onSubmit,
+  appearance = "default",
 }: TrackingNumberFormProps) => {
   return (
     <form onSubmit={onSubmit}>
       <div
         className={cn(
+          appearance === "landing" && "landing-tracking-row",
           isDashboard
             ? "flex flex-col gap-4"
             : "flex flex-col lg:flex-row lg:items-end gap-4",
         )}
       >
-        <div className={isDashboard ? "mt-4 w-full" : "flex-1"}>
+        <div className={cn(isDashboard ? "mt-4 w-full" : "flex-1", appearance === "landing" && "landing-tracking-field")}>
           <div className="tracking-section focus-within:outline-2 focus-within:outline-[#fbbf24] focus-within:outline-offset-2">
             <label
               htmlFor="trackingNumber"
@@ -61,7 +64,9 @@ export const TrackingNumberForm = ({
             isDashboard ? "w-full px-6 py-3 justify-center" : "gosend-custom-button",
           )}
         >
-          <GoArrowRight
+          {appearance === "landing" ? (
+            <span>Track a delivery</span>
+          ) : <><GoArrowRight
             className="text-white mr-1.5"
             style={{ width: "32px", height: "32px" }}
           />
@@ -72,6 +77,7 @@ export const TrackingNumberForm = ({
               <span className="uppercase">Track</span>
             )}
           </span>
+          </>}
         </Button>
       </div>
     </form>

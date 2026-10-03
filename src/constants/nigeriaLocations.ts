@@ -52,7 +52,7 @@ export const NIGERIAN_STATES_AND_CITIES: StateCities[] = [
   },
   {
     state: "Lagos State",
-    cities: ["Badagry", "Epe", "Ikeja", "Ikorodu", "Lagos", "Mushin", "Shomolu"],
+    cities: ["Badagry", "Epe", "Ikeja", "Ikorodu", "Lagos", "Lekki", "Mushin", "Shomolu", "Victoria Island", "Yaba"],
   },
   { state: "Nasarawa State", cities: ["Keffi", "Lafia", "Nasarawa"] },
   {

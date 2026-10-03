@@ -11,7 +11,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white shadow-xs hover:-translate-y-0.5 hover:shadow-lg",
+        default: "bg-[#064E3B] hover:bg-[#004c3b] text-white shadow-xs hover:-translate-y-0.5 hover:shadow-lg",
         destructive:
           "bg-[#EC2D30] text-white shadow-xs hover:bg-destructive/90 hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:

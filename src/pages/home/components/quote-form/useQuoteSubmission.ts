@@ -8,9 +8,9 @@ import { hasAuthSession } from "@/lib/authSession";
 import { savePreSigninQuote } from "@/lib/preSigninQuote";
 import { getQuotes } from "@/services/user";
 import {
-  normalizeBookingQuoteData,
+  readSavedBookingQuote,
   type BookingQuoteFormData,
-} from "./useBookingQuoteForm";
+} from "./quoteFormData";
 
 interface QuoteMutationVariables {
   data: any;
@@ -139,16 +139,8 @@ export const useQuoteSubmission = ({
       sessionStorage.getItem("unauthenticated") === "true";
     if (!isUnauthenticated) return;
 
-    const stored = sessionStorage.getItem("bookingInputData");
-    if (!stored) return;
-
-    let parsed: BookingQuoteFormData;
-    try {
-      parsed = normalizeBookingQuoteData(JSON.parse(stored));
-    } catch {
-      console.error("Invalid bookingInputData in sessionStorage");
-      return;
-    }
+    const parsed = readSavedBookingQuote();
+    if (!parsed) return;
 
     const storedMode = (sessionStorage.getItem("bookingMode") ||
       "gosendeet") as FormMode;

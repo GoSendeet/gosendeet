@@ -7,6 +7,7 @@ interface QuoteSubmitButtonProps {
   isDashboard: boolean;
   className?: string;
   onClick: () => void;
+  appearance?: "default" | "landing";
 }
 
 export const QuoteSubmitButton = ({
@@ -14,6 +15,7 @@ export const QuoteSubmitButton = ({
   isDashboard,
   className,
   onClick,
+  appearance = "default",
 }: QuoteSubmitButtonProps) => {
   return (
     <div className={isDashboard ? "mt-5 w-full" : "flex gap-3 items-end"}>
@@ -28,13 +30,16 @@ export const QuoteSubmitButton = ({
         loading={loading}
         onClick={onClick}
       >
-        <GoArrowRight
+        {appearance === "landing" ? (
+          <span>Compare prices</span>
+        ) : <><GoArrowRight
           className="text-white mr-1.5"
           style={{ width: "32px", height: "32px" }}
         />
         <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
           Get Quote
         </span>
+        </>}
       </Button>
     </div>
   );

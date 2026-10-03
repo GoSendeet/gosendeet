@@ -57,7 +57,7 @@ const Navbar = () => {
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
-            <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
+            <img src={logo} alt="GoSendeet" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>
 

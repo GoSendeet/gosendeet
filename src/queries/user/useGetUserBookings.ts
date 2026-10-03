@@ -70,10 +70,11 @@ export const useGetBookingsStats = (
   };
 };
 
-export const useGetTrackBookings = (id: string) => {
+export const useGetTrackBookings = (id?: string) => {
   const query = useQuery({
     queryKey: ["bookings", id],
-    queryFn: () => trackBookings(id),
+    queryFn: () => trackBookings(id!),
+    enabled: Boolean(id),
   });
   return {
     isLoading: query.isPending,
@@ -114,4 +115,3 @@ export const useGetSharedQuotes = (id: string) => {
     refetchUserData: query.refetch,
   };
 };
-
