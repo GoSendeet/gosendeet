@@ -33,6 +33,7 @@ import {
 } from "@/utils/address";
 
 interface AddressPopoverProps {
+  appearance?: "default" | "landing";
   type?: "pickup" | "destination";
   open: boolean;
   query: string;
@@ -45,6 +46,7 @@ interface AddressPopoverProps {
 const MANUAL_STATE_OPTIONS = ["Lagos State", "Oyo State"];
 
 export function AddressPopover({
+  appearance = "default",
   open,
   query,
   otherAddress,
@@ -129,7 +131,7 @@ export function AddressPopover({
       street: parsed.street,
       apartment: parsed.apartment,
       city: parsed.city || inferred?.city || "",
-      state: parsed.state || inferred?.state || "",
+      state: parsed.state || inferred?.state || CITY_STATE_MAP[parsed.city] || "",
     };
   }, [query]);
 
@@ -364,22 +366,22 @@ export function AddressPopover({
     Boolean(manualAddress.state.trim()) && Boolean(manualAddress.city.trim());
 
   const trimmedQuery = query.trim();
-  const isSearchComplete = completedSearchQuery === trimmedQuery;
-  const hasNoSuggestions =
-    // hasSearchQuery &&
-    isSearchComplete 
-    // !suggestionsLoading &&
-    // !hasSuggestions;
+  const hasNoSuggestions = trimmedQuery.length >= 2 &&
+    completedSearchQuery === trimmedQuery && !suggestionsLoading && suggestions.length === 0;
 
   return (
     <PopoverContent
       side="bottom"
-      align="center"
+      align={appearance === "landing" ? "start" : "center"}
       sideOffset={8}
-      //collisionPadding={16}. //avoid colision when devise screen is small
-      avoidCollisions={false}
+      avoidCollisions={appearance === "landing"}
+      collisionPadding={16}
       onOpenAutoFocus={(event) => event.preventDefault()}
-      className="w-[min(300px,calc(100vw-32px))] rounded-2xl border mr-10 mt-1.5 border-gray-200 bg-white p-0 shadow-2xl"
+      onCloseAutoFocus={(event) => {
+        // The address anchor opens on focus; restoring focus on dismissal would reopen it.
+        if (appearance === "landing") event.preventDefault();
+      }}
+      className={`w-[min(300px,calc(100vw-32px))] rounded-2xl border mt-1.5 border-gray-200 bg-white p-0 shadow-2xl ${appearance === "landing" ? "landing-address-popup" : "mr-10"}`}
     >
       <div className="p-4">
         {!showManual && (
@@ -403,38 +405,37 @@ export function AddressPopover({
               </div>
             )}
 
-            {/* {isSearching && (
+            {suggestionsLoading && trimmedQuery.length >= 2 && (
               <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
                 Searching for matching addresses...
               </p>
-            )} */}
-
-            {!hasNoSuggestions && (
+            )}
+            {hasNoSuggestions && (
               <p className="rounded-xl bg-gray-50 px-3 py-3 text-xs text-[#64748B]">
                 No matching addresses found.
               </p>
             )}
 
-            <div className="flex gap-2">
+            <div className="address-entry-actions flex items-center gap-3 sm:gap-5">
+              <button
+                type="button"
+                onClick={handleUseCurrentLocation}
+                disabled={isLocating}
+                className="inline-flex items-center gap-2 py-2 whitespace-nowrap leading-4 text-xs font-medium text-brand hover:underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <FiNavigation className="h-4 w-4 shrink-0" />
+                {isLocating ? "Locating..." : "Use location"}
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   setShowManual(true);
                   fillManualAddressFromQuery();
                 }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-center text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4]"
+                className="inline-flex items-center gap-2 py-2 whitespace-nowrap leading-4 text-xs font-medium text-brand hover:underline underline-offset-4"
               >
                 <FiEdit3 className="h-4 w-4 shrink-0" />
                 Enter manually
-              </button>
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                disabled={isLocating}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-center text-xs font-bold text-brand hover:border-brand hover:bg-[#F0FDF4] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <FiNavigation className="h-4 w-4 shrink-0" />
-                {isLocating ? "Locating..." : "Use location"}
               </button>
             </div>
 

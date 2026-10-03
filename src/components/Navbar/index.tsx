@@ -4,7 +4,7 @@ import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
-import { ArrowUpRight, BookOpen, ChevronDown, Home, RadioTower } from "lucide-react";
+import { BookOpen, ChevronDown, Home, RadioTower } from "lucide-react";
 import { Button } from "../ui/button";
 import { hasAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
@@ -57,7 +57,7 @@ const Navbar = () => {
         {/* Logo or Brand Name */}
         <div>
           <Link to="/">
-            <img src={logo} alt="logo" className="h-8 md:h-9 w-auto" />
+            <img src={logo} alt="GoSendeet" className="h-8 md:h-9 w-auto" />
           </Link>
         </div>
 
@@ -68,14 +68,12 @@ const Navbar = () => {
               <Link to="/signup">
                 <Button size={"sm"} className="bg-green100">
                   Sign Up
-                  <ArrowUpRight />
                 </Button>
               </Link>
             ) : (
               <Link to="/signin">
                 <Button size={"sm"} className="bg-green100">
                   Sign In
-                  <ArrowUpRight />
                 </Button>
               </Link>
             )
@@ -163,7 +161,6 @@ const Navbar = () => {
             <Link to="/signin">
               <Button size={"sm"} className="bg-green100">
                 Sign In
-                <ArrowUpRight />
               </Button>
             </Link>
           </div>

@@ -7,6 +7,7 @@ import { FiBox, FiCheck, FiFileText, FiPackage } from "react-icons/fi";
 import { LuBackpack, LuPackageOpen } from "react-icons/lu";
 
 interface PackageTypePopoverProps {
+  appearance?: "default" | "landing";
   selectedPackageId: string;
   currentWeight: string;
   currentDimensions: string;
@@ -99,6 +100,7 @@ const formatDimensions = (pkg: PackageTypeOption) => {
 };
 
 export function PackageTypePopover({
+  appearance = "default",
   selectedPackageId,
   currentWeight,
   currentItemPrice,
@@ -209,71 +211,11 @@ export function PackageTypePopover({
       side="bottom"
       align="center"
       sideOffset={10}
-      avoidCollisions={false}
-      className="w-[min(640px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl"
+      avoidCollisions={appearance === "landing"}
+      collisionPadding={16}
+      className={`w-[min(640px,calc(100vw-32px))] rounded-2xl border border-gray-200 bg-white p-5 shadow-2xl ${appearance === "landing" ? "landing-package-popup" : ""}`}
     >
       <div className="space-y-5">
-        <div>
-          <h3 className="text-sm font-bold text-[#0F172A]">Choose a package type</h3>
-          <p className="mt-1 text-xs text-[#64748B]">
-            Pick the closest match. You can enter exact weight manually.
-          </p>
-        </div>
-
-        {isPackageTypesLoading && (
-          <p className="text-sm text-gray-500">Loading package types...</p>
-        )}
-
-        {!isPackageTypesLoading && isPackageTypesError && (
-          <p className="text-sm text-red-500">Unable to load package types right now.</p>
-        )}
-
-        {!isPackageTypesLoading && !isPackageTypesError && (
-          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
-            {options.map((option) => {
-              const Icon = option.icon;
-              const isSelected = selectedKey === option.key;
-
-              return (
-                <button
-                  key={option.key}
-                  type="button"
-                  onClick={() => handlePackageSelect(option.key)}
-                  className={cn(
-                    "relative flex min-h-[64px] items-center gap-3 rounded-xl border p-3 text-left transition-colors",
-                    isSelected
-                      ? "border-brand bg-[#F0FDF4]"
-                      : "border-gray-200 bg-white hover:border-brand",
-                  )}
-                >
-                  {isSelected && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white">
-                      <FiCheck className="h-3 w-3" />
-                    </span>
-                  )}
-                  {option.imageUrl ? (
-                    <img
-                      src={option.imageUrl}
-                      alt=""
-                      className="h-6 w-6 shrink-0 rounded-md object-contain"
-                    />
-                  ) : (
-                    <Icon className="h-5 w-5 shrink-0 text-brand" />
-                  )}
-                  <span className="min-w-0">
-                    <span className="block truncate text-xs font-bold text-[#0F172A]">
-                      {option.label}
-                    </span>
-                    <span className="block truncate text-[11px] text-[#64748B]">
-                      {option.helper}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
@@ -351,6 +293,67 @@ export function PackageTypePopover({
             </div>
           )}
         </div>
+
+        <div>
+          <h3 className="text-sm font-bold text-[#0F172A]">Choose a package type</h3>
+          <p className="mt-1 text-xs text-[#64748B]">
+            Pick the closest match. You can enter exact weight manually.
+          </p>
+        </div>
+
+        {isPackageTypesLoading && (
+          <p className="text-sm text-gray-500">Loading package types...</p>
+        )}
+
+        {!isPackageTypesLoading && isPackageTypesError && (
+          <p className="text-sm text-red-500">Unable to load package types right now.</p>
+        )}
+
+        {!isPackageTypesLoading && !isPackageTypesError && (
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {options.map((option) => {
+              const Icon = option.icon;
+              const isSelected = selectedKey === option.key;
+
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  onClick={() => handlePackageSelect(option.key)}
+                  className={cn(
+                    "relative flex min-h-[64px] items-center gap-3 rounded-xl border p-3 text-left transition-colors",
+                    isSelected
+                      ? "border-brand bg-[#F0FDF4]"
+                      : "border-gray-200 bg-white hover:border-brand",
+                  )}
+                >
+                  {isSelected && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white">
+                      <FiCheck className="h-3 w-3" />
+                    </span>
+                  )}
+                  {option.imageUrl ? (
+                    <img
+                      src={option.imageUrl}
+                      alt=""
+                      className="h-6 w-6 shrink-0 rounded-md object-contain"
+                    />
+                  ) : (
+                    <Icon className="h-5 w-5 shrink-0 text-brand" />
+                  )}
+                  <span className="min-w-0">
+                    <span className="block truncate text-xs font-bold text-[#0F172A]">
+                      {option.label}
+                    </span>
+                    <span className="block truncate text-[11px] text-[#64748B]">
+                      {option.helper}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </PopoverContent>
   );

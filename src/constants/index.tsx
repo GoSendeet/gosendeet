@@ -10,7 +10,8 @@ export const MENU = [
   {
     title: "About Us",
     route: "/about",
-  }
+  },
+  { title: "Blog", route: "/blog" }
 ];
 
 export type BankAccountType = {

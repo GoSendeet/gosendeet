@@ -12,6 +12,7 @@ interface PackageFieldCardProps extends ButtonHTMLAttributes<HTMLButtonElement> 
   labelClassName: string;
   packageError?: FieldError;
   weightError?: FieldError;
+  appearance?: "default" | "landing";
 }
 
 export const PackageFieldCard = forwardRef<
@@ -27,6 +28,7 @@ export const PackageFieldCard = forwardRef<
       labelClassName,
       packageError,
       weightError,
+      appearance = "default",
       type = "button",
       ...buttonProps
     },
@@ -38,6 +40,7 @@ export const PackageFieldCard = forwardRef<
         type={type}
         className={cn(className, "text-left")}
         {...buttonProps}
+        data-appearance={appearance}
       >
         <label
           className={cn(labelClassName, "flex items-center justify-between gap-2")}

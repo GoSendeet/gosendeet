@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetPackageType } from "@/queries/admin/useGetAdminSettings";
+import { bookingQuoteSchema, defaultValues, normalizeBookingQuoteData, readSavedBookingQuote, type BookingQuoteFormData } from "./quoteFormData";
 
 export interface PackageTypeOption {
   id: string | number;
@@ -17,45 +17,6 @@ export interface PackageTypeOption {
   weightUnit?: string;
   imageUrl?: string;
 }
-
-export const bookingQuoteSchema = z.object({
-  pickupLocation: z
-    .string({ required_error: "Pickup location is required" })
-    .min(1, { message: "Enter pickup location" }),
-  dropOffLocation: z
-    .string({ required_error: "Drop off location is required" })
-    .min(1, { message: "Enter drop off location" }),
-  packageTypeId: z
-    .string({ required_error: "Package type is required" })
-    .min(1, { message: "Enter package type" }),
-  weight: z
-    .string({ required_error: "Weight is required" })
-    .min(1, { message: "Enter weight" }),
-  dimensions: z.string().optional(),
-  itemPrice: z.string().optional(),
-});
-
-export type BookingQuoteFormData = z.infer<typeof bookingQuoteSchema>;
-
-const defaultValues: BookingQuoteFormData = {
-  pickupLocation: "",
-  dropOffLocation: "",
-  packageTypeId: "",
-  weight: "",
-  dimensions: "",
-  itemPrice: "",
-};
-
-export const normalizeBookingQuoteData = (data: any): BookingQuoteFormData => {
-  const rest = { ...(data || {}) };
-  delete rest.pickupDate;
-
-  return {
-    ...defaultValues,
-    ...rest,
-    packageTypeId: String(data?.packageTypeId ?? ""),
-  };
-};
 
 interface UseBookingQuoteFormArgs {
   bookingRequest?: any;
@@ -85,16 +46,15 @@ export const useBookingQuoteForm = ({
     return (packageTypes?.data?.content || []) as PackageTypeOption[];
   }, [packageTypes?.data]);
 
-  const saveInputData = (data: any) => {
+  const saveInputData = useCallback((data: any) => {
     const normalized = normalizeBookingQuoteData(data);
     setInputData(normalized);
     sessionStorage.setItem("bookingInputData", JSON.stringify(normalized));
     return normalized;
-  };
+  }, []);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("bookingInputData");
-    const storedData = stored ? normalizeBookingQuoteData(JSON.parse(stored)) : null;
+    const storedData = readSavedBookingQuote();
 
     if (storedData) {
       setInputData(storedData);
