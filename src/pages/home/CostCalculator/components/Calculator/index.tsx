@@ -1,5 +1,6 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { FiClock } from "react-icons/fi";
 import { useEffect, useMemo, useState, useRef } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import CompareQuoteList from "./components/CompareQuoteList";
@@ -341,6 +342,7 @@ const Calculator = ({
             />
           </div>
           </div>
+          {!isEmbedded && mode === "compare" && <p className="landing-delivery-note"><FiClock aria-hidden="true" /><span>Book before <strong>12 pm</strong> for same-day delivery.</span></p>}
         </div>
       )}
 

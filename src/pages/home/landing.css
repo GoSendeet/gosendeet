@@ -12,6 +12,8 @@
 .landing-hero h1 span { color: #1fe99b; }
 .landing-hero p { color: #eef4f1; font-size: 19px; line-height: 1.55; max-width: 580px; }
 .landing-booking-wrap { position: relative; margin-top: -82px; z-index: 2; scroll-margin-top: 100px; }
+.landing-delivery-note { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; color: var(--landing-green); font-size: 14px; line-height: 1.5; }
+.landing-delivery-note svg { width: 18px; height: 18px; flex-shrink: 0; }
 .landing-booking-panel { background: white; border: 1px solid #e2e7eb; border-radius: 22px; padding: 0 28px 28px; box-shadow: 0 4px 12px #172b2210, 0 16px 36px #172b2208; }
 .landing-trust { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 48px 48px; color: #627087; font-size: 13px; }
 .landing-carriers { display: flex; align-items: center; justify-content: space-around; gap: 44px; flex: 1; }
@@ -139,3 +141,5 @@
 
 
 .landing-story blockquote { margin-bottom: 16px; font-size: 15px; line-height: 1.6; color: #15212b; }
+.landing-story-rating { display: flex; gap: 4px; margin-bottom: 12px; color: #c58a00; }
+.landing-story-rating svg { width: 16px; height: 16px; }

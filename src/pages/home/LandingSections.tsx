@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Headphones, UserRound } from "lucide-react";
+import { Headphones, Star, UserRound } from "lucide-react";
 import dhl from "@/assets/images/dhl.png";
 import fedex from "@/assets/images/fedex.png";
 import gig from "@/assets/images/gig.png";
@@ -73,7 +73,7 @@ export default function LandingSections({ onStartQuote }: { onStartQuote: () => 
     <section className="landing-stories" aria-labelledby="stories-heading">
       <div className="landing-shell"><h2 id="stories-heading">Stories from our senders</h2>
         <div className="landing-stories-row">
-          {stories.map(story => <article key={story.name} className="landing-story"><UserRound aria-hidden="true" /><div><blockquote>“{story.quote}”</blockquote><h3>{story.name}</h3></div></article>)}
+          {stories.map(story => <article key={story.name} className="landing-story"><UserRound aria-hidden="true" /><div><div className="landing-story-rating" role="img" aria-label="5 out of 5 stars">{Array.from({ length: 5 }, (_, index) => <Star key={index} aria-hidden="true" fill="currentColor" />)}</div><blockquote>“{story.quote}”</blockquote><h3>{story.name}</h3></div></article>)}
           <a className="landing-primary" href="mailto:support@gosendeet.com?subject=My%20GoSendeet%20delivery%20story">Share your story</a>
         </div>
       </div>
