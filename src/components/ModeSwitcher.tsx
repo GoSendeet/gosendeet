@@ -15,7 +15,8 @@ export interface ModeTab {
 interface ModeSwitcherProps {
   mode: FormMode;
   onModeChange: (mode: FormMode) => void;
-  variant?: "card" | "pill" | "underline";
+  variant?: "card" | "pill" | "underline" | "landing";
+  tabs?: ModeTab[];
   className?: string;
   showLabels?: boolean;
   animate?: boolean;
@@ -33,8 +34,8 @@ export const ModeSwitcher = ({
   className,
   showLabels = true,
   animate = true,
+  tabs = DEFAULT_TABS,
 }: ModeSwitcherProps) => {
-  const tabs = DEFAULT_TABS;
   const activeIndex = Math.max(
     0,
     tabs.findIndex((tab) => tab.key === mode),
@@ -44,6 +45,19 @@ export const ModeSwitcher = ({
     "flex justify-center items-center gap-0",
     className
   );
+
+  if (variant === "landing") {
+    return (
+      <div className={cn("landing-modes", className)} role="group" aria-label="Delivery options">
+        {tabs.map(({ key, label, icon: Icon }) => (
+          <button key={key} type="button" aria-pressed={mode === key}
+            onClick={() => onModeChange(key)}>
+            <Icon aria-hidden="true" /><span>{label}</span>
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   if (variant === "pill") {
     return (

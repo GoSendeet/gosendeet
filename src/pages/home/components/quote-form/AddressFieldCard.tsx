@@ -19,6 +19,7 @@ interface AddressFieldCardProps {
   onActivate: () => void;
   onChange: (value: string) => void;
   onHideCursorHint: () => void;
+  appearance?: "default" | "landing";
 }
 
 export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardProps>(
@@ -38,6 +39,7 @@ export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardPro
       onActivate,
       onChange,
       onHideCursorHint,
+      appearance = "default",
     },
     ref,
   ) => {
@@ -51,6 +53,7 @@ export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardPro
       <div
         className={cn(className, isActive && "ring-2 ring-brand/40")}
         onClick={onActivate}
+        data-appearance={appearance}
       >
         <label
           htmlFor={id}
@@ -62,7 +65,7 @@ export const AddressFieldCard = forwardRef<HTMLInputElement, AddressFieldCardPro
                 {label}
               </p>
               <p className="block lg:hidden font-arial lg:font-inter uppercase text-[#90A1B9] lg:text-[#2C2C2C] text-xs tracking-widest">
-                {mobileLabel}
+                {appearance === "landing" ? label : mobileLabel}
               </p>
             </>
           ) : (

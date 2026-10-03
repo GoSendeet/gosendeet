@@ -1,62 +1,29 @@
+import { useState } from "react";
 import Layout from "@/layouts/HomePageLayout";
-import "./styles.css";
-import Header from "./Header";
 import PageMeta from "@/components/PageMeta";
-import DirectDiscount from "./DirectDiscount";
-import ComparePrices from "./ComparePrices";
-import WhatIsGosendeet from "./WhatIsGosendeet";
-import WhereWeDeliver from "./WhereWeDeliver";
-import Services from "./Services";
-import Compare from "./Compare";
-import ScrollReveal from "./components/ScrollReveal";
-import Visibility from "./Visibility";
-import CTA from "./CTA";
+import type { FormMode } from "@/components/ModeSwitcher";
+import Header from "./Header";
+import LandingSections from "./LandingSections";
+import "./landing.css";
 
-const Home = () => {
+export default function Home() {
+  const [mode, setMode] = useState<FormMode>("compare");
+  const startQuote = () => {
+    setMode("compare");
+    requestAnimationFrame(() => {
+      document.getElementById("delivery-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.getElementById("compare-pickup-location-input")?.focus({ preventScroll: true });
+    });
+  };
   return (
-    <div className="v3-minimal-theme">
-      <PageMeta
-        title="GoSendeet | Courier & Delivery Service in Nigeria"
-        description="Compare courier prices from DHL, FedEx, Fez, GIG & UPS or book a verified direct pickup across Lagos and Ibadan. Instant quotes, real-time tracking, fully insured deliveries."
-        path="/"
-      />
+    <div className="landing-page">
+      <PageMeta title="GoSendeet | Courier & Delivery Service in Nigeria"
+        description="Compare courier prices or book a direct pickup across Lagos and Ibadan. Get delivery quotes and follow your parcel's progress."
+        path="/" />
       <Layout>
-        <ScrollReveal>
-          <Header />
-        </ScrollReveal>
-        <ScrollReveal>
-          <DirectDiscount />
-        </ScrollReveal>
-        <ScrollReveal>
-          <WhatIsGosendeet />
-        </ScrollReveal>
-        <ScrollReveal>
-          <Visibility />
-        </ScrollReveal>
-        <ScrollReveal>
-          <WhereWeDeliver />
-        </ScrollReveal>
-        <ScrollReveal>
-          <ComparePrices />
-        </ScrollReveal>
-        <ScrollReveal>
-          <Services />
-        </ScrollReveal>
-        <ScrollReveal>
-          <Compare />
-        </ScrollReveal>
-         <ScrollReveal>
-          <CTA />
-         </ScrollReveal>
-        {/* <Compare />
-        <Logistics />
-        <ServicesMinimal />
-        <Benefits />
-        <TestimonialsV3 />
-        <FAQMinimal /> */}
+        <Header mode={mode} onModeChange={setMode} />
+        <LandingSections onStartQuote={startQuote} />
       </Layout>
     </div>
   );
-};
-
-export default Home;
+}

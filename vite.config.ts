@@ -1,4 +1,6 @@
 import path from "path"
+// @ts-expect-error Build-only JavaScript plugin.
+import { blogContentPlugin } from "./scripts/blog-content.mjs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
@@ -7,6 +9,7 @@ import { VitePWA } from "vite-plugin-pwa"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    blogContentPlugin(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -15,9 +18,10 @@ export default defineConfig({
       workbox: {
         // Raise default 2 MiB precache limit to allow current main bundle.
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        navigateFallbackDenylist: [/^\/blog(?:\/|$)/],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
   ],

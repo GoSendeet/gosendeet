@@ -15,11 +15,10 @@ import { FormHorizontalBarSkeleton } from "./quote-form/FormHorizontalBarSkeleto
 import { PackageFieldCard } from "./quote-form/PackageFieldCard";
 import { QuoteSubmitButton } from "./quote-form/QuoteSubmitButton";
 import { TrackingNumberForm } from "./quote-form/TrackingNumberForm";
-import {
-  type BookingQuoteFormData,
-  useBookingQuoteForm,
-} from "./quote-form/useBookingQuoteForm";
+import { useBookingQuoteForm } from "./quote-form/useBookingQuoteForm";
+import type { BookingQuoteFormData } from "./quote-form/quoteFormData";
 import { useQuoteSubmission } from "./quote-form/useQuoteSubmission";
+import "./quote-form/appearance.css";
 
 interface FormHorizontalBarProps {
   variant?: "bold" | "minimal" | "floating";
@@ -30,6 +29,8 @@ interface FormHorizontalBarProps {
   onQuoteResult?: (result: any, inputData: any, mode: FormMode) => void;
   forcedIsDashboard?: boolean;
   onModeChange?: (mode: FormMode) => void;
+  appearance?: "default" | "landing";
+  addressSearchPreset?: { pickup: string; destination: string };
 }
 
 const FormHorizontalBar = ({
@@ -41,7 +42,10 @@ const FormHorizontalBar = ({
   onQuoteResult,
   forcedIsDashboard,
   onModeChange,
+  appearance = "default",
+  addressSearchPreset,
 }: FormHorizontalBarProps) => {
+  const isLanding = appearance === "landing";
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingLoading, setTrackingLoading] = useState(false);
   const [showCursorHint, setShowCursorHint] = useState(true);
@@ -126,12 +130,27 @@ const FormHorizontalBar = ({
   }, [autoFocusPickup, isHydrated, mode]);
 
   useEffect(() => {
-    setPickupSearchQuery(pickupLocation || "");
-  }, [pickupLocation]);
+    setPickupSearchQuery(pickupLocation || addressSearchPreset?.pickup || "");
+  }, [pickupLocation, addressSearchPreset?.pickup]);
 
   useEffect(() => {
-    setDestinationSearchQuery(dropOffLocation || "");
-  }, [dropOffLocation]);
+    setDestinationSearchQuery(dropOffLocation || addressSearchPreset?.destination || "");
+  }, [dropOffLocation, addressSearchPreset?.destination]);
+
+  const appliedPresetRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isHydrated || !addressSearchPreset) return;
+    const key = `${addressSearchPreset.pickup}:${addressSearchPreset.destination}`;
+    if (appliedPresetRef.current === key) return;
+    appliedPresetRef.current = key;
+    // Presets seed address search, not validated street addresses. Discard any
+    // previous route so stale selections cannot be submitted for this preset.
+    setValue("pickupLocation", "");
+    setValue("dropOffLocation", "");
+    setPickupSearchQuery(addressSearchPreset.pickup);
+    setDestinationSearchQuery(addressSearchPreset.destination);
+    saveInputData({ ...getValues(), pickupLocation: "", dropOffLocation: "" });
+  }, [isHydrated, addressSearchPreset, getValues, setValue, saveInputData]);
 
   const containerStyles = cn(
     isDashboard
@@ -237,7 +256,17 @@ const FormHorizontalBar = ({
 
   const handleQuoteSubmit = (direct: boolean, quoteMode: FormMode) =>
     handleSubmit((data) => {
-      if (!validateSupportedValue(data)) return;
+      let addressesConfirmed = true;
+      for (const [field, query] of [
+        ["pickupLocation", pickupSearchQuery],
+        ["dropOffLocation", destinationSearchQuery],
+      ] as const) {
+        if (query.trim() !== data[field].trim()) {
+          form.setError(field, { type: "manual", message: "Select or enter the complete address before comparing prices" });
+          addressesConfirmed = false;
+        }
+      }
+      if (!addressesConfirmed || !validateSupportedValue(data)) return;
       if (direct && !validateDirectServiceArea(data)) return;
 
       const normalized = saveInputData(data);
@@ -277,21 +306,22 @@ const FormHorizontalBar = ({
     );
 
     return (
-      <form onSubmit={handleSubmit((data) => saveInputData(data))}>
+      <form onSubmit={handleQuoteSubmit(direct, direct ? "gosendeet" : "compare")}>
         <div className={quoteGridClass}>
           <Popover open={pickupModalOpen} onOpenChange={setPickupModalOpen}>
-            <PopoverAnchor asChild>
+            <PopoverAnchor asChild={!isLanding} className="min-w-0">
               <AddressFieldCard
                 ref={pickupInputRef}
+                appearance={appearance}
                 id={direct ? "pickup-location-input" : "compare-pickup-location-input"}
                 label="Pickup address"
                 value={pickupSearchQuery}
-                placeholder="Enter Pickup Address"
+                placeholder={isLanding ? "Enter pickup address" : "Enter Pickup Address"}
                 icon={FiMapPin}
                 className={pickupClassName}
                 labelClassName={labelStyles}
                 error={errors.pickupLocation}
-                showCursorHint={showCursorHint && activeCard === "pickup"}
+                showCursorHint={!isLanding && showCursorHint && activeCard === "pickup"}
                 onActivate={activatePickup}
                 onChange={setPickupSearchQuery}
                 onHideCursorHint={() => setShowCursorHint(false)}
@@ -299,6 +329,7 @@ const FormHorizontalBar = ({
             </PopoverAnchor>
             <AddressPopover
               type="pickup"
+              appearance={appearance}
               open={pickupModalOpen}
               query={pickupSearchQuery}
               otherAddress={dropOffLocation || ""}
@@ -312,8 +343,9 @@ const FormHorizontalBar = ({
             open={destinationModalOpen}
             onOpenChange={setDestinationModalOpen}
           >
-            <PopoverAnchor asChild>
+            <PopoverAnchor asChild={!isLanding} className="min-w-0">
               <AddressFieldCard
+                appearance={appearance}
                 id={
                   direct
                     ? "destination-location-input"
@@ -322,12 +354,12 @@ const FormHorizontalBar = ({
                 label="Destination address"
                 mobileLabel="Deliver To"
                 value={destinationSearchQuery}
-                placeholder="Enter Destination Address"
-                icon={FiFlag}
+                placeholder={isLanding ? "Enter destination address" : "Enter Destination Address"}
+                icon={isLanding ? FiMapPin : FiFlag}
                 className={destinationClassName}
                 labelClassName={labelStyles}
                 error={errors.dropOffLocation}
-                showCursorHint={showCursorHint && activeCard === "destination"}
+                showCursorHint={!isLanding && showCursorHint && activeCard === "destination"}
                 onActivate={activateDestination}
                 onChange={setDestinationSearchQuery}
                 onHideCursorHint={() => setShowCursorHint(false)}
@@ -335,6 +367,7 @@ const FormHorizontalBar = ({
             </PopoverAnchor>
             <AddressPopover
               type="destination"
+              appearance={appearance}
               open={destinationModalOpen}
               query={destinationSearchQuery}
               otherAddress={pickupLocation || ""}
@@ -347,6 +380,7 @@ const FormHorizontalBar = ({
           <Popover open={packageModalOpen} onOpenChange={setPackageModalOpen}>
             <PopoverTrigger asChild>
               <PackageFieldCard
+                appearance={appearance}
                 className={packageClassName}
                 labelClassName={labelStyles}
                 packageName={packageName}
@@ -359,6 +393,7 @@ const FormHorizontalBar = ({
               />
             </PopoverTrigger>
             <PackageTypePopover
+              appearance={appearance}
               selectedPackageId={packageTypeId || ""}
               currentWeight={weight || ""}
               currentDimensions={dimensions || ""}
@@ -369,6 +404,7 @@ const FormHorizontalBar = ({
           </Popover>
 
           <QuoteSubmitButton
+            appearance={appearance}
             isDashboard={isDashboard}
             loading={isQuoteLoading}
             className={direct ? undefined : "shadow-lg"}
@@ -380,18 +416,23 @@ const FormHorizontalBar = ({
   };
 
   if (!isHydrated) {
+    if (isLanding) return (
+      <div className="landing-form-skeleton" aria-label="Loading delivery form" aria-busy="true">
+        {[0, 1, 2, 3].map(field => <div key={field} />)}
+      </div>
+    );
     return <FormHorizontalBarSkeleton containerClassName={containerStyles} />;
   }
 
   return (
-    <div className={cn("relative w-full mx-auto", !isDashboard && "max-w-[354px] lg:max-w-[1120px]")}>
+    <div className={cn("relative w-full mx-auto", !isDashboard && "max-w-[354px] lg:max-w-[1120px]", isLanding && "landing-form")}>
       <style>{`@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}`}</style>
-      <div
+      {!isLanding && <div
         aria-hidden="true"
         className="pointer-events-none absolute -inset-4 rounded-[48px] lg:rounded-[56px]
                   bg-[linear-gradient(90deg,#A4F4CF_0%,#DCFCE7_50%,#CBFBF1_100%)]
                   blur-[40px] opacity-50 z-0 translate-y-5"
-      />
+      />}
       <div className={cn(containerStyles, "relative z-10")}>
         {isDashboard && (
           <div className="absolute left-1/2 transform -translate-x-1/2 top-[-39px]">
@@ -409,6 +450,7 @@ const FormHorizontalBar = ({
 
         {mode === "tracking" && (
           <TrackingNumberForm
+            appearance={appearance}
             trackingNumber={trackingNumber}
             loading={trackingLoading}
             isDashboard={isDashboard}

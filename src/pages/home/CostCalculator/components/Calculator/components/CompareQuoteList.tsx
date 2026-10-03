@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import empty from "@/assets/images/green-empty-bg.png";
 import CompareCardSkeleton from "../CompareCardSkeleton";
 import {
-  ArrowRight,
   Box,
   CalendarRange,
   CheckCircle2,
@@ -116,7 +115,7 @@ const DashboardCompareQuoteCard = ({
         </span>
       </p>
       </div>
-      <div className="mt-5 rounded-[24px] border border-[#E2E8F0] bg-gradient-to-br from-white via-white to-[#F8FAFC] p-4 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
+      <div className="mt-5 rounded-[24px] border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
         <div className="mb-5 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-xl bg-[#ECFDF5] px-4 py-2 text-sm font-bold text-brand">
             <CheckCircle2 className="h-4 w-4" />
@@ -150,10 +149,9 @@ const DashboardCompareQuoteCard = ({
 
           <Button
             onClick={onSelect}
-            className="group h-16 w-full rounded-xl bg-gradient-to-r from-[#006B4F] to-brand text-lg font-extrabold text-white shadow-[0_12px_28px_rgba(0,107,79,0.22)] transition-all hover:from-[#005C43] hover:to-green-800 hover:shadow-[0_16px_32px_rgba(0,107,79,0.28)]"
+            className="group h-16 w-full rounded-xl bg-brand text-lg font-extrabold text-white shadow-[0_12px_28px_rgba(0,107,79,0.22)] transition-all hover:bg-[#005C43] hover:shadow-[0_16px_32px_rgba(0,107,79,0.28)]"
           >
             Select quote
-            <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </div>
       </div>
@@ -240,7 +238,7 @@ const PublicCompareQuoteCard = ({
             <p className="text-xs text-gray-600 font-semibold pt-2">
               {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
             </p>
-            <div className="min-w-[100px] h-1 bg-gradient-to-r from-green-400 to-green-600 rounded-full" />
+            <div className="min-w-[100px] h-1 bg-brand rounded-full" />
             <p>{``}</p>
           </div>
 
@@ -287,7 +285,7 @@ const PublicCompareQuoteCard = ({
         >
           {isRecommended ? (
             <span className="flex items-center gap-2">
-              Select Option <ArrowRight />
+              Select Option
             </span>
           ) : (
             "Select"

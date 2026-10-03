@@ -13,11 +13,12 @@ export async function trackBookingsHandler(
   try {
     setLoading(true);
 
-    const res = await trackBookings(trackingNumber);
+    const reference = trackingNumber.trim();
+    const res = await trackBookings(reference);
 
     toast.success("Booking found");
 
-    navigate(`/track-booking`, {
+    navigate(`/track-booking?trackingNumber=${encodeURIComponent(reference)}`, {
       state: {
         result: res,
       },

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Layout from "@/layouts/BookingFlowLayout";
 import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import OrderHistory from "./components/OrderHistory";
 import ItemDetails from "./components/ItemDetails";
 import ReceiverDetails from "./components/ReceiverDetails";
@@ -21,8 +21,10 @@ const Tracking = () => {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const location = useLocation();
   const { result } = location.state ?? {};
+  const [searchParams] = useSearchParams();
+  const trackingNumber = result?.data?.trackingNumber || searchParams.get("trackingNumber") || undefined;
   const { data, isLoading, isSuccess, isError } = useGetTrackBookings(
-    result?.data?.trackingNumber
+    trackingNumber
   );
 
   const [openRatingModal, setOpenRatingModal] = useState(false);
@@ -70,21 +72,29 @@ const Tracking = () => {
     <Layout>
       <div className="md:px-20 px-6 md:py-16 py-8">
         <div className="xl:w-[65%] md:w-[90%] mx-auto bg-neutral900 md:py-16 py-4 xl:px-24 md:px-10 px-4">
-          {isLoading && !isSuccess && (
+          {trackingNumber && isLoading && !isSuccess && (
             <div className="h-[50vh] w-full flex items-center justify-center">
               <Spinner />
             </div>
           )}
 
-          {isError && !isLoading && (
+          {(!trackingNumber || (isError && !isLoading)) && (
             <div className="h-[50vh] w-full flex justify-center flex-col items-center">
               <p className="font-semibold font-inter text-xl text-center">
                 There was an error getting the data
               </p>
+              <Link to="/track" className="mt-4 text-brand underline">Enter your tracking number</Link>
             </div>
           )}
 
-          {!isLoading && isSuccess && data && data?.data?.length > 0 && (
+          {trackingNumber && isSuccess && !data?.data?.trackingNumber && (
+            <div className="py-12 text-center">
+              <p>No delivery details were found for this tracking number.</p>
+              <Link to="/track" className="mt-4 inline-block text-brand underline">Try another tracking number</Link>
+            </div>
+          )}
+
+          {!isLoading && isSuccess && data?.data?.trackingNumber && (
             <>
               <div className="flex lg:flex-row flex-col lg:items-center gap-4 mb-6 lg:justify-between">
                 <h1 className="lg:text-[40px] md:text-[30px] flex items-center md:gap-3 gap-2 text-2xl font-semibold font-inter tracking-tight">

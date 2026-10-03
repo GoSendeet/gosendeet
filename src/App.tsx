@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/home";
+import Blog from "./pages/home/Blog";
 import About from "./pages/home/About";
 import Terms from "./pages/home/Terms";
 import Privacy from "./pages/home/Privacy";
@@ -51,7 +52,9 @@ import WhatsappErrorPage from "./pages/home/CostCalculator/components/Calculator
 const AppRoutes = () => {
   useSessionSync();
   return <Routes>
-            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<Blog />} />
+          <Route path="/about" element={<About />} />
           <Route path="/cost-calculator" element={<CostCalculator />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/track" element={<Track />} />
