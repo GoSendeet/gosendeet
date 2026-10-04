@@ -17,6 +17,6 @@ export default function Blog() {
     <PageMeta title={post ? post.seo_title : blogTitle} description={post?.description ?? blogDescription} path={post ? `/blog/${post.slug}` : "/blog"} noIndex={import.meta.env.DEV || post?.status === "draft"} />
     <Helmet>{post?.cover_image && <><meta property="og:image" content={new URL(post.cover_image, "https://gosendeet.com").href} /><meta property="og:image:alt" content={post.cover_image_alt} /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:image" content={new URL(post.cover_image, "https://gosendeet.com").href} /></>}<meta property="og:type" content={post ? "article" : "website"} /><script type="application/ld+json">{JSON.stringify(blogSchema(posts, post)).replace(/</g, "\\u003c")}</script></Helmet>
     <BlogContent posts={posts} post={post} newsletter={<NewsletterSignup />} />
-    <NewsletterPopup key={post?.slug ?? "blog-index"} />
+    {post && <NewsletterPopup key={post.slug} />}
   </Layout>;
 }

@@ -60,16 +60,14 @@ describe('newsletter signup behavior', () => {
     cy.get('.newsletter-popup').should('not.exist');
     cy.get('.newsletter-success').should('contain.text', 'You’re subscribed');
   });
-  it('opens once on the listing and does not repeat on articles', () => {
+  it('keeps the listing popup-free and opens on the first article', () => {
     visit('/blog');
     cy.get('h1').should('contain.text', 'Delivery advice for Nigeria');
-    cy.get('.newsletter-popup', { timeout: 8000 }).should('be.visible').and('have.attr', 'role', 'dialog');
-    cy.get('[data-slot="dialog-overlay"]').should('exist');
-    cy.get('.newsletter-popup').contains('button', 'Close').click();
     cy.get('.newsletter-popup').should('not.exist');
     cy.visit('/blog/delivery-cost-nigeria');
     cy.get('h1').should('contain.text', 'How much does delivery cost');
-    cy.get('.newsletter-popup').should('not.exist');
+    cy.get('.newsletter-popup').should('be.visible').and('have.attr', 'role', 'dialog');
+    cy.get('.newsletter-popup').contains('button', 'Close').click();
     cy.get('.newsletter-signup input[type="email"]').should('exist');
   });
   it('confirms subscription when browser storage cannot be written', () => {
