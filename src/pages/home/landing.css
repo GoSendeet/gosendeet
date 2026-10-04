@@ -137,7 +137,9 @@
   .landing-final-cta { margin-block: 28px; }
 }
 
-.landing-guide-cta { margin-top: 12px; min-height: 36px; padding: 8px 14px; }
+.landing-text-link { color: var(--landing-green); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.landing-text-link:hover { color: #004c3b; }
+.landing-guide-cta { display: inline-block; margin-top: 12px; }
 
 
 .landing-story blockquote { margin-bottom: 16px; font-size: 15px; line-height: 1.6; color: #15212b; }

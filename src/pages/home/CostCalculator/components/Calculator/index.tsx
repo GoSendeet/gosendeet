@@ -79,7 +79,10 @@ const Calculator = ({
   const bookingRequest = inputData;
   const [data, setData] = useState(results || {});
   const handleModeChange = (newMode: FormMode) => {
-    if (newMode !== mode) setData({});
+    if (newMode !== mode) {
+      setData({});
+      lastComparisonRequestRef.current = null;
+    }
     setMode(newMode);
   };
 
@@ -179,6 +182,7 @@ const Calculator = ({
   const hasTrackedResultViewRef = useRef(false);
   // True only when user explicitly submitted the form (navigated here with results in state, or submitted on-page)
   const hasUserInitiatedFetchRef = useRef(Boolean(stateResults));
+  const lastComparisonRequestRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!hasQuotes) return;
@@ -198,9 +202,11 @@ const Calculator = ({
       setData(sharedQuote);
     } else if (results) {
       hasUserInitiatedFetchRef.current = true;
+      // Navigation already supplied this unfiltered response from the form.
+      lastComparisonRequestRef.current = JSON.stringify({ payload: quotePayload, filters: {} });
       setData(results);
     }
-  }, [results, sharedQuote, shareId]);
+  }, [results, sharedQuote, shareId, quotePayload]);
 
   useEffect(() => {
     if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
@@ -259,6 +265,9 @@ const Calculator = ({
     if (externalResults !== undefined) return;
     // Don't auto-fetch on page load if the user hasn't submitted the form yet
     if (!hasUserInitiatedFetchRef.current) return;
+    const requestKey = JSON.stringify({ payload: quotePayload, filters: filterParams });
+    if (lastComparisonRequestRef.current === requestKey) return;
+    lastComparisonRequestRef.current = requestKey;
     resetQuotePagination();
     listRef.current?.scrollTo({ top: 0 });
     fetchQuotesPage(1, true);
@@ -269,6 +278,7 @@ const Calculator = ({
     externalResults,
     selectedProviders,
     selectedDeliverySpeed,
+    filterParams,
     resetQuotePagination,
     fetchQuotesPage,
   ]);

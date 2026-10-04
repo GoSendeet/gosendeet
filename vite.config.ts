@@ -4,12 +4,15 @@ import { blogContentPlugin } from "./scripts/blog-content.mjs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+// @ts-expect-error Server-only JavaScript middleware.
+import { newsletterDevPlugin } from "./scripts/newsletter-dev.mjs"
 import { VitePWA } from "vite-plugin-pwa"
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     blogContentPlugin(),
+    newsletterDevPlugin(),
     react(),
     tailwindcss(),
     VitePWA({

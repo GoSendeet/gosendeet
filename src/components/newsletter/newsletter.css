@@ -1,0 +1,30 @@
+.newsletter-signup { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 32px; padding: 32px; margin-block: 32px; background: #f3f6f5; border: 1px solid #e0e8e4; border-radius: 16px; color: #101b22; }
+.newsletter-signup .newsletter-copy :is(h2, h3) { font-size: 26px; font-weight: 700; line-height: 1.2; margin: 0 0 10px; letter-spacing: -.6px; }
+.newsletter-signup.newsletter-signup-embedded { margin-block: 28px 0; padding: 24px 0 0; border: 0; border-radius: 0; background: transparent; }
+.newsletter-signup.newsletter-signup-embedded .newsletter-copy h3 { font-size: 20px; letter-spacing: -.3px; }
+.newsletter-copy > p { font-size: 15px; line-height: 1.6; color: #606c7f; margin: 0; }
+.newsletter-email-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.newsletter-fields { display: flex; gap: 10px; }
+.newsletter-fields input { width: 100%; min-width: 0; background: #fff; border: 1px solid #ccd8d2; border-radius: 9px; padding: 12px 14px; font-size: 16px; color: #101b22; }
+.newsletter-fields button { background: #005b46; color: #fff; border-radius: 9px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 46px; }
+.newsletter-fields button:hover { background: #004c3b; }
+.newsletter-fields button:disabled { opacity: .65; cursor: wait; }
+.newsletter-signup input:focus-visible, .newsletter-signup button:focus-visible { outline: 3px solid #009966; outline-offset: 3px; }
+.newsletter-form .newsletter-note { margin: 10px 0 0; font-size: 12px; color: #606c7f; }
+.newsletter-note a { text-decoration: underline; }
+.newsletter-form .newsletter-error { color: #a12d28; font-size: 13px; margin-top: 10px; }
+.newsletter-success { color: #005b46; font-weight: 600; line-height: 1.6; }
+.newsletter-honeypot { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.newsletter-popup { width: min(460px, calc(100vw - 32px)); max-width: 460px; padding: 0; gap: 0; background: white; border: 1px solid #dce6df; border-radius: 18px; box-shadow: 0 12px 48px #172b2226; }
+.newsletter-popup .newsletter-signup { display: block; margin: 0; padding: 40px 32px 32px; border: 0; background: transparent; }
+.newsletter-popup .newsletter-copy h2 { font-size: 23px; padding-right: 16px; }
+.newsletter-popup .newsletter-form { margin-top: 20px; }
+@media (max-width: 640px) {
+  .newsletter-signup { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
+  .newsletter-signup .newsletter-copy :is(h2, h3) { font-size: 24px; }
+  .newsletter-fields { flex-direction: column; }
+  .newsletter-popup { max-height: calc(100dvh - 32px); overflow-y: auto; }
+  .newsletter-popup .newsletter-signup { padding: 40px 24px 24px; }
+  .newsletter-popup .newsletter-fields { flex-direction: row; }
+}
+

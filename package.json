@@ -8,12 +8,13 @@
     "build": "tsc -b && vite build && node scripts/build-blog.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run src && npm run test:blog",
+    "test": "vitest run src && npm run test:blog && npm run test:newsletter",
     "security:audit": "mkdir -p audit-results && npm audit --audit-level=moderate --omit=dev --json > audit-results/npm-audit.json",
     "security:audit:summary": "npm audit --audit-level=moderate --omit=dev",
     "sonar": "sonar-scanner",
     "ci:security": "npm run security:audit && npm run sonar",
-    "test:blog": "node --test scripts/blog-content.test.mjs"
+    "test:blog": "node --test scripts/blog-content.test.mjs",
+    "test:newsletter": "node --test scripts/newsletter-api.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

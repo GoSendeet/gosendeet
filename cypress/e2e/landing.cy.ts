@@ -160,7 +160,7 @@ describe("landing presentation preserves booking behavior", () => {
     cy.intercept("POST", "**/quotes?direct=false*", req => {
       requests += 1;
       req.reply({ data: [] });
-    });
+    }).as("addressQuotes");
     cy.get("#compare-pickup-location-input").clear().type("Different address");
     cy.get('body').type('{esc}');
     cy.get(".landing-form").contains("button", "Compare prices").click();
@@ -169,8 +169,14 @@ describe("landing presentation preserves booking behavior", () => {
     cy.location("pathname").should("eq", "/");
     manualAddress("#compare-pickup-location-input", "Ikeja", "Opebi Road");
     cy.get(".landing-form").contains("button", "Compare prices").click();
+    cy.wait("@addressQuotes");
     cy.location("pathname").should("eq", "/cost-calculator");
     cy.then(() => expect(requests).to.equal(1));
+    cy.get('button').filter(':visible').contains(/^Next Day$/).click();
+    cy.wait('@addressQuotes').its('request.url').should('include', 'hasNextDay=true');
+    cy.get('button').filter(':visible').contains(/^Next Day$/).click();
+    cy.wait('@addressQuotes').its('request.url').should('not.include', 'hasNextDay');
+    cy.then(() => expect(requests).to.equal(3));
   });
 
   it("opens a published guide and returns to the comparison form through a CTA", () => {
