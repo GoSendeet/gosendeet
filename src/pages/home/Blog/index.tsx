@@ -6,6 +6,8 @@ import posts from "virtual:blog-posts";
 import BlogContent from "./BlogContent";
 import { blogDescription, blogSchema, blogTitle } from "./meta";
 import "./blog.css";
+import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
+import NewsletterPopup from "@/components/newsletter/NewsletterPopup";
 
 export default function Blog() {
   const { slug } = useParams();
@@ -14,6 +16,7 @@ export default function Blog() {
   return <Layout>
     <PageMeta title={post ? post.seo_title : blogTitle} description={post?.description ?? blogDescription} path={post ? `/blog/${post.slug}` : "/blog"} noIndex={import.meta.env.DEV || post?.status === "draft"} />
     <Helmet>{post?.cover_image && <><meta property="og:image" content={new URL(post.cover_image, "https://gosendeet.com").href} /><meta property="og:image:alt" content={post.cover_image_alt} /><meta name="twitter:card" content="summary_large_image" /><meta name="twitter:image" content={new URL(post.cover_image, "https://gosendeet.com").href} /></>}<meta property="og:type" content={post ? "article" : "website"} /><script type="application/ld+json">{JSON.stringify(blogSchema(posts, post)).replace(/</g, "\\u003c")}</script></Helmet>
-    <BlogContent posts={posts} post={post} />
+    <BlogContent posts={posts} post={post} newsletter={<NewsletterSignup />} />
+    {post && <NewsletterPopup key={post.slug} />}
   </Layout>;
 }

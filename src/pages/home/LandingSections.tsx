@@ -5,6 +5,7 @@ import fedex from "@/assets/images/fedex.png";
 import gig from "@/assets/images/gig.png";
 import ups from "@/assets/images/ups.png";
 import posts from "virtual:blog-posts";
+import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
 
 const carriers = [{ src: dhl, name: "DHL" }, { src: fedex, name: "FedEx" }, { src: gig, name: "GIG Logistics" }, { src: "/images/landing/fez.svg", name: "FEZ Delivery" }, { src: ups, name: "UPS" }];
 const routes = [
@@ -88,10 +89,11 @@ export default function LandingSections({ onStartQuote }: { onStartQuote: () => 
     <QuoteCallToAction heading="Ready to send?" description="Find a courier for your next delivery." label="Compare prices" onStartQuote={onStartQuote} />
 
     <section className="landing-guides" aria-labelledby="guides-heading">
-      <div className="landing-shell"><div className="landing-section-heading"><h2 id="guides-heading">Useful guides before you send</h2><Link className="landing-primary" to="/blog">View all guides</Link></div>
+      <div className="landing-shell"><div className="landing-section-heading"><h2 id="guides-heading">Useful guides before you send</h2><Link className="landing-text-link" to="/blog">View all guides</Link></div>
         <div className="landing-card-row">{guides.map((guide, index) => <Link key={guide.slug} to={`/blog/${guide.slug}`} className="landing-guide-card">
-          <div className={`landing-card-photo landing-guide-photo landing-photo-${index}`} aria-hidden="true" /><div><h3>{guide.title}</h3><span className="landing-primary landing-guide-cta">Read guide</span></div>
+          <div className={`landing-card-photo landing-guide-photo landing-photo-${index}`} aria-hidden="true" /><div><h3>{guide.title}</h3><span className="landing-text-link landing-guide-cta">Read guide</span></div>
         </Link>)}</div>
+        <NewsletterSignup variant="embedded" />
       </div>
     </section>
 

@@ -1,4 +1,5 @@
 import type { BlogPost } from "./types";
+import type { ReactNode } from "react";
 
 function PostCard({ post }: { post: BlogPost }) {
   return <article className="blog-card">
@@ -10,7 +11,7 @@ function PostCard({ post }: { post: BlogPost }) {
   </article>;
 }
 
-export default function BlogContent({ posts, post }: { posts: BlogPost[]; post?: BlogPost }) {
+export default function BlogContent({ posts, post, newsletter }: { posts: BlogPost[]; post?: BlogPost; newsletter?: ReactNode }) {
   const related = post ? posts.filter(item => item.slug !== post.slug && (!post.related.length || post.related.includes(item.slug))).slice(0, 3) : [];
   return <div className="blog-shell">
     <nav className="blog-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span>{post ? <><a href="/blog">Blog</a><span>/</span><span>{post.category}</span></> : <span>Blog</span>}</nav>
@@ -28,11 +29,13 @@ export default function BlogContent({ posts, post }: { posts: BlogPost[]; post?:
         </div>
         {post.tags.length > 0 && <p className="blog-tags">{post.tags.join(" · ")}</p>}
       </article>
+      {newsletter}
       {related.length > 0 && <section className="blog-related"><h2>Keep reading</h2><div className="blog-card-grid">{related.map(item => <PostCard key={item.slug} post={item} />)}</div></section>}
     </> : <>
       <header className="blog-hero"><span className="blog-eyebrow">Gosendeet blog</span><h1>Delivery advice for Nigeria</h1><p className="blog-description">Help with delivery costs, customer orders, courier pickups and sending gifts.</p><a className="blog-button" href="/cost-calculator">Get a delivery quote</a></header>
       <section aria-label="Delivery guides"><div className="blog-section-heading"><h2>Articles</h2></div><div className="blog-card-grid">{posts.map(item => <PostCard key={item.slug} post={item} />)}</div></section>
     </>}
+    {!post && newsletter}
     <section className="blog-cta"><div><h2>How much will your delivery cost?</h2><p>Enter your addresses and parcel details to see available delivery options.</p></div><a className="blog-button" href="/cost-calculator">Get a quote</a><a className="blog-text-link" href="/track">Track a delivery</a></section>
   </div>;
 }
