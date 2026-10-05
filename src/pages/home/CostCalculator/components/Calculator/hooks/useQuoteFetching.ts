@@ -26,7 +26,7 @@ export const useQuoteFetching = ({
   setData,
 }: UseQuoteFetchingArgs) => {
   const pageRef = useRef(1);
-  const [hasNextPage, setHasNextPage] = useState(true);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [isFetchingQuotes, setIsFetchingQuotes] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -84,5 +84,6 @@ export const useQuoteFetching = ({
     isFetchingQuotes,
     isLoadingMore,
     resetQuotePagination,
+    setHasNextPage,
   };
 };

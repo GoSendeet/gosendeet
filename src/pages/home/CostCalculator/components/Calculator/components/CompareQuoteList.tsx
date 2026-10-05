@@ -13,7 +13,7 @@ import {
   Star,
   Store,
 } from "lucide-react";
-import { PAGE_SIZE, parsePrice } from "../quoteUtils";
+import { parsePrice } from "../quoteUtils";
 
 interface CompareQuoteListProps {
   clearFilters: () => void;
@@ -172,8 +172,12 @@ const PublicCompareQuoteCard = ({
 }) => (
   <div
     className={cn(
-      "relative bg-white rounded-xl overflow-hidden border-2 shadow-md transition-all duration-300 shrink-0 hover:shadow-lg hover:-translate-y-1",
-      isGosendeet ? "border-brand hover:border-brand" : "border-gray-300 hover:border-green800",
+      "relative bg-white rounded-xl overflow-hidden shrink-0 border-2 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
+      isGosendeet
+        ? "border-brand"
+        : isRecommended
+          ? "border-gray-300 hover:border-brand"
+          : "border-gray-200 hover:border-brand",
     )}
   >
     {isGosendeet && (
@@ -190,106 +194,164 @@ const PublicCompareQuoteCard = ({
       </div>
     )}
 
-    <div className="flex flex-col md:flex-row md:items-center justify-between p-5 lg:p-8 gap-6">
-      <div className="xl:w-1/4">
-        <div className="flex-1 flex items-center gap-1">
+    {/* ── Mobile layout (< md) ── */}
+    <div className="md:hidden px-4 py-6">
+      {/* Row 1: courier identity + price */}
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
           {item?.courier?.logo ? (
             <img
               src={item?.courier?.logo}
               alt=""
-              className="w-[47px] lg:w-[57px] rounded-lg"
+              className="w-10 h-10 rounded-lg object-contain shrink-0"
             />
           ) : (
-            <div className="shrink-0 w-16 h-16 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center">
-              <Box className="w-8 h-8 text-gray-700" />
+            <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+              <Box className="w-5 h-5 text-gray-600" />
             </div>
           )}
-          <div className="flex flex-col gap-2">
-            <h3 className="text-xs lg:text-lg font-bold text-gray-900">
+          <div className="min-w-0">
+            <h3 className="font-bold text-gray-900 text-sm truncate">
               {item?.courier?.name}
             </h3>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-0.5">
               <Rating value={item?.courier?.averageRatingScore} readOnly />
-              <div className="text-xs text-gray-600 space-y-1">
-                <p>({item?.courier?.totalRatings})</p>
-              </div>
+              <span className="text-xs text-gray-500">({item?.courier?.totalRatings ?? 0})</span>
             </div>
+            <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-green100 bg-green-100 px-2 py-0.5 rounded-sm">
+              <ShieldCheck size={12} /> Verified
+            </span>
           </div>
         </div>
-        <div className="text-xs flex items-center gap-2 mt-4 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
-          <ShieldCheck size={14} /> Verified
+
+        <div className="shrink-0">
+          <p className={cn("text-xl font-bold text-green100 tracking-tight", isGosendeet && "mt-6")}>
+            ₦{parsePrice(item.price).toLocaleString()}
+          </p>
         </div>
       </div>
 
-      <div className="xl:w-1/2 ">
-        <div className="flex lg:flex-row items-center justify-center gap-8">
-          <div className="lg:text-left text-center">
-            <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-              {item?.pudoMode === "STORE_DROPOFF"
-                ? "STORE DROP-OFF"
-                : "DOORSTEP PICKUP"}
-            </p>
-            <p className="text-xs lg:text-sm font-bold text-gray150 lg:text-gray-900">
-              {item?.pickUpdateDate || "Not specified"}
-            </p>
-          </div>
-
-          <div className="flex flex-col justify-center items-center gap-2 -mt-1 lg:mt-0">
-            <p className="text-xs text-gray-600 font-semibold pt-2">
-              {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
-            </p>
-            <div className="min-w-[100px] h-1 bg-brand rounded-full" />
-            <p>{``}</p>
-          </div>
-
-          <div className="hidden lg:block lg:text-left text-center mt-3 lg:mt-0">
-            <p className="text-xs lg:text-sm font-semibold text-brand uppercase mb-1">
-              DELIVERY
-            </p>
-            <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
-              {item?.estimatedDeliveryDate || "Not specified"}
-            </p>
-          </div>
+      {/* Row 2: pickup → SLA → delivery timeline */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold text-brand uppercase mb-0.5">
+            {item?.pudoMode === "STORE_DROPOFF" ? "DROP-OFF" : "PICKUP"}
+          </p>
+          <p className="text-xs font-bold text-gray-900">
+            {item?.pickUpdateDate || "Not specified"}
+          </p>
         </div>
 
-        <div className="block lg:hidden lg:text-left text-center mt-3">
-          <p className="text-xs lg:text-sm font-semibold text-gray-600 uppercase mb-1">
-            DELIVERY
+        <div className="flex flex-col items-center flex-1 gap-0.5 min-w-0">
+          <p className="text-[10px] text-gray-500 font-medium text-center leading-tight px-1 truncate w-full">
+            {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
           </p>
-          <p className="text-xs lg:text-sm font-bold lg:text-gray-900 text-gray150">
+          <div className="w-full h-0.5 bg-brand rounded-full" />
+        </div>
+
+        <div className="text-right min-w-0">
+          <p className="text-[10px] font-semibold text-brand uppercase mb-0.5">DELIVERY</p>
+          <p className="text-xs font-bold text-gray-900">
             {item?.estimatedDeliveryDate || "Not specified"}
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col md:items-end items-center justify-between xl:w-1/4 -mt-3">
-        <div className="mb-4">
+      {/* Row 3: full-width CTA */}
+      <Button
+        onClick={onSelect}
+        className={cn(
+          "w-full rounded-xl py-3 font-semibold",
+          isRecommended
+            ? "bg-green100 hover:bg-green800 submit-btn-shadow text-white"
+            : "bg-white text-green100 border-2 border-green100 hover:bg-green-50",
+        )}
+      >
+        {isRecommended ? "Select Option" : "Select"}
+      </Button>
+    </div>
+
+    {/* ── Desktop layout (md+): horizontal row ── */}
+    <div className="hidden md:flex md:items-center justify-between p-5 lg:p-8 gap-6">
+      {/* Courier identity */}
+      <div className="w-1/4 shrink-0">
+        <div className="flex items-center gap-3">
+          {item?.courier?.logo ? (
+            <img
+              src={item?.courier?.logo}
+              alt=""
+              className="w-[52px] rounded-lg object-contain shrink-0"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-lg bg-gray-100 border border-gray-300 flex items-center justify-center shrink-0">
+              <Box className="w-8 h-8 text-gray-700" />
+            </div>
+          )}
+          <div>
+            <h3 className="text-base font-bold text-gray-900">
+              {item?.courier?.name}
+            </h3>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Rating value={item?.courier?.averageRatingScore} readOnly />
+              <span className="text-xs text-gray-600">({item?.courier?.totalRatings ?? 0})</span>
+            </div>
+          </div>
+        </div>
+        <div className="text-xs flex items-center gap-2 mt-3 font-semibold w-fit text-green100 px-2 py-1 bg-green-100 rounded-sm">
+          <ShieldCheck size={14} /> Verified
+        </div>
+      </div>
+
+      {/* Delivery timeline */}
+      <div className="flex-1">
+        <div className="flex items-center gap-6 justify-between">
+          <div>
+            <p className="text-xs font-semibold text-brand uppercase mb-1">
+              {item?.pudoMode === "STORE_DROPOFF" ? "STORE DROP-OFF" : "DOORSTEP PICKUP"}
+            </p>
+            <p className="text-sm font-bold text-gray-900">
+              {item?.pickUpdateDate || "Not specified"}
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center flex-1 gap-1">
+            <p className="text-xs text-gray-600 font-semibold">
+              {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
+            </p>
+            <div className="w-full h-0.5 bg-brand rounded-full" />
+          </div>
+
+          <div className="text-right">
+            <p className="text-xs font-semibold text-brand uppercase mb-1">DELIVERY</p>
+            <p className="text-sm font-bold text-gray-900">
+              {item?.estimatedDeliveryDate || "Not specified"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Price + CTA */}
+      <div className="flex flex-col items-end gap-3 w-[180px] shrink-0">
+        <div className="text-left">
           {item?.discount > 0 && (
             <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full mb-1 inline-block">
               {item.discount}% off
             </span>
           )}
-          <p className="text-2xl mt-2 font-arial tracking-tighter md:text-3xl font-bold text-green100">
+          <p className="text-2xl lg:text-3xl font-bold text-green100 tracking-tight">
             ₦{parsePrice(item.price).toLocaleString()}
           </p>
         </div>
-
         <Button
           onClick={onSelect}
           className={cn(
+            "w-full rounded-2xl",
             isRecommended
-              ? "bg-green100 hover:bg-green800 submit-btn-shadow"
-              : "bg-white text-green100 border-2",
-            "rounded-2xl md:w-[170px] w-full",
+              ? "bg-green100 hover:bg-green800 submit-btn-shadow text-white"
+              : "bg-white text-green100 border-2 border-green100 hover:bg-green-50",
           )}
         >
-          {isRecommended ? (
-            <span className="flex items-center gap-2">
-              Select Option
-            </span>
-          ) : (
-            "Select"
-          )}
+          {isRecommended ? "Select Option" : "Select"}
         </Button>
       </div>
     </div>
@@ -351,8 +413,8 @@ const CompareQuoteList = ({
     {filteredAndSortedData.length > 0 && (
       <div
         className={cn(
-          "flex flex-col gap-4 overflow-y-auto pr-1",
-          isEmbedded ? "max-h-[72vh] pt-2" : "max-h-[70vh] pt-8",
+          "flex flex-col gap-4 overflow-y-auto pr-1 md:px-0",
+          isEmbedded ? "max-h-[72vh] pt-2 px-1" : "max-h-[70vh] pt-8 px-4",
         )}
       >
         {(() => {
@@ -399,7 +461,7 @@ const CompareQuoteList = ({
           >
             {isLoadingMore || isFetchingQuotes
               ? "Loading more options..."
-              : `Show ${PAGE_SIZE} more options`}
+              : "Show more options"}
             <ChevronDown size={18} />
           </button>
         )}
