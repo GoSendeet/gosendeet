@@ -19,8 +19,6 @@ export default defineConfig({
       registerType: "autoUpdate",
       manifest: false, // using our own public/manifest.json
       workbox: {
-        // Raise default 2 MiB precache limit to allow current main bundle.
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         navigateFallbackDenylist: [/^\/blog(?:\/|$)/],
       },
       devOptions: {

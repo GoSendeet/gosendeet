@@ -20,9 +20,9 @@ const Footer = () => {
       { label: "Partners", href: "/signup?type=franchise" },
     ],
     support: [
-      { label: "Help Center", href: "/help" },
+      { label: "Help Center", href: "#" },
       { label: "Trust & Safety", href: "/about" },
-      { label: "Contact", href: "/contact" },
+      { label: "Contact", href: "#" },
       { label: "FAQ", href: "/faq" },
     ],
     legal: [
