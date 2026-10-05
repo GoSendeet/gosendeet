@@ -47,7 +47,7 @@ try {
   }
   let sitemap = await readFile('public/sitemap.xml', 'utf8');
   sitemap = sitemap.replace(/\s*<url>\s*<loc>https:\/\/gosendeet\.com\/blog[^<]*<\/loc>[\s\S]*?<\/url>/g, '');
-  const urls = ['/blog', ...posts.map(post => `/blog/${post.slug}`)].map(route => `<url><loc>https://gosendeet.com${route}</loc></url>`).join('\n');
+  const urls = ['/blog', ...posts.map(post => `/blog/${post.slug}`)].map(route => `<url><loc>https://gosendeet.com${route}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>`).join('\n');
   await writeFile('dist/sitemap.xml', sitemap.replace('</urlset>', `${urls}\n</urlset>`));
   console.log(`Generated blog index and ${posts.length} articles with full HTML and metadata.`);
 } finally {

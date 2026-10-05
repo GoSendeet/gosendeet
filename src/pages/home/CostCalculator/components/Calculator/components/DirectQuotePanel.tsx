@@ -35,7 +35,7 @@ const DirectQuotePanel = ({
     <div className="flex flex-col lg:flex-row lg:items-center justify-between">
       <div className="flex items-center gap-6 mb-4">
         <img src={logo} alt="logo" className="h-8 md:h-10 lg:h-12 w-auto" />
-        <h1 className=" font-semibold text-xl text-brand">Direct Quote</h1>
+        <h2 className=" font-semibold text-xl text-brand">Direct Quote</h2>
       </div>
       <Button
         className="w-fit bg-brand mb-4"
