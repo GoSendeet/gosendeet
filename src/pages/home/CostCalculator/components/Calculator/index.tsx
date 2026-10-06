@@ -19,6 +19,7 @@ import {
   buildQuotePayload,
   extractStateFromAddress,
   normalizeQuotesResponse,
+  PAGE_SIZE,
   parsePrice,
 } from "./quoteUtils";
 import { useQuoteFetching } from "./hooks/useQuoteFetching";
@@ -167,6 +168,7 @@ const Calculator = ({
     isFetchingQuotes,
     isLoadingMore,
     resetQuotePagination,
+    setHasNextPage,
   } = useQuoteFetching({
     filterParams,
     isSharedView,
@@ -200,13 +202,15 @@ const Calculator = ({
   useEffect(() => {
     if (shareId && sharedQuote) {
       setData(sharedQuote);
+      setHasNextPage(normalizeQuotesResponse(sharedQuote).length >= PAGE_SIZE);
     } else if (results) {
       hasUserInitiatedFetchRef.current = true;
       // Navigation already supplied this unfiltered response from the form.
       lastComparisonRequestRef.current = JSON.stringify({ payload: quotePayload, filters: {} });
       setData(results);
+      setHasNextPage(normalizeQuotesResponse(results).length >= PAGE_SIZE);
     }
-  }, [results, sharedQuote, shareId, quotePayload]);
+  }, [results, sharedQuote, shareId, quotePayload, setHasNextPage]);
 
   useEffect(() => {
     if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
