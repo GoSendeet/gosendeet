@@ -31,6 +31,7 @@ const Tracking = lazy(() => import("./pages/home/Track/Tracking"));
 const PublicDispatchPage = lazy(() => import("./pages/dispatch/PublicDispatchPage"));
 const NotFound = lazy(() => import("./pages/home/NotFound"));
 const DeliveryService = lazy(() => import("./pages/home/DeliveryService"));
+const CourierService = lazy(() => import("./pages/home/CourierService"));
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
 const Signin = lazy(() => import("./pages/auth/Signin"));
@@ -89,6 +90,7 @@ const AppRoutes = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/dispatch/:trackingId" element={<PublicDispatchPage />} />
         <Route path="/delivery-service" element={<DeliveryService />} />
+        <Route path="/courier-service" element={<CourierService />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/" element={<Home />} />
