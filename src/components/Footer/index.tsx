@@ -23,6 +23,7 @@ const Footer = () => {
       { label: "Partners", href: "/signup?type=franchise" },
       { label: "Business Delivery", href: "/business-delivery" },
       { label: "E-commerce Delivery", href: "/ecommerce-delivery" },
+      { label: "Price Calculator", href: "/delivery-price-calculator" },
     ],
     support: [
       { label: "Help Center", href: "#" },

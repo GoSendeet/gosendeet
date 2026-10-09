@@ -35,6 +35,7 @@ const CourierService = lazy(() => import("./pages/home/CourierService"));
 const LogisticsService = lazy(() => import("./pages/home/Logistics/index"));
 const BusinessDelivery = lazy(() => import("./pages/home/BusinessDelivery"));
 const EcommerceDelivery = lazy(() => import("./pages/home/EcommerceDelivery"));
+const DeliveryPriceCalculator = lazy(() => import("./pages/home/DeliveryPriceCalculator"));
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
 const Signin = lazy(() => import("./pages/auth/Signin"));
@@ -97,6 +98,7 @@ const AppRoutes = () => {
         <Route path="/logistics" element={<LogisticsService />} />
         <Route path="/business-delivery" element={<BusinessDelivery />} />
         <Route path="/ecommerce-delivery" element={<EcommerceDelivery />} />
+        <Route path="/delivery-price-calculator" element={<DeliveryPriceCalculator />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/" element={<Home />} />

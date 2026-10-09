@@ -4,7 +4,7 @@ import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
-import { BookOpen, ChevronDown, Home, RadioTower, Package, Truck, Building2, Briefcase, ShoppingBag } from "lucide-react";
+import { BookOpen, ChevronDown, Home, RadioTower, Package, Truck, Building2, Briefcase, ShoppingBag, Calculator } from "lucide-react";
 import { Button } from "../ui/button";
 import { hasAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
@@ -39,6 +39,12 @@ const serviceLinks = [
     route: "/ecommerce-delivery",
     description: "Ship orders from your online store",
     icon: ShoppingBag,
+  },
+  {
+    title: "Price Calculator",
+    route: "/delivery-price-calculator",
+    description: "Compare live courier prices instantly",
+    icon: Calculator,
   },
 ];
 
@@ -149,7 +155,8 @@ const Navbar = () => {
                 location.pathname === "/courier-service" ||
                 location.pathname === "/logistics" ||
                 location.pathname === "/business-delivery" ||
-                location.pathname === "/ecommerce-delivery"
+                location.pathname === "/ecommerce-delivery" ||
+                location.pathname === "/delivery-price-calculator"
                   ? "text-blue100 after:w-full"
                   : "after:w-0 hover:after:w-full"
               }`}
