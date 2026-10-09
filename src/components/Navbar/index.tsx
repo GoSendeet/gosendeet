@@ -4,7 +4,7 @@ import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
-import { BookOpen, ChevronDown, Home, RadioTower, Package, Truck, Building2 } from "lucide-react";
+import { BookOpen, ChevronDown, Home, RadioTower, Package, Truck, Building2, Briefcase, ShoppingBag } from "lucide-react";
 import { Button } from "../ui/button";
 import { hasAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
@@ -27,6 +27,18 @@ const serviceLinks = [
     route: "/logistics",
     description: "Logistics solutions for businesses",
     icon: Building2,
+  },
+  {
+    title: "Business Delivery",
+    route: "/business-delivery",
+    description: "Delivery for companies and teams",
+    icon: Briefcase,
+  },
+  {
+    title: "E-commerce Delivery",
+    route: "/ecommerce-delivery",
+    description: "Ship orders from your online store",
+    icon: ShoppingBag,
   },
 ];
 
@@ -135,7 +147,9 @@ const Navbar = () => {
               className={`relative flex items-center gap-1 py-2 text-sm text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
                 location.pathname === "/delivery-service" ||
                 location.pathname === "/courier-service" ||
-                location.pathname === "/logistics"
+                location.pathname === "/logistics" ||
+                location.pathname === "/business-delivery" ||
+                location.pathname === "/ecommerce-delivery"
                   ? "text-blue100 after:w-full"
                   : "after:w-0 hover:after:w-full"
               }`}

@@ -80,10 +80,11 @@ export function AddressPopover({
   }, [query, setPlacesValue]);
 
   useEffect(() => {
-    if (open && query.trim()) {
+    if (!open) {
       setShowManual(false);
+      setManualAddress({ street: "", apartment: "", city: "", state: "" });
     }
-  }, [open, query]);
+  }, [open]);
 
   useEffect(() => {
     const trimmedQuery = query.trim();
@@ -416,7 +417,7 @@ export function AddressPopover({
               </p>
             )}
 
-            <div className="address-entry-actions flex items-center gap-3 sm:gap-5">
+            <div className="address-entry-actions flex items-center justify-between gap-3 sm:gap-5">
               <button
                 type="button"
                 onClick={handleUseCurrentLocation}
@@ -574,7 +575,12 @@ export function AddressPopover({
                 variant="outline"
                 size="custom"
                 className="flex-1 py-2 text-xs"
-                onClick={() => setShowManual(false)}
+                onClick={() => {
+                  setManualAddress({ street: "", apartment: "", city: "", state: "" });
+                  setShowManual(false);
+                  onQueryChange("");
+                  onOpenChange(false);
+                }}
               >
                 Back
               </Button>
