@@ -33,6 +33,8 @@ const NotFound = lazy(() => import("./pages/home/NotFound"));
 const DeliveryService = lazy(() => import("./pages/home/DeliveryService"));
 const CourierService = lazy(() => import("./pages/home/CourierService"));
 const LogisticsService = lazy(() => import("./pages/home/Logistics/index"));
+const BusinessDelivery = lazy(() => import("./pages/home/BusinessDelivery"));
+const EcommerceDelivery = lazy(() => import("./pages/home/EcommerceDelivery"));
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
 const Signin = lazy(() => import("./pages/auth/Signin"));
@@ -93,6 +95,8 @@ const AppRoutes = () => {
         <Route path="/delivery-service" element={<DeliveryService />} />
         <Route path="/courier-service" element={<CourierService />} />
         <Route path="/logistics" element={<LogisticsService />} />
+        <Route path="/business-delivery" element={<BusinessDelivery />} />
+        <Route path="/ecommerce-delivery" element={<EcommerceDelivery />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/" element={<Home />} />
