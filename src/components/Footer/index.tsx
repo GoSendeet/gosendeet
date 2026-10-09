@@ -9,8 +9,11 @@ const Footer = () => {
   const footerLinks = {
     platform: [
       { label: "Direct", href: "/cost-calculator" },
-      { label: "Compare", href: "/cost-calculator", mode:"compare" },
+      { label: "Compare", href: "/cost-calculator", mode: "compare" },
       { label: "Tracking", href: "/track" },
+      { label: "Delivery Service", href: "/delivery-service" },
+      { label: "Courier Service", href: "/courier-service" },
+      { label: "Logistics", href: "/logistics" },
     ],
     company: [
       { label: "About", href: "/about" },

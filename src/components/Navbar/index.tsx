@@ -4,10 +4,31 @@ import { MENU } from "../../constants";
 import logo from "@/assets/images/logo-green.png";
 import { HiBars3 } from "react-icons/hi2";
 import { GoX } from "react-icons/go";
-import { BookOpen, ChevronDown, Home, RadioTower } from "lucide-react";
+import { BookOpen, ChevronDown, Home, RadioTower, Package, Truck, Building2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { hasAuthSession } from "@/lib/authSession";
 import { getDefaultRouteForRole } from "@/lib/roles";
+
+const serviceLinks = [
+  {
+    title: "Delivery Service",
+    route: "/delivery-service",
+    description: "Book same-day and next-day delivery",
+    icon: Package,
+  },
+  {
+    title: "Courier Service",
+    route: "/courier-service",
+    description: "Compare courier companies in Nigeria",
+    icon: Truck,
+  },
+  {
+    title: "Logistics",
+    route: "/logistics",
+    description: "Logistics solutions for businesses",
+    icon: Building2,
+  },
+];
 
 const developerLinks = [
   {
@@ -92,14 +113,14 @@ const Navbar = () => {
         </div>
 
         {/* Links (desktop view) */}
-        <ul className="hidden lg:flex xl:space-x-16 lg:space-x-6 items-center">
+        <ul className="hidden lg:flex xl:space-x-10 lg:space-x-6 items-center">
           {MENU.map((link, index) => {
             const isActive = link.route === location.pathname;
             return (
               <li key={index} className="text-center cursor-pointer">
                 <Link
                   to={link.route}
-                  className={`relative block py-2 text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
+                  className={`relative block py-2 text-sm text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
                     isActive ? "text-blue100 after:w-full" : "after:w-0 hover:after:w-full"
                   }`}
                 >
@@ -111,7 +132,48 @@ const Navbar = () => {
           <li className="relative group text-center cursor-pointer">
             <button
               type="button"
-              className={`relative flex items-center gap-1 py-2 text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
+              className={`relative flex items-center gap-1 py-2 text-sm text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
+                location.pathname === "/delivery-service" ||
+                location.pathname === "/courier-service" ||
+                location.pathname === "/logistics"
+                  ? "text-blue100 after:w-full"
+                  : "after:w-0 hover:after:w-full"
+              }`}
+            >
+              Services
+              <ChevronDown className="size-4 transition-transform duration-200 group-hover:rotate-180" />
+            </button>
+            <div className="invisible absolute left-1/2 top-full z-30 w-72 -translate-x-1/2 pt-4 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100">
+              <div className="rounded-2xl border border-neutral300 bg-white p-2 text-left shadow-xl">
+                {serviceLinks.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.route}
+                      to={item.route}
+                      className="flex items-start gap-3 rounded-xl px-3 py-3 hover:bg-green300"
+                    >
+                      <span className="mt-0.5 rounded-lg bg-green300 p-2 text-green700">
+                        <Icon className="size-4" />
+                      </span>
+                      <span>
+                        <span className="block font-semibold text-blue100">
+                          {item.title}
+                        </span>
+                        <span className="block text-xs text-neutral600">
+                          {item.description}
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </li>
+          <li className="relative group text-center cursor-pointer">
+            <button
+              type="button"
+              className={`relative flex items-center gap-1 py-2 text-sm text-neutral600 transition-colors duration-200 hover:text-blue100 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-green500 after:transition-all after:duration-300 ${
                 location.pathname.startsWith("/developer") ||
                 location.pathname === "/status"
                   ? "text-blue100 after:w-full"
@@ -233,6 +295,38 @@ const Navbar = () => {
                 navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
               }`}
               style={{ transitionDelay: navOpen ? `${MENU.length * 50}ms` : "0ms" }}
+            >
+              Services
+            </li>
+            {serviceLinks.map((link, i) => {
+              const isActive = link.route === location.pathname;
+              return (
+                <Link
+                  to={link.route}
+                  className={`my-1 w-full transition-all duration-200 ${
+                    navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+                  }`}
+                  style={{ transitionDelay: navOpen ? `${(MENU.length + 1 + i) * 50}ms` : "0ms" }}
+                  key={link.route}
+                  onClick={() => setNavOpen(false)}
+                >
+                  <span
+                    className={`block px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
+                      isActive
+                        ? "text-green500 bg-green-50"
+                        : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
+                    }`}
+                  >
+                    {link.title}
+                  </span>
+                </Link>
+              );
+            })}
+            <li
+              className={`mt-5 mb-2 px-3 text-xs font-bold uppercase text-neutral500 tracking-wider transition-all duration-200 ${
+                navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
+              }`}
+              style={{ transitionDelay: navOpen ? `${(MENU.length + serviceLinks.length + 1) * 50}ms` : "0ms" }}
             >
               Developer
             </li>
