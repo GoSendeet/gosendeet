@@ -8,12 +8,12 @@ const Footer = () => {
 
   const footerLinks = {
     platform: [
-      { label: "Direct", href: "/cost-calculator" },
       { label: "Compare", href: "/cost-calculator", mode: "compare" },
       { label: "Tracking", href: "/track" },
       { label: "Delivery Service", href: "/delivery-service" },
       { label: "Courier Service", href: "/courier-service" },
       { label: "Logistics", href: "/logistics" },
+   
     ],
     company: [
       { label: "About", href: "/about" },
@@ -21,6 +21,8 @@ const Footer = () => {
       // { label: "Careers", href: "/careers" },
       { label: "Become a Franchise", href: "/signup?type=franchise" },
       { label: "Partners", href: "/signup?type=franchise" },
+      { label: "Business Delivery", href: "/business-delivery" },
+      { label: "E-commerce Delivery", href: "/ecommerce-delivery" },
     ],
     support: [
       { label: "Help Center", href: "#" },
