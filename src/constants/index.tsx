@@ -1,10 +1,10 @@
 export const MENU = [
   {
-    title: "Get a quote",
+    title: "Get quote",
     route: "/cost-calculator",
   },
   {
-    title: "Track A Delivery",
+    title: "Track delivery",
     route: "/track",
   },
   {
