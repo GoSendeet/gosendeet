@@ -24,6 +24,8 @@ const Footer = () => {
       { label: "Business Delivery", href: "/business-delivery" },
       { label: "E-commerce Delivery", href: "/ecommerce-delivery" },
       { label: "Price Calculator", href: "/delivery-price-calculator" },
+      { label: "Lagos to Ibadan", href: "/delivery/lagos-to-ibadan" },
+      { label: "Lagos to Oyo", href: "/delivery/lagos-to-oyo" },
     ],
     support: [
       { label: "Help Center", href: "#" },

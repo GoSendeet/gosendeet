@@ -36,6 +36,8 @@ const LogisticsService = lazy(() => import("./pages/home/Logistics/index"));
 const BusinessDelivery = lazy(() => import("./pages/home/BusinessDelivery"));
 const EcommerceDelivery = lazy(() => import("./pages/home/EcommerceDelivery"));
 const DeliveryPriceCalculator = lazy(() => import("./pages/home/DeliveryPriceCalculator"));
+const LagosToIbadan = lazy(() => import("./pages/home/delivery/LagosToIbadan"));
+const LagosToOyo = lazy(() => import("./pages/home/delivery/LagosToOyo"));
 
 // ── Auth pages ────────────────────────────────────────────────────────────────
 const Signin = lazy(() => import("./pages/auth/Signin"));
@@ -99,6 +101,8 @@ const AppRoutes = () => {
         <Route path="/business-delivery" element={<BusinessDelivery />} />
         <Route path="/ecommerce-delivery" element={<EcommerceDelivery />} />
         <Route path="/delivery-price-calculator" element={<DeliveryPriceCalculator />} />
+        <Route path="/delivery/lagos-to-ibadan" element={<LagosToIbadan />} />
+        <Route path="/delivery/lagos-to-oyo" element={<LagosToOyo />} />
 
         <Route element={<PublicRoutes />}>
           <Route path="/" element={<Home />} />
