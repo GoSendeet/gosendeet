@@ -13,6 +13,9 @@ const Footer = () => {
       { label: "Delivery Service", href: "/delivery-service" },
       { label: "Courier Service", href: "/courier-service" },
       { label: "Logistics", href: "/logistics" },
+      { label: "Price Calculator", href: "/delivery-price-calculator" },
+      { label: "E-commerce Delivery", href: "/ecommerce-delivery" },
+
    
     ],
     company: [
@@ -22,8 +25,6 @@ const Footer = () => {
       { label: "Become a Franchise", href: "/signup?type=franchise" },
       { label: "Partners", href: "/signup?type=franchise" },
       { label: "Business Delivery", href: "/business-delivery" },
-      { label: "E-commerce Delivery", href: "/ecommerce-delivery" },
-      { label: "Price Calculator", href: "/delivery-price-calculator" },
       { label: "Lagos to Ibadan", href: "/delivery/lagos-to-ibadan" },
       { label: "Lagos to Oyo", href: "/delivery/lagos-to-oyo" },
     ],
