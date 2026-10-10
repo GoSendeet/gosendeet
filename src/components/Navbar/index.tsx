@@ -75,11 +75,22 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const location = useLocation();
+
+  // Lock body scroll while sidenav is open
+  useEffect(() => {
+    document.body.style.overflow = navOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [navOpen]);
+
+  // Close sidenav on route change
+  useEffect(() => {
+    setNavOpen(false);
+  }, [location.pathname]);
+
   const handleNavToggle = () => {
     setNavOpen(!navOpen);
   };
-
-  const location = useLocation();
 
   const isAuthenticated = hasAuthSession();
   const role = sessionStorage.getItem("role") || "";
@@ -279,36 +290,36 @@ const Navbar = () => {
               <img src={logo} alt="logo" className="h-7 w-auto" />
             </Link>
             <button
-              onClick={handleNavToggle}
+              onClick={() => setNavOpen(false)}
               className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
             >
               <GoX size={22} />
             </button>
           </div>
 
-          <ul className="flex flex-col mt-8 flex-1">
+          <ul className="flex flex-col mt-8 flex-1 overflow-y-auto -mr-2 pr-2">
             {MENU.map((link, index) => {
               const isActive = link.route === location.pathname;
               return (
-                <Link
-                  to={link.route}
-                  className={`my-1 w-full transition-all duration-200 ${
+                <li
+                  key={index}
+                  className={`my-1 w-full transition-all duration-200 list-none ${
                     navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                   }`}
                   style={{ transitionDelay: navOpen ? `${index * 50}ms` : "0ms" }}
-                  key={index}
-                  onClick={() => setNavOpen(false)}
                 >
-                  <li
-                    className={`px-3 py-3 rounded-xl font-medium cursor-pointer transition-colors duration-150 ${
+                  <Link
+                    to={link.route}
+                    onClick={() => setNavOpen(false)}
+                    className={`block px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
                       isActive
                         ? "text-green500 bg-green-50"
                         : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
                     }`}
                   >
                     {link.title}
-                  </li>
-                </Link>
+                  </Link>
+                </li>
               );
             })}
             <li
@@ -321,26 +332,30 @@ const Navbar = () => {
             </li>
             {serviceLinks.map((link, i) => {
               const isActive = link.route === location.pathname;
+              const Icon = link.icon;
               return (
-                <Link
-                  to={link.route}
-                  className={`my-1 w-full transition-all duration-200 ${
+                <li
+                  key={link.route}
+                  className={`my-1 w-full transition-all duration-200 list-none ${
                     navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                   }`}
                   style={{ transitionDelay: navOpen ? `${(MENU.length + 1 + i) * 50}ms` : "0ms" }}
-                  key={link.route}
-                  onClick={() => setNavOpen(false)}
                 >
-                  <span
-                    className={`block px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
+                  <Link
+                    to={link.route}
+                    onClick={() => setNavOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
                       isActive
                         ? "text-green500 bg-green-50"
                         : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
                     }`}
                   >
+                    <span className="shrink-0 rounded-lg bg-green300 p-1.5 text-green700">
+                      <Icon className="size-3.5" />
+                    </span>
                     {link.title}
-                  </span>
-                </Link>
+                  </Link>
+                </li>
               );
             })}
             <li
@@ -353,26 +368,30 @@ const Navbar = () => {
             </li>
             {developerLinks.map((link, i) => {
               const isActive = link.route === location.pathname;
+              const Icon = link.icon;
               return (
-                <Link
-                  to={link.route}
-                  className={`my-1 w-full transition-all duration-200 ${
+                <li
+                  key={link.route}
+                  className={`my-1 w-full transition-all duration-200 list-none ${
                     navOpen ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4"
                   }`}
-                  style={{ transitionDelay: navOpen ? `${(MENU.length + 1 + i) * 50}ms` : "0ms" }}
-                  key={link.route}
-                  onClick={() => setNavOpen(false)}
+                  style={{ transitionDelay: navOpen ? `${(MENU.length + serviceLinks.length + 2 + i) * 50}ms` : "0ms" }}
                 >
-                  <span
-                    className={`block px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
+                  <Link
+                    to={link.route}
+                    onClick={() => setNavOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors duration-150 ${
                       isActive
                         ? "text-green500 bg-green-50"
                         : "text-neutral700 hover:bg-gray-50 hover:text-blue100"
                     }`}
                   >
+                    <span className="shrink-0 rounded-lg bg-green300 p-1.5 text-green700">
+                      <Icon className="size-3.5" />
+                    </span>
                     {link.title}
-                  </span>
-                </Link>
+                  </Link>
+                </li>
               );
             })}
           </ul>
