@@ -127,6 +127,7 @@
 .quote-page { --landing-green: #005b46; }
 .quote-page .quote-form-section { max-width: 1280px; margin-inline: auto; }
 .quote-page .landing-booking-panel { margin-inline: 16px; }
+.quote-page .quote-results-section { max-width: 1280px; margin-inline: auto; padding-inline: 16px; }
 .landing-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 32px; margin-block: 12px 40px; background: #f3f6f5; border-radius: 16px; }
 .landing-cta h2 { font-size: 28px; margin-bottom: 8px; }
 .landing-cta p { color: #657084; font-size: 15px; }
