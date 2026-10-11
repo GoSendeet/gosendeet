@@ -154,7 +154,7 @@ const FormHorizontalBar = ({
 
   const containerStyles = cn(
     isDashboard
-      ? "w-full max-w-3xl mx-auto py-10 px-6 rounded-2xl bg-white border relative"
+      ? "w-full max-w-3xl mx-auto py-6 px-4 sm:py-10 sm:px-6 rounded-2xl bg-white border relative"
       : "w-full mx-auto max-w-[354px] lg:max-w-[1120px] pt-[12.82px] px-[10.82px] pb-[0.83px] lg:pt-[16.57px] lg:px-[16.57px] lg:pb-[16.57px] rounded-[32px] lg:rounded-[40px] border-t border-[#F1F5F9] bg-white/80 backdrop-blur-[48px] shadow-lg",
     !isDashboard && variant === "bold" && "bg-white border",
     !isDashboard && variant === "minimal" && "bg-white border border-gray-200",
@@ -176,7 +176,7 @@ const FormHorizontalBar = ({
   );
 
   const quoteGridClass = isDashboard
-    ? "space-y-4"
+    ? "space-y-3 sm:space-y-4"
     : cn(
         "grid grid-cols-1 gap-y-4 lg:gap-6 items-end",
         mode === "compare"

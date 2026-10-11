@@ -1,21 +1,72 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
+  ArrowUpDown,
   CheckCircle2,
   Clock3,
   Circle,
-  TrendingUp,
   RotateCcw,
   Wallet,
   Users,
   Timer,
+  SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PRICE_MIN, PRICE_STEP } from "../quoteUtils";
 
+const SORT_TABS = [
+  { key: "recommended", label: "Recommended", sort: "price-asc" },
+  { key: "cheapest", label: "Cheapest", sort: "price-asc" },
+  { key: "fastest", label: "Fastest", sort: "delivery-fastest" },
+] as const;
+
+const SortTabs = ({
+  activeTab,
+  setActiveTab,
+  setSortBy,
+}: {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  setSortBy: (sort: string) => void;
+}) => (
+  <div className="mb-4 space-y-1.5">
+    <FilterSectionHeader
+      description="Sort quotes by your preference"
+      icon={ArrowUpDown}
+      title="Sort by"
+    />
+    <div className="flex flex-wrap items-start gap-2">
+      {SORT_TABS.map(({ key, label, sort }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => { setActiveTab(key); setSortBy(sort); }}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-semibold transition-all",
+            activeTab === key
+              ? "border-[#86EFAC] bg-[#ECFDF5] text-brand shadow-sm"
+              : "border-[#D1D5DB] bg-white text-[#0F172A] hover:border-brand hover:bg-[#F8FAFC]",
+          )}
+        >
+          {activeTab === key ? (
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
+          ) : (
+            <Circle className="h-3.5 w-3.5 shrink-0 text-[#64748B]" />
+          )}
+          {label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 interface QuoteFiltersProps {
   activeFiltersCount: number;
+  activeTab: string;
   clearFilters: () => void;
   deliverySpeedOptions: string[];
   getPercent: (value: number) => number;
@@ -31,8 +82,10 @@ interface QuoteFiltersProps {
   selectedProviders: string[];
   setMaxPrice: Dispatch<SetStateAction<number | "">>;
   setMinPrice: Dispatch<SetStateAction<number | "">>;
+  setActiveTab: (tab: string) => void;
   setSelectedDeliverySpeed: Dispatch<SetStateAction<string[]>>;
   setSelectedProviders: Dispatch<SetStateAction<string[]>>;
+  setSortBy: (sort: string) => void;
   showFilters: boolean;
   showFilterControls: boolean;
   toggleMobileFilterBtn: (show: boolean) => void;
@@ -48,15 +101,15 @@ const FilterSectionHeader = ({
   icon: LucideIcon;
   title: string;
 }) => (
-  <div className="flex items-center gap-4">
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#DCFCE7] text-brand">
-      <Icon size={18} />
+  <div className="flex items-center gap-2">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#DCFCE7] text-brand">
+      <Icon size={13} />
     </span>
     <div>
-      <h4 className="font-semibold text-sm text-dark tracking-wider">
+      <h4 className="font-semibold text-xs text-dark tracking-wider">
         {title}
       </h4>
-      <h3 className="text-xs text-gray-500">{description}</h3>
+      <h3 className="text-[12px] text-gray-600">{description}</h3>
     </div>
   </div>
 );
@@ -72,7 +125,7 @@ const ProviderFilter = ({
   setSelectedProviders: Dispatch<SetStateAction<string[]>>;
   scrollable?: boolean;
 }) => (
-  <div className="mb-6 space-y-2">
+  <div className="mb-4 space-y-1.5">
     <FilterSectionHeader
       description="Select one or more providers to filter quotes"
       icon={Users}
@@ -91,16 +144,16 @@ const ProviderFilter = ({
               );
             }}
             className={cn(
-              "inline-flex min-h-10 items-center gap-3 rounded-xl border px-2 py-2 text-sm font-normal transition-all",
+              "inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs font-normal transition-all",
               selectedProviders.includes(provider)
                 ? "border-[#86EFAC] bg-[#ECFDF5] text-brand shadow-sm"
                 : "border-[#D1D5DB] bg-white text-[#0F172A] hover:border-brand hover:bg-[#F8FAFC]",
             )}
           >
             {selectedProviders.includes(provider) ? (
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
             ) : (
-              <Circle className="h-5 w-5 shrink-0 text-[#64748B]" />
+              <Circle className="h-3.5 w-3.5 shrink-0 text-[#64748B]" />
             )}
             {provider}
           </button>
@@ -121,7 +174,7 @@ const DeliverySpeedFilter = ({
   setSelectedDeliverySpeed: Dispatch<SetStateAction<string[]>>;
   cursorPointer?: boolean;
 }) => (
-  <div className="mb-6 space-y-2">
+  <div className="mb-4 space-y-1.5">
     <FilterSectionHeader
       description="Choose how quickly you want the delivery completed"
       icon={Timer}
@@ -137,7 +190,7 @@ const DeliverySpeedFilter = ({
             )
           }
           className={cn(
-            "inline-flex min-h-10 items-center gap-3 rounded-xl border px-2 py-2 text-sm font-extrabold transition-all",
+            "inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs font-bold transition-all",
             cursorPointer && "cursor-pointer",
             selectedDeliverySpeed.includes(speed)
               ? "border-[#86EFAC] bg-[#ECFDF5] text-brand shadow-sm"
@@ -145,9 +198,9 @@ const DeliverySpeedFilter = ({
           )}
         >
           {selectedDeliverySpeed.includes(speed) ? (
-            <CheckCircle2 className="h-5 w-5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-brand" fill="#064E3B" stroke="white" />
           ) : (
-            <Clock3 className="h-5 w-5 shrink-0 text-[#64748B]" />
+            <Clock3 className="h-3.5 w-3.5 shrink-0 text-[#64748B]" />
           )}
           {speed}
         </button>
@@ -178,36 +231,36 @@ const DesktopPriceFilter = ({
   | "setMinPrice"
   | "userHasSetPriceFilter"
 >) => (
-  <div className="mb-6">
-    <div className="space-y-4">
+  <div className="mb-4">
+    <div className="space-y-3">
       <FilterSectionHeader
         description="Select the minimum and maximum price for quotes"
         icon={Wallet}
         title="Price Range"
       />
-      <div className="flex items-center justify-between ">
-        <div className="bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1 text-center">
+      <div className="flex items-center justify-between gap-2">
+        <div className="bg-[#F9FAFB] p-2 rounded-lg flex-1 min-w-0 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+          <p className="text-[10px] text-[#99A1AF] text-capitalize font-semibold mb-0.5 text-center">
             MIN
           </p>
           <input
             type="number"
             value={minPrice}
             onChange={(e) => handleMinInput(e.target.value)}
-            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none cursor-text"
+            className="price-input w-full text-xs font-bold text-brand bg-transparent outline-none cursor-text"
             step={PRICE_STEP}
           />
         </div>
-        <div className="text-gray-400">→</div>
-        <div className="text-right bg-[#F9FAFB] p-3 rounded-lg w-28.75 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-          <p className="text-xs text-[#99A1AF] text-capitalize font-semibold mb-1 text-center">
+        <div className="text-gray-400 shrink-0 text-xs">→</div>
+        <div className="text-right bg-[#F9FAFB] p-2 rounded-lg flex-1 min-w-0 border border-[#E5E7EB] focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+          <p className="text-[10px] text-[#99A1AF] text-capitalize font-semibold mb-0.5 text-center">
             MAX
           </p>
           <input
             type="number"
             value={maxPrice}
             onChange={(e) => handleMaxInput(e.target.value)}
-            className="price-input w-full text-sm font-bold text-brand bg-transparent outline-none text-right cursor-text"
+            className="price-input w-full text-xs font-bold text-brand bg-transparent outline-none text-right cursor-text"
             step={PRICE_STEP}
           />
         </div>
@@ -276,6 +329,8 @@ const DesktopPriceFilter = ({
 );
 
 const QuoteFilters = ({
+  activeFiltersCount,
+  activeTab,
   clearFilters,
   deliverySpeedOptions,
   getPercent,
@@ -288,112 +343,147 @@ const QuoteFilters = ({
   providerOptions,
   selectedDeliverySpeed,
   selectedProviders,
+  setActiveTab,
   setMaxPrice,
   setMinPrice,
   setSelectedDeliverySpeed,
   setSelectedProviders,
+  setSortBy,
   showFilterControls,
   showFilters,
   toggleMobileFilterBtn,
   userHasSetPriceFilter,
-}: QuoteFiltersProps) => (
+}: QuoteFiltersProps) => {
+  useEffect(() => {
+    document.body.style.overflow = showFilters ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [showFilters]);
+
+  return (
   <>
     {showFilterControls && !isEmbedded && (
-      <div
-        className="md:hidden bg-white flex items-center justify-center gap-2 p-2 rounded-2xl mb-6 cursor-pointer shadow-md"
+      <button
+        type="button"
+        className="xl:hidden flex items-center max-w-40 gap-2 px-4 py-2.5 rounded-2xl bg-white border border-[#D1FAE5] shadow-sm cursor-pointer mb-2 transition-colors hover:border-brand"
         onClick={() => toggleMobileFilterBtn(true)}
       >
-        <TrendingUp color="#064E3B" />
-        <h3 className="font-font text-sm text-brand">Filter & Sort</h3>
+        <SlidersHorizontal size={16} color="#064E3B" />
+        <span className="font-bold text-sm text-brand">Filter & Sort</span>
+        {activeFiltersCount > 0 && (
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+            {activeFiltersCount}
+          </span>
+        )}
+      </button>
+    )}
+
+    {/* Portal: renders directly into document.body so fixed positioning isn't trapped by a transformed ancestor (e.g. dashboard layout) */}
+    {createPortal(
+      <>
+      {/* Mobile bottom-sheet overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 transition-opacity duration-300",
+          !isEmbedded && "xl:hidden",
+          showFilters ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        )}
+        onClick={() => toggleMobileFilterBtn(false)}
+      >
+        <div className="absolute inset-0 bg-black/50" />
       </div>
+
+      {/* Mobile bottom sheet */}
+      <div
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-50 flex max-h-[88vh] flex-col rounded-t-3xl bg-white shadow-2xl transition-transform duration-300 ease-out",
+          !isEmbedded && "xl:hidden",
+          showFilters ? "translate-y-0" : "translate-y-full",
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+      {/* Drag handle */}
+      <div className="flex justify-center pt-3 pb-1 shrink-0">
+        <div className="h-1.5 w-10 rounded-full bg-gray-200" />
+      </div>
+
+      {/* Sheet header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-base text-brand">Filter quotes</h3>
+          {activeFiltersCount > 0 && (
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+              {activeFiltersCount}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={clearFilters}
+            className="flex items-center gap-1 rounded-lg border border-brand-light px-2.5 py-1 text-xs font-semibold text-brand transition-colors hover:text-green-800"
+            variant="outline"
+            size="sm"
+          >
+            <RotateCcw size={12} />
+            <span>Reset</span>
+          </Button>
+          <button
+            onClick={() => toggleMobileFilterBtn(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-brand"
+            aria-label="Close filters"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <SortTabs activeTab={activeTab} setActiveTab={setActiveTab} setSortBy={setSortBy} />
+        <hr className="my-4 border-gray-100" />
+        <DesktopPriceFilter
+          getPercent={getPercent}
+          handleMaxInput={handleMaxInput}
+          handleMinInput={handleMinInput}
+          maxPrice={maxPrice}
+          minPrice={minPrice}
+          priceMax={priceMax}
+          setMaxPrice={setMaxPrice}
+          setMinPrice={setMinPrice}
+          userHasSetPriceFilter={userHasSetPriceFilter}
+        />
+        <hr className="my-4 border-gray-100" />
+        <ProviderFilter
+          providerOptions={providerOptions}
+          selectedProviders={selectedProviders}
+          setSelectedProviders={setSelectedProviders}
+        />
+        <hr className="my-4 border-gray-100" />
+        <DeliverySpeedFilter
+          cursorPointer
+          deliverySpeedOptions={deliverySpeedOptions}
+          selectedDeliverySpeed={selectedDeliverySpeed}
+          setSelectedDeliverySpeed={setSelectedDeliverySpeed}
+        />
+      </div>
+
+      {/* Sticky footer */}
+      <div className="shrink-0 border-t border-gray-100 px-5 pt-4" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}>
+        <button
+          onClick={() => toggleMobileFilterBtn(false)}
+          className="w-full cursor-pointer rounded-xl bg-brand px-4 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-green-800"
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+      </>,
+      document.body,
     )}
 
     <div
       className={cn(
-        "fixed inset-0 z-40 transition-all duration-500 ease-in-out",
-        !isEmbedded && "md:hidden",
-        showFilters ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-      )}
-      style={{ touchAction: "pan-y" }}
-      onClick={() => toggleMobileFilterBtn(false)}
-    >
-      <div
-        className={cn(
-          "absolute inset-0 bg-white/10 backdrop-blur-sm transition-opacity duration-500 ease-in-out",
-          showFilters ? "opacity-100" : "opacity-0",
-        )}
-      />
-      <div
-        className={cn(
-          "fixed right-0 top-0 z-50 h-full w-full max-w-sm transform overflow-y-auto bg-[#F8FAFC] p-4 shadow-xl transition-transform duration-500 ease-in-out",
-          showFilters ? "translate-x-0" : "translate-x-full",
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="rounded-xl border border-[#E2E8F0] bg-white p-5 shadow-md">
-          <div className="mb-6 flex items-center justify-between gap-3">
-            <h3 className="font-semibold text-lg text-brand">Filter quotes</h3>
-
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={clearFilters}
-                className="flex items-center gap-1 rounded border border-brand-light px-2 py-1 text-xs font-semibold text-brand transition-colors hover:text-green-800"
-                variant="outline"
-                size="sm"
-              >
-                <RotateCcw size={14} />
-                <span>Reset</span>
-              </Button>
-              <button
-                onClick={() => toggleMobileFilterBtn(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E2E8F0] text-lg font-semibold text-gray-500 transition hover:border-brand hover:text-brand"
-                aria-label="Close filters"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-
-          <DesktopPriceFilter
-            getPercent={getPercent}
-            handleMaxInput={handleMaxInput}
-            handleMinInput={handleMinInput}
-            maxPrice={maxPrice}
-            minPrice={minPrice}
-            priceMax={priceMax}
-            setMaxPrice={setMaxPrice}
-            setMinPrice={setMinPrice}
-            userHasSetPriceFilter={userHasSetPriceFilter}
-          />
-          <hr className="my-6 border-gray-200" />
-          <ProviderFilter
-            providerOptions={providerOptions}
-            scrollable
-            selectedProviders={selectedProviders}
-            setSelectedProviders={setSelectedProviders}
-          />
-          <hr className="my-6 border-gray-200" />
-          <DeliverySpeedFilter
-            cursorPointer
-            deliverySpeedOptions={deliverySpeedOptions}
-            selectedDeliverySpeed={selectedDeliverySpeed}
-            setSelectedDeliverySpeed={setSelectedDeliverySpeed}
-          />
-
-          <button
-            onClick={() => toggleMobileFilterBtn(false)}
-            className="mt-2 w-full cursor-pointer rounded-xl bg-brand px-3 py-3 text-sm font-semibold text-white transition-colors hover:bg-green-800"
-          >
-            Apply Filters
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div
-      className={cn(
         "hidden w-full shrink-0",
-        showFilterControls && (isEmbedded ? "xl:block" : "md:block"),
+        showFilterControls && "xl:block",
       )}
     >
       <div className="bg-white rounded-xl shadow-md p-6 border border-[#E2E8F0] sticky top-4">
@@ -413,6 +503,8 @@ const QuoteFilters = ({
           </Button>
         </div>
 
+        <SortTabs activeTab={activeTab} setActiveTab={setActiveTab} setSortBy={setSortBy} />
+        <hr className="my-6 border-gray-200" />
         <DesktopPriceFilter
           getPercent={getPercent}
           handleMaxInput={handleMaxInput}
@@ -424,8 +516,8 @@ const QuoteFilters = ({
           setMinPrice={setMinPrice}
           userHasSetPriceFilter={userHasSetPriceFilter}
         />
-  <hr className="my-6 border-gray-200" />
-          <ProviderFilter
+        <hr className="my-6 border-gray-200" />
+        <ProviderFilter
           providerOptions={providerOptions}
           selectedProviders={selectedProviders}
           setSelectedProviders={setSelectedProviders}
@@ -440,6 +532,7 @@ const QuoteFilters = ({
       </div>
     </div>
   </>
-);
+  );
+};
 
 export default QuoteFilters;

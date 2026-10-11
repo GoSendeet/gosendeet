@@ -38,7 +38,7 @@ const Dashboard = () => {
   }, [activeTab, onTabChange]);
 
   return (
-    <div className="md:px-20 px-6 py-18 bg-neutral100 min-h-screen">
+    <div className="md:px-20 px-6 pt-8 pb-18 md:pt-10 lg:pt-14 xl:pt-18 bg-neutral100 min-h-screen">
       <OnboardingGuide open={showOnboarding} onClose={() => setShowOnboarding(false)} />
       {activeTab === "overview" && <Overview data={userData} />}
       {activeTab === "notifications" && (

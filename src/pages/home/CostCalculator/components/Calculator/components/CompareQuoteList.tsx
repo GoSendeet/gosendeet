@@ -41,12 +41,10 @@ const DashboardCompareQuoteCard = ({
 }) => (
   <div
     className={cn(
-      "relative overflow-hidden shrink-0 rounded-[20px] gap-4 justify-center border bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
-      isGosendeet
-        ? "border-brand ring-2 ring-brand/20"
-        : isRecommended
-          ? "border-[#CBD5E1] ring-1 ring-[#E2E8F0]"
-          : "border-[#E2E8F0]",
+      "relative overflow-hidden shrink-0 rounded-[20px] gap-4 justify-center border bg-white p-4 md:p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      isRecommended
+        ? "border-[#CBD5E1] ring-1 ring-[#E2E8F0]"
+        : "border-[#E2E8F0]",
     )}
   >
     {isGosendeet && (
@@ -79,14 +77,14 @@ const DashboardCompareQuoteCard = ({
             </div>
           )}
           <div className="min-w-0">
-            <h3 className="truncate text-base font-extrabold text-[#0F172A]">
+            <h3 className="truncate text-sm md:text-base font-extrabold text-[#0F172A]">
               {item?.courier?.name || "GoSendeet Direct"}
             </h3>
-            <span className="flex w-fit items-center gap-2 rounded-lg bg-[#D1FAE5] px-3 py-2 text-xs font-extrabold text-[#064E3B]">
-              <ShieldCheck size={14} /> Verified
+            <span className="flex w-fit items-center gap-1.5 rounded-lg bg-[#D1FAE5] px-2 py-1 md:px-3 md:py-2 text-xs font-extrabold text-[#064E3B]">
+              <ShieldCheck size={12} /> Verified
             </span>
             <div className="mt-1 flex items-center gap-1">
-              <Rating value={item?.courier?.averageRatingScore} readOnly />
+              <Rating value={item?.courier?.averageRatingScore} readOnly size={14} />
               <span className="text-xs font-semibold text-[#64748B]">
                 ({item?.courier?.totalRatings ?? 0})
               </span>
@@ -101,24 +99,22 @@ const DashboardCompareQuoteCard = ({
               {item.discount}% off
             </span>
           )}
-          <p className="text-2xl font-extrabold tracking-tight text-brand">
+          <p className="text-xl md:text-2xl font-extrabold tracking-tight text-brand">
             ₦{parsePrice(item.price).toLocaleString()}
           </p>
         </div>
       </div>
-        <div className="flex items-center gap-2 bg-[#F0FDF4] px-4 py-2 rounded-lg w-fit mb-4 text-[#475569]">
-        <CalendarRange size={14} />
-        <p className="text-sm font-semibold ">
-        Arrives{" "}
-        <span className="">
-          {item?.estimatedDeliveryDate || "Not specified"}
-        </span>
-      </p>
-      </div>
+        <div className="flex items-center gap-2 bg-[#F0FDF4] px-3 py-1.5 md:px-4 md:py-2 rounded-lg w-fit mb-4 text-[#475569]">
+          <CalendarRange size={13} />
+          <p className="text-xs md:text-sm font-semibold">
+            Arrives{" "}
+            <span>{item?.estimatedDeliveryDate || "Not specified"}</span>
+          </p>
+        </div>
       <div className="mt-5 rounded-[24px] border border-[#E2E8F0] bg-white p-4 shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
         <div className="mb-5 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-2 rounded-xl bg-[#ECFDF5] px-4 py-2 text-sm font-bold text-brand">
-            <CheckCircle2 className="h-4 w-4" />
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-[#ECFDF5] px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold text-brand">
+            <CheckCircle2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
             {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
           </span>
         </div>
@@ -136,12 +132,12 @@ const DashboardCompareQuoteCard = ({
             </div>
 
             <div className="pb-6">
-              <p className="text-lg font-extrabold leading-none text-[#0F172A]">
+              <p className="text-sm md:text-lg font-extrabold leading-none text-[#0F172A]">
                 {item?.pudoMode === "STORE_DROPOFF"
                   ? "Store drop-off"
                   : "Doorstep pickup"}
               </p>
-              <p className="mt-2 text-base font-bold text-[#64748B]">
+              <p className="mt-2 text-sm md:text-base font-bold text-[#64748B]">
                 {item?.pickUpdateDate || "Not specified"}
               </p>
             </div>
@@ -149,7 +145,7 @@ const DashboardCompareQuoteCard = ({
 
           <Button
             onClick={onSelect}
-            className="group h-16 w-full rounded-xl bg-brand text-lg font-extrabold text-white shadow-[0_12px_28px_rgba(0,107,79,0.22)] transition-all hover:bg-[#005C43] hover:shadow-[0_16px_32px_rgba(0,107,79,0.28)]"
+            className="group h-12 md:h-16 w-full rounded-xl bg-brand text-sm md:text-lg font-extrabold text-white shadow-[0_12px_28px_rgba(0,107,79,0.22)] transition-all hover:bg-[#005C43] hover:shadow-[0_16px_32px_rgba(0,107,79,0.28)]"
           >
             Select quote
           </Button>
@@ -173,11 +169,9 @@ const PublicCompareQuoteCard = ({
   <div
     className={cn(
       "relative bg-white rounded-xl overflow-hidden shrink-0 border-2 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
-      isGosendeet
-        ? "border-brand"
-        : isRecommended
-          ? "border-gray-300 hover:border-brand"
-          : "border-gray-200 hover:border-brand",
+      isRecommended
+        ? "border-gray-300 hover:border-brand"
+        : "border-gray-200 hover:border-brand",
     )}
   >
     {isGosendeet && (
@@ -215,7 +209,7 @@ const PublicCompareQuoteCard = ({
               {item?.courier?.name}
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
-              <Rating value={item?.courier?.averageRatingScore} readOnly />
+              <Rating value={item?.courier?.averageRatingScore} readOnly size={12} />
               <span className="text-xs text-gray-500">({item?.courier?.totalRatings ?? 0})</span>
             </div>
             <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-green100 bg-green-100 px-2 py-0.5 rounded-sm">
@@ -231,27 +225,31 @@ const PublicCompareQuoteCard = ({
         </div>
       </div>
 
-      {/* Row 2: pickup → SLA → delivery timeline */}
-      <div className="flex items-center gap-3 mb-4">
+      {/* Row 2: SLA badge — own row so it's never truncated */}
+      <div className="mb-3">
+        <span className="inline-flex items-center gap-1 rounded-md bg-[#F0FDF4] px-2 py-0.5 text-[10px] font-semibold text-brand">
+          <CheckCircle2 className="h-3 w-3 shrink-0" />
+          {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
+        </span>
+      </div>
+
+      {/* Row 3: pickup → delivery timeline */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 mb-4">
         <div className="min-w-0">
           <p className="text-[10px] font-semibold text-brand uppercase mb-0.5">
             {item?.pudoMode === "STORE_DROPOFF" ? "DROP-OFF" : "PICKUP"}
           </p>
-          <p className="text-xs font-bold text-gray-900">
+          <p className="text-xs font-bold text-gray-900 truncate">
             {item?.pickUpdateDate || "Not specified"}
           </p>
         </div>
-
-        <div className="flex flex-col items-center flex-1 gap-0.5 min-w-0">
-          <p className="text-[10px] text-gray-500 font-medium text-center leading-tight px-1 truncate w-full">
-            {item?.serviceLevelAgreements?.[0] || "Standard Delivery"}
-          </p>
-          <div className="w-full h-0.5 bg-brand rounded-full" />
+        <div className="flex items-center gap-0.5">
+          <div className="w-3 h-px bg-brand/30 rounded-full" />
+          <div className="w-3 h-px bg-brand/30 rounded-full" />
         </div>
-
         <div className="text-right min-w-0">
           <p className="text-[10px] font-semibold text-brand uppercase mb-0.5">DELIVERY</p>
-          <p className="text-xs font-bold text-gray-900">
+          <p className="text-xs font-bold text-gray-900 truncate">
             {item?.estimatedDeliveryDate || "Not specified"}
           </p>
         </div>
@@ -272,7 +270,7 @@ const PublicCompareQuoteCard = ({
     </div>
 
     {/* ── Desktop layout (md+): horizontal row ── */}
-    <div className="hidden md:flex md:items-center justify-between p-5 lg:p-8 gap-6">
+    <div className="hidden md:flex md:items-center justify-between p-4 lg:p-5 gap-4">
       {/* Courier identity */}
       <div className="w-1/4 shrink-0">
         <div className="flex items-center gap-3">
@@ -292,7 +290,7 @@ const PublicCompareQuoteCard = ({
               {item?.courier?.name}
             </h3>
             <div className="flex items-center gap-1 mt-0.5">
-              <Rating value={item?.courier?.averageRatingScore} readOnly />
+              <Rating value={item?.courier?.averageRatingScore} readOnly size={14} />
               <span className="text-xs text-gray-600">({item?.courier?.totalRatings ?? 0})</span>
             </div>
           </div>
@@ -338,7 +336,7 @@ const PublicCompareQuoteCard = ({
               {item.discount}% off
             </span>
           )}
-          <p className="text-2xl lg:text-3xl font-bold text-green100 tracking-tight">
+          <p className="text-xl lg:text-2xl font-bold text-green100 tracking-tight">
             ₦{parsePrice(item.price).toLocaleString()}
           </p>
         </div>
@@ -414,7 +412,7 @@ const CompareQuoteList = ({
       <div
         className={cn(
           "flex flex-col gap-4 overflow-y-auto pr-1 md:px-0",
-          isEmbedded ? "max-h-[72vh] pt-2 px-1" : "max-h-[70vh] pt-8 px-4",
+          isEmbedded ? "max-h-[72vh] pt-2 px-1" : "max-h-[70vh] pt-3 md:pt-8 px-1 md:px-4",
         )}
       >
         {(() => {
