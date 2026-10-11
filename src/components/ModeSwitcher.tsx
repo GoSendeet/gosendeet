@@ -63,7 +63,7 @@ export const ModeSwitcher = ({
     return (
       <div className={containerClasses}>
         <div
-          className="relative grid grid-cols-2 items-center w-full min-w-[280px] max-w-[300px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
+          className="relative grid grid-cols-2 items-center w-full min-w-[220px] sm:min-w-[280px] max-w-[300px] p-1 bg-white rounded-full shadow-sm overflow-hidden"
           style={{ boxShadow: "0px 8px 30px 0px #0000000F", border: "1px solid #E2E8F0" }}
         >
           {tabs.map((tab, index) => {
@@ -81,7 +81,7 @@ export const ModeSwitcher = ({
                 type="button"
                 onClick={() => onModeChange(tab.key)}
                 className={cn(
-                  "relative justify-center px-3 py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-colors",
+                  "relative justify-center px-3 py-2.5 sm:py-3.5 text-xs font-semibold rounded-full flex items-center gap-2 transition-colors",
                   isActive ? "text-white" : "text-[#62748E] hover:text-gray-800"
                 )}
                 {...wrapperProps}

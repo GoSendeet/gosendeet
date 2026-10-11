@@ -8,8 +8,9 @@ import {
   consumePreSigninQuote,
   peekPreSigninQuote,
 } from "@/lib/preSigninQuote";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Settings2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const MODE_HEADER_COPY: Record<FormMode, { title: string; subtitle: string }> = {
   gosendeet: {
@@ -86,8 +87,11 @@ const Overview = ({ data: _data }: { data: any }) => {
 
   return (
     <div className="overflow-x-clip">
-      <div className="relative z-20 flex items-center justify-between lg:-mt-6 lg:mb-10 mb-16 md:px-4 gap-3">
-        <div className="hidden lg:block items-center gap-3 min-w-0">
+      <div className={cn(
+        "relative z-20 flex items-center justify-between md:px-4 gap-3",
+        showQuotePanel ? "hidden xl:flex xl:-mt-6 xl:mb-10" : "lg:-mt-6 lg:mb-10 mb-16",
+      )}>
+        <div className="hidden xl:block items-center gap-3 min-w-0">
           <div className="flex flex-col min-w-0">
             <p className="font-clash text-brand uppercase tracking-widest font-semibold">
               {showQuotePanel || isRestoringSession ? "Available Quotes" : "Dashboard Overview"}
@@ -124,8 +128,8 @@ const Overview = ({ data: _data }: { data: any }) => {
             transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
             className="mb-10"
           >
-            <div className="mb-6 flex flex-col gap-4 px-1">
-              <div className="flex justify-center">
+            <div className="mb-2 xl:mb-6 flex flex-col gap-2 xl:gap-4 px-1">
+              <div className="hidden xl:flex justify-center">
                 <ModeSwitcher
                   mode={formMode}
                   onModeChange={handleModeChange}
@@ -134,8 +138,16 @@ const Overview = ({ data: _data }: { data: any }) => {
                 />
               </div>
               <button
+                type="button"
                 onClick={handleBack}
-                className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
+                className="xl:hidden -mt-5 max-w-45 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-[#D1FAE5] shadow-sm transition-colors hover:border-brand"
+              >
+                <Settings2 size={16} color="#064E3B" />
+                <span className="font-bold text-sm text-brand">Customise Quote</span>
+              </button>
+              <button
+                onClick={handleBack}
+                className="hidden xl:flex w-fit items-center gap-1.5 text-sm font-semibold text-brand hover:text-green-800 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back

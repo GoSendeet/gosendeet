@@ -33,8 +33,7 @@ export const QuoteSubmitButton = ({
         {appearance === "landing" ? (
           <span>Compare prices</span>
         ) : <><GoArrowRight
-          className="text-white mr-1.5"
-          style={{ width: "32px", height: "32px" }}
+          className="text-white mr-1.5 w-5 h-5 sm:w-8 sm:h-8"
         />
         <span className="text-[#D0FAE5CC] font-arial font-bold text-xs uppercase">
           Get Quote

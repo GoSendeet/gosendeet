@@ -1,6 +1,7 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { FiClock } from "react-icons/fi";
+import { Settings2, X } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import FormHorizontalBar from "@/pages/home/components/FormHorizontalBar";
 import CompareQuoteList from "./components/CompareQuoteList";
@@ -60,6 +61,7 @@ const Calculator = ({
   const [embeddedInputData, setEmbeddedInputData] = useState<any>(
     externalInputData || null,
   );
+  const [showMobileForm, setShowMobileForm] = useState(false);
 
   const storedInputData = useMemo(readSavedBookingQuote, []);
 
@@ -106,6 +108,11 @@ const Calculator = ({
   useEffect(() => {
     if (externalInputData !== undefined) setEmbeddedInputData(externalInputData);
   }, [externalInputData]);
+
+  useEffect(() => {
+    document.body.style.overflow = showMobileForm ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [showMobileForm]);
   const quoteContent = useMemo(() => {
     return normalizeQuotesResponse(data);
   }, [data]);
@@ -314,14 +321,23 @@ const Calculator = ({
   const routePickupState = extractStateFromAddress(bookingRequest?.pickupLocation);
   const routeDropOffState = extractStateFromAddress(bookingRequest?.dropOffLocation);
   const packageSummary = buildPackageSummary(bookingRequest);
-  const showCompareContext =
-    stablePriceMaxRef.current > 0 || isFetchingQuotes || hasRouteQuery;
+  const showCompareContext = hasQuotes || isFetchingQuotes;
   const filterPriceMax = PRICE_MAX > 0 ? PRICE_MAX : 1;
 
   return (
-    <div className={cn("md:px-6 bg-[#F8FAFC]", hideForm ? "pt-0 pb-8" : "py-12")}>
+    <div className={cn(
+      "md:px-6 bg-[#F8FAFC]",
+      hideForm
+        ? "pt-0 pb-8"
+        : showCompareContext && !isEmbedded
+          ? "pt-4 pb-8 md:py-12"
+          : "py-12",
+    )}>
       {!hideForm && (
-        <div className={!isEmbedded ? "quote-form-section w-full mb-20" : undefined}>
+        <div className={cn(
+          !isEmbedded ? "quote-form-section w-full mb-20" : undefined,
+          showCompareContext && !isEmbedded ? "hidden xl:block" : undefined,
+        )}>
           <div className={!isEmbedded ? "landing-booking-panel" : undefined}>
           {/* Mode Switcher Tabs - Top of Calculator */}
           <div className={isEmbedded ? "w-full mb-6 flex justify-center" : undefined}>
@@ -361,18 +377,33 @@ const Calculator = ({
       )}
 
       {/* Results Section Header */}
-      <div ref={resultsSectionRef}>
+      <div ref={resultsSectionRef} className={!isEmbedded ? "quote-results-section" : undefined}>
       {mode === "compare" && (
         <>
+          {/* Mobile — Customise Result button (opens form drawer) */}
+          {!isEmbedded && showCompareContext && (
+            <div className="xl:hidden mb-4">
+              <button
+                type="button"
+                onClick={() => setShowMobileForm(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-[#D1FAE5] shadow-sm transition-colors hover:border-brand"
+              >
+                <Settings2 size={16} color="#064E3B" />
+                <span className="font-bold text-sm text-brand">Edit Delivery Details</span>
+              </button>
+            </div>
+          )}
+
           <div
             className={cn(
               "flex flex-col gap-6 mb-6 font-arial",
               showCompareContext &&
-                "xl:grid xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]",
+                "xl:grid xl:grid-cols-[270px_minmax(0,1fr)]",
             )}
           >
             <QuoteFilters
               activeFiltersCount={activeFiltersCount}
+              activeTab={activeTab}
               clearFilters={clearFilters}
               deliverySpeedOptions={deliverySpeedOptions}
               getPercent={getPercent}
@@ -386,10 +417,12 @@ const Calculator = ({
               providerOptions={providerOptions}
               selectedDeliverySpeed={selectedDeliverySpeed}
               selectedProviders={selectedProviders}
+              setActiveTab={setActiveTab}
               setMaxPrice={setMaxPrice}
               setMinPrice={setMinPrice}
               setSelectedDeliverySpeed={setSelectedDeliverySpeed}
               setSelectedProviders={setSelectedProviders}
+              setSortBy={setSortBy}
               showFilterControls={showCompareContext}
               showFilters={showFilters}
               toggleMobileFilterBtn={toggleMobileFilterBtn}
@@ -398,24 +431,23 @@ const Calculator = ({
 
             {/* Right Content Area */}
             <div className="flex-1">
-              <CompareResultsHeader
-                activeTab={activeTab}
-                bookingRequest={bookingRequest}
-                copyUrl={copyUrl}
-                filteredCount={filteredAndSortedData.length}
-                handleShare={handleShare}
-                isEmbedded={isEmbedded}
-                onBack={onBack}
-                packageSummary={packageSummary}
-                routeDropOffState={routeDropOffState}
-                routePickupState={routePickupState}
-                setActiveTab={setActiveTab}
-                setSortBy={setSortBy}
-                shareLoading={shareLoading}
-                shareUrl={shareUrl}
-                showActions={showCompareContext}
-                toggleMobileFilterBtn={toggleMobileFilterBtn}
-              />
+              {(isEmbedded || showCompareContext) && (
+                <CompareResultsHeader
+                  bookingRequest={bookingRequest}
+                  copyUrl={copyUrl}
+                  filteredCount={filteredAndSortedData.length}
+                  handleShare={handleShare}
+                  isEmbedded={isEmbedded}
+                  onBack={onBack}
+                  packageSummary={packageSummary}
+                  routeDropOffState={routeDropOffState}
+                  routePickupState={routePickupState}
+                  shareLoading={shareLoading}
+                  shareUrl={shareUrl}
+                  showActions={showCompareContext}
+                  toggleMobileFilterBtn={toggleMobileFilterBtn}
+                />
+              )}
 
               {/* Results Cards */}
               <CompareQuoteList
@@ -436,6 +468,73 @@ const Calculator = ({
       )}
 
       </div>
+
+      {/* Mobile form bottom sheet — "Customise Result" drawer */}
+      {!isEmbedded && !hideForm && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={cn(
+              "xl:hidden fixed inset-0 z-40 transition-opacity duration-300",
+              showMobileForm ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+            )}
+            onClick={() => setShowMobileForm(false)}
+          >
+            <div className="absolute inset-0 bg-black/50" />
+          </div>
+
+          {/* Sheet */}
+          <div
+            className={cn(
+              "xl:hidden fixed bottom-0 left-0 right-0 z-50 flex max-h-[82vh] flex-col rounded-t-3xl bg-white shadow-2xl transition-transform duration-300 ease-out",
+              showMobileForm ? "translate-y-0" : "translate-y-full",
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1 shrink-0">
+              <div className="h-1.5 w-10 rounded-full bg-gray-200" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+              <h3 className="font-bold text-base text-brand">Edit Delivery Details</h3>
+              <button
+                onClick={() => setShowMobileForm(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition hover:bg-gray-200 hover:text-brand"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Scrollable form */}
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <FormHorizontalBar
+                variant="minimal"
+                appearance="default"
+                activeMode={mode}
+                bookingRequest={bookingRequest}
+                setData={setData}
+                forcedIsDashboard={false}
+                onQuoteResult={(result: any, newInputData: any, newMode: FormMode) => {
+                  hasUserInitiatedFetchRef.current = true;
+                  setData(result);
+                  setEmbeddedInputData(newInputData);
+                  setMode(newMode);
+                  setShowMobileForm(false);
+                }}
+              />
+              {mode === "compare" && (
+                <p className="landing-delivery-note mt-4">
+                  <FiClock aria-hidden="true" />
+                  <span>Book before <strong>12 pm</strong> for same-day delivery.</span>
+                </p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
