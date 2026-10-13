@@ -1,17 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
-const points = [
-  "Instantly compare quotes from Nigeria's top couriers side by side, no account needed.",
-  "Book a pickup or drop-off with verified couriers across Nigeria in minutes.",
-  "Track every delivery in real time from pickup to doorstep.",
-];
 
 const WhatIsGosendeet = () => {
   return (
     <section
       aria-labelledby="what-is-gosendeet-heading"
-      className="bg-white py-6 md:py-8 font-arial"
+      className="bg-white py-6 md:py-4 mb-16 font-arial"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-10 xl:px-1">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
@@ -55,22 +50,17 @@ const WhatIsGosendeet = () => {
               GoSendeet connects senders with verified couriers across Nigeria. Compare prices,
               book pickups, and track deliveries, all in one place, without the guesswork.
             </p>
-
-            <ul className="flex flex-col gap-2">
-              {points.map((point) => (
-                <li key={point} className="flex items-start gap-3">
-                  <CheckCircle2 size={20} className="shrink-0 text-green800 mt-0.5" />
-                  <span className="text-grey200 text-sm md:text-base leading-relaxed">{point}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-grey200 -mt-2 text-base md:text-lg leading-relaxed">
+              Our goal isn't just to move boxes; it's to move the economy forward by 
+              creating a layer of trust that businesses and individuals can build upon.
+            </p>
 
             <div className="pt-2">
               <Link
-                to="/cost-calculator"
+                to="/about"
                 className="inline-flex items-center gap-2 landing-primary text-white font-bold px-6 py-3 rounded-full hover:bg-green-900 transition-colors duration-200 text-sm md:text-base"
               >
-                Calculate Delivery Cost
+                Know more
                 <ArrowRight size={18} />
               </Link>
             </div>
