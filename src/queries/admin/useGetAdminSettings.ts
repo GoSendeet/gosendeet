@@ -1,5 +1,6 @@
-import { getAdminDimensionUnits, getAdminWeightUnits, getCoverageArea, getCrossAreaRoute, getDeliveryProgress, getLocationCode, getPackageType, getPickupOptions, getPromoCodes, getServiceLevel } from "@/services/adminSettings";
-import { useQuery } from "@tanstack/react-query";
+import { getAdminDimensionUnits, getAdminWeightUnits, getCoverageArea, getCrossAreaRoute, getDeliveryProgress, getLocationCode, getPackageType, getPickupOptions, getPromoCodes, getRoutingConfig, getServiceLevel, updateRoutingConfig } from "@/services/adminSettings";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useGetServiceLevel = (options?: { page?: number; minimize?: boolean }) => {
   const query = useQuery({
@@ -135,4 +136,33 @@ export const useGetPromoCodes = (options?: { page?: number; search?: string }) =
     isError: query.isError,
     data: query.data,
   };
+};
+
+export const routingConfigKey = ["routing_config"];
+
+export const useGetRoutingConfig = () => {
+  const query = useQuery({
+    queryKey: routingConfigKey,
+    queryFn: getRoutingConfig,
+  });
+  return {
+    isLoading: query.isPending,
+    isSuccess: query.isSuccess,
+    isError: query.isError,
+    data: query.data,
+  };
+};
+
+export const useUpdateRoutingConfig = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateRoutingConfig,
+    onSuccess: () => {
+      toast.success("Routing settings saved");
+      queryClient.invalidateQueries({ queryKey: routingConfigKey });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Failed to save routing settings");
+    },
+  });
 };

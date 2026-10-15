@@ -373,3 +373,8 @@ export const isServiceableAddress = (address?: string) => {
   const { city, state } = extractLocationFromAddress(address);
   return isDeliveryLocationAllowed(state, city);
 };
+
+/** Joins non-blank address parts into a single geocodable string. */
+export const buildAddressString = (
+  ...parts: (string | undefined | null)[]
+): string => parts.filter((p) => p && p.trim()).join(", ");

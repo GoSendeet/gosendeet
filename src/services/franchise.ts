@@ -522,6 +522,25 @@ export const updateFranchiseProfile = async (
   }
 };
 
+export type GeocodePreview = {
+  lat: number;
+  lng: number;
+};
+
+export const geocodeAddressPreview = async (
+  address: string,
+): Promise<GeocodePreview> => {
+  try {
+    const res = await api.get<GeocodePreview>(
+      "/franchise/address/geocode-preview",
+      { params: { address } },
+    );
+    return res.data;
+  } catch (error: unknown) {
+    return throwApiError(error);
+  }
+};
+
 export const getFranchiseBankAccount =
   async (): Promise<FranchiseBankAccount> => {
     try {
