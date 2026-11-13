@@ -11,14 +11,18 @@ import { statusClasses } from "@/constants";
 import {
   useGetBookingsById,
   useGetBookingProviderStatus,
+  useCancelBookingWithProvider,
 } from "@/queries/user/useGetUserBookings";
 import { Spinner } from "@/components/Spinner";
 import OrderHistory from "@/pages/home/Track/Tracking/components/OrderHistory";
 import { TaskManagementSection } from "../TaskManagement";
+import { toast } from "sonner";
 
 const OrderDetails = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
   const location = useLocation();
   const { bookingData } = location?.state ?? {};
   const { data, isLoading, isSuccess, isError } = useGetBookingsById(
@@ -31,6 +35,10 @@ const OrderDetails = () => {
     data: providerStatusData,
     fetch: fetchProviderStatus,
   } = useGetBookingProviderStatus(bookingData.id);
+  const {
+    mutate: cancelWithProvider,
+    isPending: cancelPending,
+  } = useCancelBookingWithProvider(bookingData.id);
   return (
     <div className="md:px-20 px-6 py-8 bg-neutral100">
       {isLoading && !isSuccess && (
@@ -390,15 +398,31 @@ const OrderDetails = () => {
 
           {data?.data?.providerReference && (
             <div className="mt-6">
-              <div className="px-3 xl:px-4 py-4 text-md font-inter text-brand font-semibold bg-brand-light w-full flex items-center justify-between">
+              <div className="px-3 xl:px-4 py-4 text-md font-inter text-brand font-semibold bg-brand-light w-full flex items-center justify-between gap-3 flex-wrap">
                 <p>Provider Tracking ({data?.data?.company?.name})</p>
-                <button
-                  onClick={() => fetchProviderStatus()}
-                  disabled={providerStatusFetching}
-                  className="text-sm font-medium bg-brand text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {providerStatusFetching ? "Fetching..." : "Check Status"}
-                </button>
+                <div className="flex items-center gap-2">
+                  {data?.data?.company?.name?.toLowerCase()?.includes("gig") &&
+                    data?.data?.status !== "CANCELLED" &&
+                    data?.data?.status !== "DELIVERED" && (
+                      <button
+                        onClick={() => {
+                          setCancelOpen(true);
+                          setCancelReason("");
+                        }}
+                        disabled={cancelPending}
+                        className="text-sm font-medium bg-red-600 text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        Cancel with GIG
+                      </button>
+                    )}
+                  <button
+                    onClick={() => fetchProviderStatus()}
+                    disabled={providerStatusFetching}
+                    className="text-sm font-medium bg-brand text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {providerStatusFetching ? "Fetching..." : "Check Status"}
+                  </button>
+                </div>
               </div>
               <div className="px-3 xl:px-4 py-4 bg-white mb-6">
                 <div className="flex flex-wrap gap-8 mb-4">
@@ -425,6 +449,64 @@ const OrderDetails = () => {
                       </div>
                     )}
                 </div>
+
+                {cancelOpen && (
+                  <div className="mb-6 border border-red-200 rounded-lg p-4 bg-red-50">
+                    <p className="font-semibold text-red-700 mb-1 text-sm">
+                      Cancel shipment with GIG?
+                    </p>
+                    <p className="text-red-600 text-xs mb-3">
+                      This will request GIG to cancel waybill{" "}
+                      <span className="font-medium">
+                        {data?.data?.providerReference}
+                      </span>
+                      . GIG does not charge a cancellation fee. If the shipment
+                      has already been picked up, a return waybill may be
+                      generated.
+                    </p>
+                    <textarea
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      placeholder="Cancellation reason (optional)"
+                      rows={2}
+                      className="w-full border border-red-200 rounded-md px-3 py-2 text-sm text-neutral800 placeholder:text-neutral400 focus:outline-none focus:ring-1 focus:ring-red-400 mb-3 bg-white resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          cancelWithProvider(cancelReason || undefined, {
+                            onSuccess: (res: any) => {
+                              setCancelOpen(false);
+                              const msg = res?.data?.message ?? "Shipment cancelled with GIG.";
+                              const returnWaybill = res?.data?.returnWaybill;
+                              toast.success(
+                                returnWaybill
+                                  ? `${msg} Return waybill: ${returnWaybill}`
+                                  : msg,
+                              );
+                            },
+                            onError: (err: any) => {
+                              toast.error(
+                                err?.message ?? "Failed to cancel with GIG. Please try again.",
+                              );
+                            },
+                          });
+                        }}
+                        disabled={cancelPending}
+                        className="text-sm font-medium bg-red-600 text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {cancelPending ? "Cancelling..." : "Confirm Cancel"}
+                      </button>
+                      <button
+                        onClick={() => setCancelOpen(false)}
+                        disabled={cancelPending}
+                        className="text-sm font-medium border border-neutral300 text-neutral700 px-4 py-1.5 rounded-full disabled:opacity-60"
+                      >
+                        No, go back
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {providerStatusError && (
                   <p className="text-red-500 text-sm mt-2">

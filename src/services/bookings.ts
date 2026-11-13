@@ -110,6 +110,16 @@ export const getBookingProviderStatus = async (id: string) => {
   }
 };
 
+export const cancelBookingWithProvider = async (id: string, cancelReason?: string) => {
+  try {
+    const params = cancelReason ? { cancelReason } : {};
+    const res = await api.post(`/bookings/${id}/cancel-provider`, null, { params });
+    return res.data;
+  } catch (error: unknown) {
+    throwApiError(error);
+  }
+};
+
 export const createRatings = async (data: any) => {
   try {
     const res = await api.post(`/ratings`, data);

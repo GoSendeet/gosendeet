@@ -212,12 +212,21 @@ const Calculator = ({
       setHasNextPage(normalizeQuotesResponse(sharedQuote).length >= PAGE_SIZE);
     } else if (results) {
       hasUserInitiatedFetchRef.current = true;
-      // Navigation already supplied this unfiltered response from the form.
-      lastComparisonRequestRef.current = JSON.stringify({ payload: quotePayload, filters: {} });
+      // Build the dedup key from the navigation input (stateInputData) rather than
+      // the reactive quotePayload. Using quotePayload here caused the effect to
+      // re-fire whenever the user edited the form (embeddedInputData change), which
+      // overwrote the new search results with the original navigation data and
+      // simultaneously marked the new payload as already-fetched so the auto-fetch
+      // would skip it — leaving stale results on screen permanently.
+      lastComparisonRequestRef.current = JSON.stringify({
+        payload: buildQuotePayload(stateInputData),
+        filters: {},
+      });
       setData(results);
       setHasNextPage(normalizeQuotesResponse(results).length >= PAGE_SIZE);
     }
-  }, [results, sharedQuote, shareId, quotePayload, setHasNextPage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results, sharedQuote, shareId, setHasNextPage]);
 
   useEffect(() => {
     if (!autoScrollToResults || hasAutoScrolledToResultsRef.current) return;
