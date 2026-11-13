@@ -9,10 +9,13 @@ import {
   CheckCircle2,
   ChevronDown,
   Home,
+  MapPin,
   ShieldCheck,
   Star,
   Store,
 } from "lucide-react";
+import { useState } from "react";
+import DropOffStationDrawer, { type DropOffStation } from "./DropOffStationDrawer";
 import { parsePrice } from "../quoteUtils";
 
 interface CompareQuoteListProps {
@@ -33,11 +36,13 @@ const DashboardCompareQuoteCard = ({
   isRecommended,
   isGosendeet,
   onSelect,
+  onShowStation,
 }: {
   item: any;
   isRecommended: boolean;
   isGosendeet: boolean;
   onSelect: () => void;
+  onShowStation: (station: DropOffStation) => void;
 }) => (
   <div
     className={cn(
@@ -137,6 +142,15 @@ const DashboardCompareQuoteCard = ({
                   ? "Store drop-off"
                   : "Doorstep pickup"}
               </p>
+              {item?.pudoMode === "STORE_DROPOFF" && item?.nearestDropOffStation && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onShowStation(item.nearestDropOffStation); }}
+                  className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-[#F0FDF4] px-2.5 py-1.5 text-xs font-semibold text-brand transition-colors hover:bg-[#DCFCE7]"
+                >
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  Show drop-off station near me
+                </button>
+              )}
               <p className="mt-2 text-sm md:text-base font-bold text-[#64748B]">
                 {item?.pickUpdateDate || "Not specified"}
               </p>
@@ -160,11 +174,13 @@ const PublicCompareQuoteCard = ({
   isRecommended,
   isGosendeet,
   onSelect,
+  onShowStation,
 }: {
   item: any;
   isRecommended: boolean;
   isGosendeet: boolean;
   onSelect: () => void;
+  onShowStation: (station: DropOffStation) => void;
 }) => (
   <div
     className={cn(
@@ -242,6 +258,15 @@ const PublicCompareQuoteCard = ({
           <p className="text-xs font-bold text-gray-900 truncate">
             {item?.pickUpdateDate || "Not specified"}
           </p>
+          {item?.pudoMode === "STORE_DROPOFF" && item?.nearestDropOffStation && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onShowStation(item.nearestDropOffStation); }}
+              className="mt-1 flex items-center gap-1 rounded-md bg-[#F0FDF4] px-1.5 py-1 text-[9px] font-semibold text-brand"
+            >
+              <MapPin className="h-2.5 w-2.5 shrink-0" />
+              Show station near me
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-0.5">
           <div className="w-3 h-px bg-brand/30 rounded-full" />
@@ -310,6 +335,15 @@ const PublicCompareQuoteCard = ({
             <p className="text-sm font-bold text-gray-900">
               {item?.pickUpdateDate || "Not specified"}
             </p>
+            {item?.pudoMode === "STORE_DROPOFF" && item?.nearestDropOffStation && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onShowStation(item.nearestDropOffStation); }}
+                className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-[#F0FDF4] px-2.5 py-1.5 text-xs font-semibold text-brand transition-colors hover:bg-[#DCFCE7]"
+              >
+                <MapPin className="h-3 w-3 shrink-0" />
+                Show drop-off station near me
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col items-center flex-1 gap-1">
@@ -367,105 +401,120 @@ const CompareQuoteList = ({
   isEmbedded,
   isFetchingQuotes,
   isLoadingMore,
-}: CompareQuoteListProps) => (
-  <div className="flex flex-col gap-4">
-    {isFetchingQuotes && !isLoadingMore && (
-      <div className="flex flex-col gap-4 pt-8">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <CompareCardSkeleton key={i} />
-        ))}
-      </div>
-    )}
+}: CompareQuoteListProps) => {
+  const [drawerStation, setDrawerStation] = useState<DropOffStation | null>(null);
 
-    {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
-      <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
-        <img src={empty} alt="empty quotes" className="h-50" />
+  const handleShowStation = (station: DropOffStation) => setDrawerStation(station);
+  const handleCloseDrawer = () => setDrawerStation(null);
 
-        <p className="text-center font-bold text-green-600 text-lg mb-1">
-          {hasRouteQuery
-            ? "No available quote for this route"
-            : "No courier services available"}
-        </p>
-        <p className="text-center text-gray-600 text-sm">
-          {hasRouteQuery
-            ? "Try a different pickup/drop-off route or update package details."
-            : "Use the form above to search for courier services by entering your pickup location, destination, and package details."}
-        </p>
-      </div>
-    )}
+  return (
+    <>
+      <DropOffStationDrawer
+        open={drawerStation != null}
+        station={drawerStation}
+        onClose={handleCloseDrawer}
+      />
 
-    {hasQuotes && filteredAndSortedData.length === 0 && (
-      <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-center font-bold text-gray-600 text-lg mb-2">
-          No results match your filters
-        </p>
-        <button
-          onClick={clearFilters}
-          className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
-        >
-          Clear all filters
-        </button>
-      </div>
-    )}
-
-    {filteredAndSortedData.length > 0 && (
-      <div
-        className={cn(
-          "flex flex-col gap-4 overflow-y-auto pr-1 md:px-0",
-          isEmbedded ? "max-h-[72vh] pt-2 px-1" : "max-h-[70vh] pt-3 md:pt-8 px-1 md:px-4",
+      <div className="flex flex-col gap-4">
+        {isFetchingQuotes && !isLoadingMore && (
+          <div className="flex flex-col gap-4 pt-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <CompareCardSkeleton key={i} />
+            ))}
+          </div>
         )}
-      >
-        {(() => {
-          const gosendeetIdx = filteredAndSortedData.findIndex((item) =>
-            item?.courier?.name?.toLowerCase().includes("gosendeet"),
-          );
-          const pinned =
-            gosendeetIdx > 0
-              ? [
-                  filteredAndSortedData[gosendeetIdx],
-                  ...filteredAndSortedData.filter((_, i) => i !== gosendeetIdx),
-                ]
-              : filteredAndSortedData;
 
-          return pinned.map((item, globalIndex) => {
-            const isGosendeet = item?.courier?.name?.toLowerCase().includes("gosendeet");
-            const isRecommended = globalIndex === 0;
-            const cardProps = {
-              item,
-              isRecommended,
-              isGosendeet,
-              onSelect: () => handleClick(item),
-            };
+        {!hasQuotes && !isFetchingQuotes && !isLoadingMore && (
+          <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
+            <img src={empty} alt="empty quotes" className="h-50" />
+            <p className="text-center font-bold text-green-600 text-lg mb-1">
+              {hasRouteQuery
+                ? "No available quote for this route"
+                : "No courier services available"}
+            </p>
+            <p className="text-center text-gray-600 text-sm">
+              {hasRouteQuery
+                ? "Try a different pickup/drop-off route or update package details."
+                : "Use the form above to search for courier services by entering your pickup location, destination, and package details."}
+            </p>
+          </div>
+        )}
 
-            return isEmbedded ? (
-              <DashboardCompareQuoteCard
-                key={item?.id ?? globalIndex}
-                {...cardProps}
-              />
-            ) : (
-              <PublicCompareQuoteCard
-                key={item?.id ?? globalIndex}
-                {...cardProps}
-              />
-            );
-          });
-        })()}
+        {hasQuotes && filteredAndSortedData.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-center font-bold text-gray-600 text-lg mb-2">
+              No results match your filters
+            </p>
+            <button
+              onClick={clearFilters}
+              className="text-green-700 hover:text-green-800 font-semibold text-sm underline"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
 
-        {hasNextPage && (
-          <button
-            onClick={handleLoadMore}
-            disabled={isLoadingMore || isFetchingQuotes}
-            className="sticky bottom-0 z-20 shrink-0 w-full flex items-center justify-center gap-3 rounded-2xl border border-[#D1D5DB] bg-white py-4 text-sm font-semibold text-green100 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+        {filteredAndSortedData.length > 0 && (
+          <div
+            className={cn(
+              "flex flex-col gap-4 overflow-y-auto pr-1 md:px-0",
+              isEmbedded ? "max-h-[72vh] pt-2 px-1" : "max-h-[70vh] pt-3 md:pt-8 px-1 md:px-4",
+            )}
           >
-            {isLoadingMore || isFetchingQuotes
-              ? "Loading more options..."
-              : "Show more options"}
-            <ChevronDown size={18} />
-          </button>
+            {(() => {
+              const gosendeetIdx = filteredAndSortedData.findIndex((item) =>
+                item?.courier?.name?.toLowerCase().includes("gosendeet"),
+              );
+              const pinned =
+                gosendeetIdx > 0
+                  ? [
+                      filteredAndSortedData[gosendeetIdx],
+                      ...filteredAndSortedData.filter((_, i) => i !== gosendeetIdx),
+                    ]
+                  : filteredAndSortedData;
+
+              return pinned.map((item, globalIndex) => {
+                const isGosendeet = item?.courier?.name?.toLowerCase().includes("gosendeet");
+                const isRecommended = globalIndex === 0;
+                const cardProps = {
+                  item,
+                  isRecommended,
+                  isGosendeet,
+                  onSelect: () => handleClick(item),
+                  onShowStation: handleShowStation,
+                };
+
+                return isEmbedded ? (
+                  <DashboardCompareQuoteCard
+                    key={item?.id ?? globalIndex}
+                    {...cardProps}
+                  />
+                ) : (
+                  <PublicCompareQuoteCard
+                    key={item?.id ?? globalIndex}
+                    {...cardProps}
+                  />
+                );
+              });
+            })()}
+
+            {hasNextPage && (
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore || isFetchingQuotes}
+                className="sticky bottom-0 z-20 shrink-0 w-full flex items-center justify-center gap-3 rounded-2xl border border-[#D1D5DB] bg-white py-4 text-sm font-semibold text-green100 shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoadingMore || isFetchingQuotes
+                  ? "Loading more options..."
+                  : "Show more options"}
+                <ChevronDown size={18} />
+              </button>
+            )}
+          </div>
         )}
       </div>
-    )}
-  </div>
-);
+    </>
+  );
+};
 
 export default CompareQuoteList;

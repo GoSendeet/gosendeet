@@ -216,9 +216,14 @@ const PickupTime = () => {
         (quote: any) =>
           String(quote?.courier?.id) === String(nextBookingData.companyId) &&
           String(quote?.routeConfigId ?? "") === String(nextBookingData.routeConfigId ?? "") &&
-          String(quote?.slaConfigId ?? "") === String(nextBookingData.slaConfigId ?? "")
+          String(quote?.slaConfigId ?? "") === String(nextBookingData.slaConfigId ?? "") &&
+          (quote?.pudoMode ?? "") === (nextBookingData.pudoMode ?? "")
       ) ||
-      quotes.find((quote: any) => String(quote?.courier?.id) === String(nextBookingData.companyId)) ||
+      quotes.find(
+        (quote: any) =>
+          String(quote?.courier?.id) === String(nextBookingData.companyId) &&
+          (quote?.pudoMode ?? "") === (nextBookingData.pudoMode ?? "")
+      ) ||
       quotes.find((quote: any) => quote?.courier?.name === nextBookingData.courierName);
 
     if (!matchingQuote) return { ...nextBookingData, quotedItemValue: previousItemValue };
@@ -241,6 +246,9 @@ const PickupTime = () => {
       pudoMode: matchingQuote.pudoMode ?? nextBookingData.pudoMode,
       routeConfigId: matchingQuote.routeConfigId ?? nextBookingData.routeConfigId,
       slaConfigId: matchingQuote.slaConfigId ?? nextBookingData.slaConfigId,
+      nearestDropOffStation: nextBookingData.nearestDropOffStation ?? matchingQuote.nearestDropOffStation,
+      dropOffStationName: nextBookingData.dropOffStationName ?? matchingQuote.nearestDropOffStation?.stationName,
+      dropOffStationAddress: nextBookingData.dropOffStationAddress ?? matchingQuote.nearestDropOffStation?.address,
     };
   };
 
