@@ -313,6 +313,28 @@ const Checkout = () => {
                           </>
                         )}
                     </div>
+                    {bookingData?.pudoMode && (
+                      <div className="mt-2 flex flex-col gap-1">
+                        <span className="text-sm font-medium text-[#111827]">
+                          Pickup option:{" "}
+                          {bookingData.pudoMode === "STORE_DROPOFF"
+                            ? "Store Drop-off"
+                            : "Doorstep Pickup"}
+                        </span>
+                        {bookingData.pudoMode === "STORE_DROPOFF" &&
+                          bookingData.dropOffStationName && (
+                            <span className="text-sm text-[#475467]">
+                              <span className="font-medium text-[#111827]">
+                                Drop-off station:
+                              </span>{" "}
+                              {bookingData.dropOffStationName}
+                              {bookingData.dropOffStationAddress && (
+                                <> — {bookingData.dropOffStationAddress}</>
+                              )}
+                            </span>
+                          )}
+                      </div>
+                    )}
                     <p className="mt-3 break-words text-sm text-[#475467]">
                       {bookingData?.deliveryInstruction || "No delivery instruction added."}
                     </p>

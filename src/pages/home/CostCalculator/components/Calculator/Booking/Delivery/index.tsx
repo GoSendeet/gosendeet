@@ -199,6 +199,9 @@ const Delivery = () => {
       pudoMode: bookingDetails?.pudoMode,
       routeConfigId: bookingDetails?.routeConfigId,
       slaConfigId: bookingDetails?.slaConfigId,
+      nearestDropOffStation: bookingDetails?.nearestDropOffStation,
+      dropOffStationName: bookingDetails?.nearestDropOffStation?.stationName,
+      dropOffStationAddress: bookingDetails?.nearestDropOffStation?.address,
       itemValue: Number(bookingRequest?.itemPrice) || 0,
       quotedItemValue: Number(bookingRequest?.itemPrice) || 0,
     };

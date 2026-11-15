@@ -407,3 +407,34 @@ export const deletePromoCode = async (id: string) => {
     throwApiError(error);
   }
 };
+
+
+
+export type RoutingConfigData = {
+  offerTimeoutSeconds: number;
+  maxAttempts: number;
+  heartbeatTimeoutMinutes: number;
+  weightOnTimeRate: number;
+  weightAcceptanceRate: number;
+  weightLoadPenalty: number;
+  weightProximity: number;
+  proximityReferenceKm: number;
+};
+
+export const getRoutingConfig = async (): Promise<RoutingConfigData> => {
+  try {
+    const res = await api.get(`/admin/routing-config`);
+    return res.data?.data ?? res.data;
+  } catch (error: unknown) {
+    return throwApiError(error) as never;
+  }
+};
+
+export const updateRoutingConfig = async (data: Partial<RoutingConfigData>): Promise<RoutingConfigData> => {
+  try {
+    const res = await api.put(`/admin/routing-config`, data);
+    return res.data?.data ?? res.data;
+  } catch (error: unknown) {
+    return throwApiError(error) as never;
+  }
+};

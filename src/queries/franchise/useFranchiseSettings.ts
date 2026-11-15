@@ -1,4 +1,5 @@
 import {
+  geocodeAddressPreview,
   getFranchiseAlertPreferences,
   getFranchiseBankAccount,
   getFranchiseProfile,
@@ -15,6 +16,13 @@ export const franchiseProfileKey = ["franchise_profile"];
 export const franchiseBankAccountKey = ["franchise_bank_account"];
 export const franchiseVehicleCapabilitiesKey = ["franchise_vehicle_capabilities"];
 export const franchiseAlertPreferencesKey = ["franchise_alert_preferences"];
+
+/**
+ * On-demand geocode lookup — mutation so it fires only when the user requests a preview,
+ * not automatically on every address keystroke. Error handling is left to the caller.
+ */
+export const useGeocodeAddressPreview = () =>
+  useMutation({ mutationFn: geocodeAddressPreview });
 
 export const useGetFranchiseProfile = () =>
   useQuery({

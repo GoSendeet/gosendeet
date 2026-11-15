@@ -3,10 +3,11 @@ import {
   getBookingsById,
   getBookingStats,
   getBookingProviderStatus,
+  cancelBookingWithProvider,
   trackBookings,
 } from "@/services/bookings";
 import { fetchSharedQuotes } from "@/services/user";
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 
 export const useGetBookingsById = (id: string) => {
   const query = useQuery({
@@ -99,6 +100,16 @@ export const useGetBookingProviderStatus = (id: string) => {
     data: query.data,
     fetch: query.refetch,
   };
+};
+
+export const useCancelBookingWithProvider = (bookingId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (cancelReason?: string) => cancelBookingWithProvider(bookingId, cancelReason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bookings", bookingId] });
+    },
+  });
 };
 
 export const useGetSharedQuotes = (id: string) => {
