@@ -401,7 +401,8 @@ const OrderDetails = () => {
               <div className="px-3 xl:px-4 py-4 text-md font-inter text-brand font-semibold bg-brand-light w-full flex items-center justify-between gap-3 flex-wrap">
                 <p>Provider Tracking ({data?.data?.company?.name})</p>
                 <div className="flex items-center gap-2">
-                  {data?.data?.company?.name?.toLowerCase()?.includes("gig") &&
+                  {(data?.data?.company?.name?.toLowerCase()?.includes("gig") ||
+                    data?.data?.company?.name?.toLowerCase()?.includes("fez")) &&
                     data?.data?.status !== "CANCELLED" &&
                     data?.data?.status !== "DELIVERED" && (
                       <button
@@ -412,7 +413,7 @@ const OrderDetails = () => {
                         disabled={cancelPending}
                         className="text-sm font-medium bg-red-600 text-white px-4 py-1.5 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        Cancel with GIG
+                        Cancel with {data?.data?.company?.name}
                       </button>
                     )}
                   <button
@@ -453,16 +454,14 @@ const OrderDetails = () => {
                 {cancelOpen && (
                   <div className="mb-6 border border-red-200 rounded-lg p-4 bg-red-50">
                     <p className="font-semibold text-red-700 mb-1 text-sm">
-                      Cancel shipment with GIG?
+                      Cancel shipment with {data?.data?.company?.name}?
                     </p>
                     <p className="text-red-600 text-xs mb-3">
-                      This will request GIG to cancel waybill{" "}
+                      This will request {data?.data?.company?.name} to cancel waybill{" "}
                       <span className="font-medium">
                         {data?.data?.providerReference}
                       </span>
-                      . GIG does not charge a cancellation fee. If the shipment
-                      has already been picked up, a return waybill may be
-                      generated.
+                      . This action cannot be undone once confirmed by the courier.
                     </p>
                     <textarea
                       value={cancelReason}
@@ -477,7 +476,7 @@ const OrderDetails = () => {
                           cancelWithProvider(cancelReason || undefined, {
                             onSuccess: (res: any) => {
                               setCancelOpen(false);
-                              const msg = res?.data?.message ?? "Shipment cancelled with GIG.";
+                              const msg = res?.data?.message ?? "Shipment cancelled successfully.";
                               const returnWaybill = res?.data?.returnWaybill;
                               toast.success(
                                 returnWaybill
@@ -487,7 +486,7 @@ const OrderDetails = () => {
                             },
                             onError: (err: any) => {
                               toast.error(
-                                err?.message ?? "Failed to cancel with GIG. Please try again.",
+                                err?.message ?? "Failed to cancel shipment. Please try again.",
                               );
                             },
                           });
